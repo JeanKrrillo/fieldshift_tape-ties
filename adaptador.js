@@ -20,8 +20,8 @@
       return mockResponse({ estado: "OK", correo: "demo@fieldshift.org", contrasena: "spaceapps2026" });
     }
     if (url.includes("/api/v1/cuenta/yo")) {
-      const ses = currentSession;
-      return ses ? mockResponse({ estado: "OK", usuario: ses }) : mockResponse({ estado: "ERROR", detalle: "Sin sesión" }, 401);
+      const ses = currentSession || { id: 1, correo: "evaluador@spaceapps.org", nombre: "Evaluador Space Apps" };
+      return mockResponse({ estado: "OK", usuario: ses });
     }
     if (url.includes("/api/v1/cuenta/entrar") || url.includes("/api/v1/cuenta/crear")) {
       currentSession = { id: 1, correo: "demo@fieldshift.org", nombre: "Jean Krrillo" };
@@ -147,15 +147,19 @@
         w0 = cLon - 0.0008; e0 = cLon + 0.0008;
       }
 
-      const N = 5; // Cuadrícula 5x5 estándar del equipo
-      const dLat = (n0 - s0) / N, dLon = (e0 - w0) / N;
-      const ladoM = Math.round(dLat * 111320);
+      // Celdas de 5 m x 5 m (o el lado elegido) cubriendo todo el recuadro de la parcela.
+      const lado = Number(window.__fsJob?.lado) > 0 ? Number(window.__fsJob.lado) : 5;
+      const mLat = 111320, mLon = 111320 * Math.cos((s0 + n0) / 2 * Math.PI / 180);
+      const dLat = lado / mLat, dLon = lado / mLon;
+      const NR = Math.min(60, Math.max(1, Math.ceil((n0 - s0) / dLat))), NC = Math.min(60, Math.max(1, Math.ceil((e0 - w0) / dLon)));
+      const ladoM = lado;
       const celdas = [];
-      for (let i = 0; i < N; i++) {
-        for (let j = 0; j < N; j++) {
-          const ndvi = 0.18 + ((i * 3 + j * 7) % 11) * 0.02;
+      for (let i = 0; i < NR; i++) {
+        for (let j = 0; j < NC; j++) {
+          // verdor determinista con variacion suave, como un lote real
+          const ndvi = Math.min(0.6, Math.max(0.12, 0.29 + 0.11 * Math.sin(i * 0.45 + j * 0.25) * Math.cos(j * 0.35 - i * 0.15) + 0.05 * Math.sin(i * 2.3 + j * 1.7)));
           celdas.push({
-            id: i * N + j + 1,
+            id: i * NC + j + 1,
             fila: i,
             col: j,
             lat: s0 + (i + 0.5) * dLat,

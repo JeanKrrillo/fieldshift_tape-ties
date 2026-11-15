@@ -152,8 +152,10 @@
       this.clearTerrain(false);
       const poly = L.polygon(latlngs, {
         color: "#2F7D32",
-        weight: 3,
-        fillOpacity: 0.08
+        weight: 2,
+        fill: false,
+        lineJoin: "miter",
+        smoothFactor: 0
       });
       this.setPolygonLayer(poly, label);
     },

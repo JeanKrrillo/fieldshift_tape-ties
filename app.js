@@ -51,7 +51,7 @@
     recolData: null,
     catalog: null,
     cellsCount: 25,
-    cellSide: null,                           // null = cuadrícula estándar 5x5 (25 cuadros); nunca 2500
+    cellSide: 5,                              // celdas de 5 m x 5 m por defecto
     colorMode: "ndvi",
     selectedCells: new Set(),
     favLayers: lsGetJson("v2_fav_layers", []),
