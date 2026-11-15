@@ -50,7 +50,7 @@
     modelsMeta: null,
     recolData: null,
     catalog: null,
-    cellsCount: 9,
+    cellsCount: 25,
     cellSide: 5,                           // lado del cuadro en metros (5 m = escala de la humedad del suelo); null = automático por cantidad
     colorMode: "ndvi",
     selectedCells: new Set(),
@@ -87,14 +87,11 @@
 
       // Inicio de sesión obligatorio: sin sesión solo se ve la ventana de entrada.
       const ses = window.V2Adapter ? await window.V2Adapter.cuentaYo() : null;
-      if (ses) {
-        if (window.V2Alertas) await window.V2Alertas.init();
-        if (window.V2Robot) await window.V2Robot.cargarDatos();
-        this.iniciarRobotPolling();
-        this.modal = null;
-      } else {
-        this.modal = "cuenta";
-      }
+      // Sin inicio de sesion obligatorio: la pagina se ve directo (la cuenta es opcional).
+      if (ses && window.V2Alertas) await window.V2Alertas.init();
+      if (window.V2Robot) await window.V2Robot.cargarDatos();
+      this.iniciarRobotPolling();
+      this.modal = null;
 
       await this.renderShellChrome();
       this.renderActiveViews();
@@ -223,7 +220,7 @@
     },
 
     closeModal() {
-      if (this.modal === "cuenta" && !window.V2Adapter?.obtenerSesion()) return; // sin sesión no se puede cerrar
+      
       this.modal = null;
       this.renderModal();
     },
