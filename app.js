@@ -80,6 +80,9 @@
 
     async init() {
       this.applyThemeAndMode();
+      // Altura real del encabezado (en celular ocupa varios renglones): el CSS la usa para no tapar contenido.
+      const tb = document.getElementById("v2-topbar");
+      if (tb && window.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty("--topbar-h", Math.round(tb.getBoundingClientRect().bottom) + "px")).observe(tb);
       if (window.V2Adapter) {
         window.V2Adapter.updateDemoBanner();
       }
@@ -462,20 +465,20 @@
             const tabs = this.lang === "en"
               ? [
                   ["summary", "compass", "1. Summary", "4 key indicators of water, plant greenness, frost & soil"],
-                  ["terrain", "grid", "2. My Field", "Draw your parcel, change number of cells (9 to 100) or export"],
+                  ["terrain", "grid", "2. My Field", "Draw your parcel, change square size (5 to 50 m) or export"],
                   ["cell", "info", "3. Sector", "Diagnosis of the specific square you click on the map"],
                   ["layers", "layers", "4. Layers", "Turn on 14 satellite layers, 12-week time machine & curtain"]
                 ]
               : this.lang === "pt"
               ? [
                   ["summary", "compass", "1. Resumo", "4 indicadores principais de água, verdor, geada e solo"],
-                  ["terrain", "grid", "2. Terreno", "Desenhe sua área, mude o número de quadros (9 a 100) ou exporte"],
+                  ["terrain", "grid", "2. Terreno", "Desenhe sua área, mude o tamanho dos quadros (5 a 50 m) ou exporte"],
                   ["cell", "info", "3. Setor", "Diagnóstico do quadro clicado no mapa"],
                   ["layers", "layers", "4. Camadas", "Ative 14 camadas de satélite e máquina do tempo"]
                 ]
               : [
                   ["summary", "compass", "1. Resumen", "Los 4 medidores clave de agua, verdor, frío y suelo de este lugar"],
-                  ["terrain", "grid", "2. Mi terreno", "Dibuja tu parcela, cambia cuántos cuadros ves (9 a 100) o exporta"],
+                  ["terrain", "grid", "2. Mi terreno", "Dibuja tu parcela, cambia el tamaño de los cuadros (5 a 50 m) o exporta"],
                   ["cell", "info", "3. Sector", "Diagnóstico del cuadro específico que toques en el mapa"],
                   ["layers", "layers", "4. Capas", "Enciende 14 capas satelitales, viaje en el tiempo y cortina"]
                 ];

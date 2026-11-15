@@ -179,7 +179,7 @@
             <div>These <b>4 satellite gauges</b> summarize water, plant cover, 7-day frost risk, and soil reserve for this field. On the map, your parcel is divided into <b>numbered squares (#1, #2…)</b> measured at 10 m resolution.</div>
             <div class="guide-steps">
               <span class="guide-step"><b>Option 1:</b> Click any square on the map to inspect that sector</span>
-              <span class="guide-step"><b>Option 2:</b> Go to <b>2. My Field</b> to draw or change grid size (9–100)</span>
+              <span class="guide-step"><b>Option 2:</b> Go to <b>2. My Field</b> to draw or change square size (5–50 m)</span>
               <span class="guide-step"><b>Option 3:</b> Go to <b>Decide</b> (left menu) for crop rotation & profit</span>
             </div>
           </div>
@@ -194,7 +194,7 @@
             <div>Estes <b>4 medidores de satélite</b> resumem água, cobertura vegetal, frio (7 dias) e solo. No mapa, o terreno está dividido em <b>setores numerados (#1, #2…)</b> medidos a cada 10 m.</div>
             <div class="guide-steps">
               <span class="guide-step"><b>Opção 1:</b> Clique em um quadro no mapa para ver seu diagnóstico</span>
-              <span class="guide-step"><b>Opção 2:</b> Vá em <b>2. Terreno</b> para desenhar ou mudar os quadros (9–100)</span>
+              <span class="guide-step"><b>Opção 2:</b> Vá em <b>2. Terreno</b> para desenhar ou mudar o tamanho dos quadros (5–50 m)</span>
               <span class="guide-step"><b>Opção 3:</b> Vá em <b>Decidir</b> para rotação e lucro</span>
             </div>
           </div>
@@ -208,7 +208,7 @@
             <div>Estos <b>4 medidores satelitales</b> evalúan el estado actual de tu parcela. En el mapa de la derecha, el terreno está dividido en <b>sectores numerados (#1, #2…)</b> leídos por el satélite Sentinel-2 cada 10 metros.</div>
             <div class="guide-steps">
               <span class="guide-step"><b>1.</b> Haz clic en cualquier cuadro del mapa para diagnosticar ese sector</span>
-              <span class="guide-step"><b>2.</b> Abre <b>2. Mi terreno</b> arriba para dibujar tu lote o cambiar de 9 a 100 cuadros</span>
+              <span class="guide-step"><b>2.</b> Abre <b>2. Mi terreno</b> arriba para dibujar tu lote o cambiar el tamaño de los cuadros (5 a 50 m)</span>
               <span class="guide-step"><b>3.</b> Pulsa <b>Decidir qué sembrar</b> abajo para ver rotaciones y ganancia</span>
             </div>
           </div>
@@ -328,7 +328,7 @@
         ? `
           <div class="guide-box">
             <div class="guide-box-title"><span>${ic("grid", "sm")} How does the field grid work?</span></div>
-            <div>We divide your parcel into <b>9 to 100 squares</b> so the Sentinel-2 satellite (10 m resolution) can tell you which spots have dense crop and which have bare soil.</div>
+            <div>We divide your parcel into <b>squares of 5 to 50 m</b> so the Sentinel-2 satellite (10 m resolution) can tell you which spots have dense crop and which have bare soil.</div>
             <div class="guide-steps">
               <span class="guide-step"><b>Option A:</b> Draw your border by hand on the map</span>
               <span class="guide-step"><b>Option B:</b> Adopt an official 259 ha US BLM PLSS section in 1 click</span>
@@ -340,7 +340,7 @@
         ? `
           <div class="guide-box">
             <div class="guide-box-title"><span>${ic("grid", "sm")} Como funciona a grade do terreno?</span></div>
-            <div>Dividimos sua área em <b>9 a 100 quadros</b> para o satélite Sentinel-2 (10 m) mostrar onde a planta está densa e onde o solo está exposto.</div>
+            <div>Dividimos sua área em <b>quadros de 5 a 50 m</b> para o satélite Sentinel-2 (10 m) mostrar onde a planta está densa e onde o solo está exposto.</div>
             <div class="guide-steps">
               <span class="guide-step"><b>Opção A:</b> Desenhar à mão no mapa</span>
               <span class="guide-step"><b>Opção B:</b> Usar seção oficial dos EUA (BLM PLSS) em 1 clique</span>
@@ -351,7 +351,7 @@
         : `
           <div class="guide-box">
             <div class="guide-box-title"><span>${ic("grid", "sm")} ¿Qué es la cuadrícula y qué opciones tienes aquí?</span></div>
-            <div>Dividimos tu terreno en <b>9 a 100 sectores</b> para que el satélite Sentinel-2 (10 m) te diga exactamente en qué rincón crece bien el cultivo y dónde hay suelo pelado.</div>
+            <div>Dividimos tu terreno en <b>cuadros de 5 a 50 m</b> para que el satélite Sentinel-2 (10 m) te diga exactamente en qué rincón crece bien el cultivo y dónde hay suelo pelado.</div>
             <div class="guide-steps">
               <span class="guide-step"><b>Opción A:</b> Dibujar tu lindero a mano sobre el mapa</span>
               <span class="guide-step"><b>Opción B:</b> Tomar la parcela oficial de EE. UU. (259 ha BLM) en 1 clic</span>

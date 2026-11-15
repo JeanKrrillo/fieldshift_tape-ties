@@ -2493,3 +2493,61 @@ body.demo-activo .pista {
 
 /* Con la SI abierta, el control del demo baja a la esquina inferior izquierda para no tapar el panel */
 body.si-abierta #demo-caja { top: auto; bottom: 16px; right: auto; left: 96px; }
+
+/* Auditoria de sobreposiciones: cada control flotante del mapa tiene su zona fija. */
+/* Avisos: arriba al centro, donde no hay botones. */
+#vivo-avisos { top: 76px; bottom: auto; right: auto; left: 50%; transform: translateX(-50%); width: min(360px, calc(100vw - 32px)); }
+@media (min-width: 1024px) {
+  /* Tira de capas y fila del robot: a la derecha del panel (480 px + margenes) y antes del boton de la SI. */
+  #campo-capas, #vivo-fab { left: 512px; transform: none; max-width: calc(100% - 512px - 180px); }
+  #vivo-avisos { left: auto; right: 215px; transform: none; width: clamp(220px, calc(100vw - 800px), 340px); }
+  /* El panel a media altura empieza debajo del tablero de clima, y la SI deja libres los controles de Leaflet. */
+  #v2-sheet[data-snap="mid"] { top: 256px; max-height: calc(100vh - 272px); }
+  body[data-space="mapa"] #v2-si-btn { right: 64px; bottom: 18px; }
+  body:has(#v2-sheet[data-snap="max"]) #vivo-avisos { display: none; }
+}
+@media (max-width: 1023px) {
+  /* El panel ocupa todo el ancho abajo: los controles van encima de el, y se esconden si el panel sube. */
+  #vivo-fab { left: 12px; transform: none; bottom: 182px; max-width: calc(100% - 24px - 150px); }
+  #campo-capas { left: 12px; transform: none; bottom: 236px; max-width: calc(100% - 24px - 150px); }
+  body[data-space="mapa"] #v2-si-btn { bottom: 182px; right: 12px; }
+  #v2-map-legend { bottom: 240px; max-height: calc(100% - 420px); overflow: auto; }
+  #vivo-avisos { top: 196px; left: 12px; transform: none; width: min(340px, calc(100vw - 280px)); }
+  body:has(#v2-sheet[data-snap="mid"]) #campo-capas, body:has(#v2-sheet[data-snap="max"]) #campo-capas,
+  body:has(#v2-sheet[data-snap="mid"]) #vivo-fab, body:has(#v2-sheet[data-snap="max"]) #vivo-fab,
+  body:has(#v2-sheet[data-snap="mid"]) #v2-map-legend, body:has(#v2-sheet[data-snap="max"]) #v2-map-legend { display: none !important; }
+}
+@media (max-width: 768px) {
+  /* Celular: el encabezado ocupa dos renglones (~150 px); todo lo flotante empieza debajo. */
+  #v2-map-fabs { top: calc(var(--topbar-h, 58px) + 10px) !important; }
+  /* El tablero de clima y la leyenda repiten lo que ya dice el panel; en pantalla chica se ocultan. */
+  #campo-tablero, #v2-map-legend { display: none !important; }
+  #vivo-fab { flex-wrap: nowrap; justify-content: flex-start; width: auto; left: 12px; right: auto; bottom: 182px; max-width: calc(100vw - 24px - 96px); overflow-x: auto; }
+  #campo-capas { bottom: 236px; left: 12px; max-width: calc(100vw - 24px - 96px); }
+  body[data-space="mapa"] #v2-si-btn { bottom: 182px; right: 12px; }
+  #vivo-avisos { top: auto; bottom: 312px; left: 12px; right: 12px; width: auto; transform: none; }
+  body:has(#v2-sheet[data-snap="mid"]) #vivo-avisos, body:has(#v2-sheet[data-snap="max"]) #vivo-avisos,
+  body[data-space="mapa"]:has(#v2-sheet[data-snap="max"]) #v2-si-btn { display: none !important; }
+  body[data-space="mapa"]:has(#v2-sheet[data-snap="mid"]) #v2-si-btn { bottom: calc(48vh + 12px); }
+  /* Menu inferior: botones de ancho fijo con desplazamiento, sin partir palabras letra por letra. */
+  #v2-nav { overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
+  #v2-nav .nav-spaces { flex: 0 0 auto; justify-content: flex-start; }
+  .nav-btn { flex: 0 0 64px !important; min-width: 64px; }
+  .nav-btn span { font-size: 10px; white-space: nowrap; overflow-wrap: normal; overflow: hidden; text-overflow: ellipsis; max-width: 60px; }
+}
+@media (max-width: 768px) {
+  /* Zoom con dos dedos y boton "Capas" ya cubren esto; los creditos del mapa suben a un hueco libre. */
+  .leaflet-control-zoom, .leaflet-control-layers { display: none !important; }
+  .leaflet-bottom.leaflet-right { bottom: 290px; }
+}
+@media (max-width: 768px) {
+  /* El encabezado en celular mide ~158 px: el contenido empieza debajo. */
+  .v2-workspace { top: calc(var(--topbar-h, 58px) + 4px) !important; }
+}
+@media (max-width: 768px) {
+  /* Panel completo: empieza debajo del encabezado de celular. */
+  #v2-sheet[data-snap="max"] { height: calc(100vh - var(--topbar-h, 58px) - 4px - var(--nav-bottom-h, 64px)) !important; }
+}
+@media (max-width: 768px) {
+  body:has(#v2-sheet[data-snap="max"]) #v2-map-fabs { display: none !important; }
+}

@@ -543,7 +543,7 @@
       }
 
       const legHdr = lang === "en" ? "What do the map squares show?" : lang === "pt" ? "O que mostram os quadros do mapa?" : "¿Qué muestran los cuadros del mapa?";
-      const legCfgBtn = lang === "en" ? "Change grid size (9–100) or draw →" : "Cambiar cuadros (9–100) o dibujar →";
+      const legCfgBtn = lang === "en" ? "Change square size or draw →" : "Cambiar tamaño de cuadros o dibujar →";
 
       box.innerHTML = `
         <div style="font-weight:700;font-size:12.5px;margin-bottom:4px">${esc(legHdr)}</div>
