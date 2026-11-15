@@ -72,17 +72,26 @@
 
     // Movimiento con curva y aceleración suave
     async mover(x, y) {
+      if (Number.isNaN(x) || x == null) x = innerWidth / 2;
+      if (Number.isNaN(y) || y == null) y = innerHeight / 2;
+      const targetX = Math.max(16, Math.min(innerWidth - 24, x));
+      const targetY = Math.max(16, Math.min(innerHeight - 24, y));
       const f = this.factor();
-      const x0 = this.x, y0 = this.y, d = Math.hypot(x - x0, y - y0);
+      const x0 = this.x, y0 = this.y, d = Math.hypot(targetX - x0, targetY - y0);
       const t = Math.max(70, Math.min(900, (240 + d * 0.7) / f)), ini = performance.now();
-      const cx = (x0 + x) / 2 + (y - y0) * 0.18, cy = (y0 + y) / 2 - (x - x0) * 0.18;
+      const cx = (x0 + targetX) / 2 + (targetY - y0) * 0.18, cy = (y0 + targetY) / 2 - (targetX - x0) * 0.18;
       while (true) {
         if (this.pausa) { await this.esperar(0); continue; }
         const k = Math.min(1, (performance.now() - ini) / t);
         const e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
-        this.x = (1 - e) ** 2 * x0 + 2 * (1 - e) * e * cx + e * e * x;
-        this.y = (1 - e) ** 2 * y0 + 2 * (1 - e) * e * cy + e * e * y;
-        if (this.cursor) this.cursor.style.transform = `translate(${this.x}px, ${this.y}px)`;
+        this.x = (1 - e) ** 2 * x0 + 2 * (1 - e) * e * cx + e * e * targetX;
+        this.y = (1 - e) ** 2 * y0 + 2 * (1 - e) * e * cy + e * e * targetY;
+        this.x = Math.max(16, Math.min(innerWidth - 24, this.x));
+        this.y = Math.max(16, Math.min(innerHeight - 24, this.y));
+        if (this.cursor) {
+          this.cursor.hidden = false;
+          this.cursor.style.transform = `translate(${this.x}px, ${this.y}px)`;
+        }
         if (k >= 1) {
           try {
             sessionStorage.setItem("fs_demo_x", Math.round(this.x));
@@ -129,11 +138,14 @@
 
     async rodar(el, arriba = false) {
       if (!el) return;
+      try {
+        el.scrollIntoView({ behavior: "smooth", block: arriba ? "start" : "center", inline: "nearest" });
+      } catch (_) {}
       const c = this.contenedor(el), pagina = c === document.scrollingElement || c === document.documentElement;
       const r = el.getBoundingClientRect();
       const v = pagina ? { top: 0, bottom: innerHeight, height: innerHeight } : c.getBoundingClientRect();
-      const margenSup = pagina ? 86 : 28;
-      const margenInf = pagina ? 50 : 28;
+      const margenSup = pagina ? 86 : 36;
+      const margenInf = pagina ? 50 : 36;
 
       if (!arriba && r.top >= v.top + margenSup && r.bottom <= v.bottom - margenInf) return;
 
@@ -147,11 +159,11 @@
         targetScroll = (arriba || r.height > (v.height - margenSup - margenInf)) ? (c.scrollTop + diff - margenSup) : (c.scrollTop + diff - Math.max(margenSup, (v.height - r.height) / 2));
       }
       const dist = Math.abs(targetScroll - c.scrollTop);
-      await this.desplazarSuave(c, targetScroll, Math.min(550, Math.max(160, dist * 0.5)));
+      await this.desplazarSuave(c, targetScroll, Math.min(500, Math.max(120, dist * 0.4)));
     },
 
     async recorrerBloque(el, ms = 2200) {
-      if (!el || this.tarde()) return;
+      if (!el) return;
       const c = this.contenedor(el), pagina = c === document.scrollingElement || c === document.documentElement;
       const alto = pagina ? innerHeight : c.clientHeight;
       const r = el.getBoundingClientRect();
@@ -166,7 +178,6 @@
     },
 
     async recorrerEspacio(selWorkspace, texto, ms = 2400) {
-      if (this.tarde()) return;
       const ws = typeof selWorkspace === "string" ? await this.buscar(selWorkspace, 3000) : selWorkspace;
       if (!ws) return;
       this.decir(texto);
@@ -183,15 +194,17 @@
     },
 
     async irA(el) {
+      if (!el) return;
       await this.rodar(el);
       const b = await this.quieto(el);
-      await this.mover(b.left + b.width / 2, b.top + b.height / 2);
+      const targetX = Math.max(16, Math.min(innerWidth - 24, b.left + Math.max(4, b.width / 2)));
+      const targetY = Math.max(16, Math.min(innerHeight - 24, b.top + Math.max(4, b.height / 2)));
+      await this.mover(targetX, targetY);
     },
 
     tarde() {
-      const t0 = +(sessionStorage.getItem("fs_demo_t0") || Date.now());
-      const limite = this.duraciones[this.duracionActiva]?.limite || 185000;
-      return Date.now() - t0 > limite;
+      // Nunca saltar pasos de forma prematura para garantizar una demo fluida
+      return false;
     },
 
     anotar(texto, ok, motivo) {
@@ -332,6 +345,14 @@
 
     // ---------------------------------------------------------------- primera vez: crear o elegir terreno
     async primerTerreno() {
+      // Si el terreno ya está cargado con cuadrícula en el mapa, simplemente enfocar y continuar
+      if (window.V2Map?.poly && window.V2?.terrainResp?.celdas?.length) {
+        if (window.V2.space !== "mapa") window.V2.setSpace("mapa");
+        window.V2.setSheetSnap?.("min");
+        window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.35), { animate: true });
+        return;
+      }
+
       if (!(await this.buscar("#v2-ub-search-q", 3000))) await this.clic('[data-action="abrir-ubicacion"]', "Add your field: search by town or coordinates", 1000);
       if (!(await this.buscar("#v2-ub-search-q", 3000))) return;
       this.decir("New user setup: define the field location");
@@ -341,7 +362,8 @@
       if (await this.buscar("[data-geo-pick]", 4000)) await this.clic("[data-geo-pick]", "Select the exact field coordinates", 1000);
       await this.clic("#v2-ub-btn-draw", "Draw parcel boundary: click each corner on the map", 700);
       await this.dibujar([[42.1049, -93.6055], [42.1049, -93.6045], [42.1041, -93.6045], [42.1041, -93.6055]]);
-      await this.buscar("#v2-ub-nombre", 15000);
+      if (window.V2Ubicacion?.volverTrasDibujo) window.V2Ubicacion.volverTrasDibujo();
+      await this.buscar("#v2-ub-nombre", 4000);
       await this.esperar(400);
       const sel = await this.buscar("#v2-ub-cultivo-act");
       if (sel) {
@@ -419,10 +441,11 @@
       await this.clic("[data-vivo-ruta]", "Optimal rover sampling route generated across low-vigor squares", 1600);
       await this.clic("[data-vivo-sim]", "Simulate fleet of 35 rovers scanning the parcel", 1200);
 
-      // Dejar que los robots se muevan por el terreno y el cursor los sigue
+      // Dejar que los robots se muevan por el terreno y la cámara/cursor los sigue
       this.decir("Fleet of 35 rovers moving autonomously reading real-time NDVI");
       const rCenter = window.V2Map?.poly?.getBounds?.().getCenter?.();
       if (rCenter && window.V2Map?.map) {
+        window.V2Map.map.panTo(rCenter, { animate: true, duration: 0.8 });
         const mp = window.V2Map.map, p = mp.latLngToContainerPoint(rCenter), b = mp.getContainer().getBoundingClientRect();
         await this.mover(b.left + p.x, b.top + p.y);
       }
@@ -441,7 +464,7 @@
       await this.clic("#v2-si-cerrar", "Close SI panel and continue exploring", 700);
 
       // 5. INSPECCIONAR EL ROBOT EN VIVO (HARDWARE REAL + STREAMING GOOGLE SHEETS)
-      await this.clic('[data-vivo-robot], [data-go-space="inicio"]', "Inspect live robot telemetry from physical IoT prototype", 1400);
+      await this.clic('[data-go-space="inicio"]', "Inspect live robot telemetry from physical IoT prototype", 1400);
       if (V.space !== "inicio") V.setSpace("inicio");
       await this.esperar(500);
 
@@ -490,7 +513,10 @@
       // 8. REGRESO AL MAPA Y CONCLUSIÓN
       await this.clic('[data-go-space="mapa"]', "Field Shift: complete end-to-end satellite & robotics platform", 1400);
       if (V.space !== "mapa") V.setSpace("mapa");
-      this.decir("");
+      this.decir(window.V2?.lang === "en" ? "✓ Demo finished: North field satellite & IoT rover tour complete!"
+        : window.V2?.lang === "pt" ? "✓ Demonstração concluída: mapa de satélite e robô IoT inspecionados!"
+        : "✓ ¡Demo completada con éxito: satélite Sentinel-2 y telemetría de rover!");
+      await this.esperar(2500);
     },
 
     // ---------------------------------------------------------------- control de sesión
@@ -546,6 +572,7 @@
     async correr() {
       if (this.corriendo) return;
       this.corriendo = true;
+      try { sessionStorage.setItem("fs_demo_t0", Date.now()); } catch (_) {}
       if (this.cursor) this.cursor.hidden = false;
       this.pintar();
       document.body.classList.add("demo-activo");
@@ -556,6 +583,7 @@
         if (f === "entrar" || (!f && !sesion)) await this.entrar();
         else if (!f && sesion) await this.salir();
         else if (f === "recorrido") {
+          try { sessionStorage.setItem("fs_demo_t0", Date.now()); } catch (_) {}
           await this.esperar(1000);
           await this.primerTerreno();
           await this.recorrido();
@@ -573,7 +601,13 @@
       document.body.classList.remove("demo-activo");
       this.corriendo = false;
       this.pausa = false;
-      if (this.cursor) this.cursor.hidden = true;
+      if (this.cursor) {
+        // Estacionar el cursor suavemente en el control superior sin desaparecer de golpe
+        await this.mover(innerWidth - 120, 26);
+        setTimeout(() => {
+          if (!this.corriendo && this.cursor) this.cursor.hidden = true;
+        }, 3000);
+      }
       this.decir("");
       this.pintar();
     },
