@@ -1102,6 +1102,7 @@
     "Alta para el campo": ["High for farming", "Alta para o campo"], "Contexto": ["Context", "Contexto"], "Baja": ["Low", "Baixa"], "Generar ruta de muestreo para robot (5 cuadros críticos)": ["List the 5 lowest-greenness squares for the robot", "Listar os 5 quadros de menor verdor para o robô"],
     "Estaciones de agua cercanas (USGS NWIS):": ["Nearby water stations (USGS NWIS):", "Estações de água próximas (USGS NWIS):"], "Últimas pasadas de satélite sobre este punto (NASA CMR):": ["Latest satellite passes over this point (NASA CMR):", "Últimas passagens de satélite sobre este ponto (NASA CMR):"],
     "Consultando serie de 40 años en NASA POWER…": ["Fetching the 40-year series from NASA POWER…", "Buscando a série de 40 anos no NASA POWER…"], "Panel": ["Panel", "Painel"], "Filtrar término…": ["Filter term…", "Filtrar termo…"],
+    "Nitrógeno": ["Nitrogen", "Nitrogênio"], "Fósforo": ["Phosphorus", "Fósforo"], "Potasio": ["Potassium", "Potássio"], "Humedad suelo": ["Soil moisture", "Umidade do solo"], "Temp. suelo": ["Soil temp", "Temp. do solo"], "Salinidad": ["Salinity", "Salinidade"], "TDS": ["TDS", "TDS"], "Hum. aire": ["Air hum", "Umidade do ar"], "Temp. aire": ["Air temp", "Temp. do ar"], "Velocidad": ["Speed", "Velocidade"], "Rotación": ["Rotation", "Rotação"],
   };
   window.traducirDom = function () {
     const i = window.V2?.lang === "en" ? 0 : window.V2?.lang === "pt" ? 1 : -1;

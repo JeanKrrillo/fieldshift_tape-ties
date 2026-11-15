@@ -517,10 +517,18 @@ function doGet() {
       const ahora = new Date().toISOString();
       const rot = rec.rotacion ?? rec["rotación"] ?? 0;
       const vars = [
-        { variable: "humedad", nombre: "humedad", valor: rec.humedad, unidad: "%", t: rec.t || ahora, min: 20, max: 75, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
+        { variable: "humedad", nombre: "humedad ambiente", valor: rec.humedad, unidad: "%", t: rec.t || ahora, min: 20, max: 75, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
         { variable: "rotacion", nombre: "rotación", valor: rot, unidad: "°", t: rec.t || ahora, min: 0, max: 360, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
-        { variable: "temperatura", nombre: "temperatura", valor: rec.temperatura, unidad: "°C", t: rec.t || ahora, min: 5, max: 38, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
-        { variable: "velocidad", nombre: "velocidad", valor: rec.velocidad, unidad: "km/h", t: rec.t || ahora, min: 0, max: 25, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" }
+        { variable: "temperatura", nombre: "temperatura ambiente", valor: rec.temperatura, unidad: "°C", t: rec.t || ahora, min: 5, max: 38, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
+        { variable: "velocidad", nombre: "velocidad", valor: rec.velocidad, unidad: "km/h", t: rec.t || ahora, min: 0, max: 25, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
+        { variable: "humedad_suelo_pct", nombre: "humedad del suelo", valor: rec.humedad_suelo, unidad: "%", t: rec.t || ahora, min: 10, max: 50, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" },
+        { variable: "temp_suelo_c", nombre: "temperatura del suelo", valor: rec.temperatura_suelo, unidad: "°C", t: rec.t || ahora, min: 10, max: 35, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" },
+        { variable: "n_mg_kg", nombre: "nitrógeno (N)", valor: rec.nitrogeno, unidad: "mg/kg", t: rec.t || ahora, min: 10, max: 120, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" },
+        { variable: "p_mg_kg", nombre: "fósforo (P)", valor: rec.fosforo, unidad: "mg/kg", t: rec.t || ahora, min: 5, max: 80, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" },
+        { variable: "k_mg_kg", nombre: "potasio (K)", valor: rec.potasio, unidad: "mg/kg", t: rec.t || ahora, min: 30, max: 300, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" },
+        { variable: "ph", nombre: "pH", valor: rec.ph, unidad: "", t: rec.t || ahora, min: 5.5, max: 8.0, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" },
+        { variable: "ec_ms_cm", nombre: "salinidad (EC)", valor: rec.salinidad, unidad: "µS/cm", t: rec.t || ahora, min: 100, max: 1000, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" },
+        { variable: "tds", nombre: "TDS", valor: rec.tds, unidad: "ppm", t: rec.t || ahora, min: 50, max: 600, lat: rec.lat, lon: rec.lon, fuente: "Sonda NPK 8-en-1" }
       ];
       if (window.V2Robot) window.V2Robot.ultimasLecturas = vars;
 
@@ -531,7 +539,7 @@ function doGet() {
       if (coordsEl) coordsEl.textContent = `📍 Coordenadas de prueba: ${rec.lat.toFixed(5)}° N, ${rec.lon.toFixed(5)}° W (Querétaro)`;
 
       const timeEl = document.getElementById("rover-stream-time");
-      if (timeEl) timeEl.textContent = `⏱ Timestamp: ${String(rec.t || ahora).replace("T", " ").replace("+00:00", "")} UTC`;
+      if (timeEl) timeEl.textContent = `⏱ Timestamp: ${String(rec.t || ahora).replace("T", " ").replace("+00:00", "")} UTC · NPK: ${rec.nitrogeno ?? "—"}/${rec.fosforo ?? "—"}/${rec.potasio ?? "—"} mg/kg · pH: ${rec.ph ?? "—"}`;
 
       document.querySelectorAll(".robot-var-card").forEach(card => {
         const nom = card.querySelector(".robot-var-name")?.textContent.trim().toLowerCase();

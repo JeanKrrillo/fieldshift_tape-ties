@@ -1659,24 +1659,29 @@
       const lang = window.V2.lang;
       const mode = window.V2.mode;
 
-      // Lecturas dinámicas del robot
+      // Lecturas dinámicas del robot y sonda NPK 8-en-1
       const conocidas = {
-        temp_suelo_c: { ic: "sun", nombre: lang === "en" ? "Soil temperature" : "Temperatura del suelo", defUnidad: "°C" },
-        humedad_suelo_pct: { ic: "water", nombre: lang === "en" ? "Soil moisture" : "Humedad del suelo", defUnidad: "%" },
-        ec_ms_cm: { ic: "sensor", nombre: lang === "en" ? "Conductivity (EC)" : "Conductividad (EC)", defUnidad: "mS/cm" },
+        temp_suelo_c: { ic: "sun", nombre: lang === "en" ? "Soil temperature" : lang === "pt" ? "Temperatura do solo" : "Temperatura del suelo", defUnidad: "°C" },
+        humedad_suelo_pct: { ic: "water", nombre: lang === "en" ? "Soil moisture" : lang === "pt" ? "Umidade do solo" : "Humedad del suelo", defUnidad: "%" },
+        ec_ms_cm: { ic: "sensor", nombre: lang === "en" ? "Salinity (EC)" : lang === "pt" ? "Salinidade (EC)" : "Salinidad (EC)", defUnidad: "µS/cm" },
         ph: { ic: "soil", nombre: "pH", defUnidad: "" },
-        n_mg_kg: { ic: "leaf", nombre: lang === "en" ? "Nitrogen (N)" : "Nitrógeno disponible (N)", defUnidad: "mg/kg" },
-        p_mg_kg: { ic: "soil", nombre: lang === "en" ? "Phosphorus (P)" : "Fósforo disponible (P)", defUnidad: "mg/kg" },
-        k_mg_kg: { ic: "soil", nombre: lang === "en" ? "Potassium (K)" : "Potasio disponible (K)", defUnidad: "mg/kg" },
-        bateria_pct: { ic: "sensor", nombre: lang === "en" ? "Robot battery" : "Batería del robot", defUnidad: "%" }
+        n_mg_kg: { ic: "leaf", nombre: lang === "en" ? "Nitrogen (N)" : lang === "pt" ? "Nitrogênio (N)" : "Nitrógeno disponible (N)", defUnidad: "mg/kg" },
+        p_mg_kg: { ic: "soil", nombre: lang === "en" ? "Phosphorus (P)" : lang === "pt" ? "Fósforo (P)" : "Fósforo disponible (P)", defUnidad: "mg/kg" },
+        k_mg_kg: { ic: "soil", nombre: lang === "en" ? "Potassium (K)" : lang === "pt" ? "Potássio (K)" : "Potasio disponible (K)", defUnidad: "mg/kg" },
+        tds: { ic: "sensor", nombre: "TDS", defUnidad: "ppm" },
+        humedad: { ic: "water", nombre: lang === "en" ? "Air humidity" : lang === "pt" ? "Umidade do ar" : "Humedad ambiente", defUnidad: "%" },
+        temperatura: { ic: "sun", nombre: lang === "en" ? "Air temp" : lang === "pt" ? "Temperatura do ar" : "Temperatura ambiente", defUnidad: "°C" },
+        velocidad: { ic: "rover", nombre: lang === "en" ? "Speed" : lang === "pt" ? "Velocidade" : "Velocidad", defUnidad: "km/h" },
+        rotacion: { ic: "sensor", nombre: lang === "en" ? "Heading" : lang === "pt" ? "Orientação" : "Rotación", defUnidad: "°" },
+        bateria_pct: { ic: "sensor", nombre: lang === "en" ? "Robot battery" : lang === "pt" ? "Bateria do robô" : "Batería del robot", defUnidad: "%" }
       };
 
-      // 4. Lado a lado: Datos locales (Robot) vs Datos de la nube (NASA / Satélite)
-      const rHumedad = robotUltimas.find(x => x.variable === "humedad_suelo_pct")?.valor;
+      // 4. Lado a lado: Datos locales (Robot / Sonda NPK) vs Datos de la nube (NASA / Satélite)
+      const rHumedad = robotUltimas.find(x => x.variable === "humedad_suelo_pct")?.valor ?? robotUltimas.find(x => x.variable === "humedad")?.valor;
       const sHumedad = pw.humedad_zona_radicular_media_pct;
       const diffHum = (rHumedad != null && sHumedad != null) ? (rHumedad - sHumedad).toFixed(1) : null;
 
-      const rTemp = robotUltimas.find(x => x.variable === "temp_suelo_c")?.valor;
+      const rTemp = robotUltimas.find(x => x.variable === "temp_suelo_c")?.valor ?? robotUltimas.find(x => x.variable === "temperatura")?.valor;
       const sTemp = pw.temp_media_anual_c;
       const diffTemp = (rTemp != null && sTemp != null) ? (rTemp - sTemp).toFixed(1) : null;
 
@@ -1950,7 +1955,7 @@
                 ${ic("download", "sm")} <span>Descargar CSV completo</span>
               </button>
             </div>
-            <p class="small mut" style="margin:0 0 10px">${esc(m("Serie temporal de lecturas directas del banco y campo físico (Google Sheets · AppSheet).", "Time series of direct test bench and physical field readings (Google Sheets · AppSheet).", "Série temporal de leituras diretas de bancada e campo físico (Google Sheets · AppSheet)."))}</p>
+            <p class="small mut" style="margin:0 0 10px">${esc(m("Serie temporal de lecturas directas del banco y campo físico (Google Sheets · AppSheet · Sonda NPK 8-en-1).", "Time series of direct test bench and physical field readings (Google Sheets · AppSheet · 8-in-1 NPK probe).", "Série temporal de leituras diretas de bancada e campo físico (Google Sheets · AppSheet · Sonda NPK 8-em-1)."))}</p>
             <div class="table-wrap" style="max-height:280px;overflow-y:auto">
               <table class="v2-table rover-stream-table">
                 <thead>
@@ -1959,8 +1964,16 @@
                     <th>${esc(m("Hora (UTC)", "Time (UTC)", "Hora (UTC)"))}</th>
                     <th>${esc(m("Velocidad", "Speed", "Velocidade"))}</th>
                     <th>${esc(m("Rotación", "Rotation", "Rotação"))}</th>
-                    <th>${esc(m("Temperatura", "Temperature", "Temperatura"))}</th>
-                    <th>${esc(m("Humedad", "Moisture", "Umidade"))}</th>
+                    <th>${esc(m("Temp. aire", "Air temp", "Temp. ar"))}</th>
+                    <th>${esc(m("Hum. aire", "Air hum", "Umidade ar"))}</th>
+                    <th>${esc(m("Nitrógeno", "Nitrogen", "Nitrogênio"))}</th>
+                    <th>${esc(m("Fósforo", "Phosphorus", "Fósforo"))}</th>
+                    <th>${esc(m("Potasio", "Potassium", "Potássio"))}</th>
+                    <th>${esc(m("Hum. suelo", "Soil hum", "Umidade solo"))}</th>
+                    <th>${esc(m("Temp. suelo", "Soil temp", "Temp. solo"))}</th>
+                    <th>pH</th>
+                    <th>${esc(m("Salinidad", "Salinity", "Salinidade"))}</th>
+                    <th>TDS</th>
                     <th>${esc(m("Coordenadas", "Coordinates", "Coordenadas"))}</th>
                   </tr>
                 </thead>
@@ -1973,6 +1986,14 @@
                       <td><b>${r.rotacion ?? r["rotación"]}°</b></td>
                       <td><b>${r.temperatura} °C</b></td>
                       <td><b>${r.humedad}%</b></td>
+                      <td style="color:#2e7d32"><b>${r.nitrogeno != null ? r.nitrogeno + " mg/kg" : "—"}</b></td>
+                      <td style="color:#1565c0"><b>${r.fosforo != null ? r.fosforo + " mg/kg" : "—"}</b></td>
+                      <td style="color:#e65100"><b>${r.potasio != null ? r.potasio + " mg/kg" : "—"}</b></td>
+                      <td><b>${r.humedad_suelo != null ? r.humedad_suelo + "%" : "—"}</b></td>
+                      <td><b>${r.temperatura_suelo != null ? r.temperatura_suelo + " °C" : "—"}</b></td>
+                      <td><b>${r.ph != null ? r.ph : "—"}</b></td>
+                      <td><b>${r.salinidad != null ? r.salinidad + " µS/cm" : "—"}</b></td>
+                      <td><b>${r.tds != null ? r.tds + " ppm" : "—"}</b></td>
                       <td class="coord-mono xs">${r.lat != null ? `${r.lat.toFixed(5)}, ${r.lon.toFixed(5)}` : "—"}</td>
                     </tr>
                   `).join("")}

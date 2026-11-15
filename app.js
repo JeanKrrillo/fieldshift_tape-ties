@@ -870,6 +870,38 @@
     },
 
     exportarLecturasRawCsv() {
+      const hojaRecs = window.ROBOT_HOJA_RECORDS || [];
+      if (hojaRecs.length) {
+        const headers = ["hora_utc", "latitud", "longitud", "velocidad_kmh", "rotacion_deg", "temp_aire_c", "humedad_aire_pct", "nitrogeno_mg_kg", "fosforo_mg_kg", "potasio_mg_kg", "humedad_suelo_pct", "temp_suelo_c", "ph", "salinidad_us_cm", "tds_ppm"];
+        const rows = hojaRecs.map(r => [
+          r.t ? new Date(r.t).toISOString() : "",
+          r.lat ?? "",
+          r.lon ?? "",
+          r.velocidad ?? "",
+          r.rotacion ?? r["rotación"] ?? "",
+          r.temperatura ?? "",
+          r.humedad ?? "",
+          r.nitrogeno ?? "",
+          r.fosforo ?? "",
+          r.potasio ?? "",
+          r.humedad_suelo ?? "",
+          r.temperatura_suelo ?? "",
+          r.ph ?? "",
+          r.salinidad ?? "",
+          r.tds ?? ""
+        ]);
+        const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `fieldshift_appscript_npk_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      }
       const lecturas = window.V2Robot?.ultimasLecturas || [];
       if (!lecturas.length) {
         this.showToast("No hay lecturas disponibles para exportar.", 3000);

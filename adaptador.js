@@ -34,7 +34,7 @@
       return mockResponse({ estado: "OK" });
     }
     if (url.includes("/api/v1/terrenos")) {
-      if (opts.method === "POST") {
+      if (String(opts?.method || "").toUpperCase() === "POST") {
         const body = JSON.parse(opts.body || "{}");
         const t = { id: Date.now(), nombre: body.nombre || "North field", lat: body.lat || 42.1045, lon: body.lon || -93.6050, area_ha: 0.7, poligono: body.poligono || [[42.1049, -93.6055], [42.1049, -93.6045], [42.1041, -93.6045], [42.1041, -93.6055]] };
         try {
@@ -78,10 +78,18 @@
       const r = recs[0] || {};
       return mockResponse({
         variables: [
-          { variable: "humedad", nombre: "humedad", valor: r.humedad ?? 40, unidad: "%", t: r.t || new Date().toISOString(), min: 20, max: 75, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
+          { variable: "humedad", nombre: "humedad ambiente", valor: r.humedad ?? 40, unidad: "%", t: r.t || new Date().toISOString(), min: 20, max: 75, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
           { variable: "rotacion", nombre: "rotación", valor: r.rotacion ?? r["rotación"] ?? 90, unidad: "°", t: r.t || new Date().toISOString(), min: 0, max: 360, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
-          { variable: "temperatura", nombre: "temperatura", valor: r.temperatura ?? 25, unidad: "°C", t: r.t || new Date().toISOString(), min: 5, max: 38, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
-          { variable: "velocidad", nombre: "velocidad", valor: r.velocidad ?? 5.7, unidad: "km/h", t: r.t || new Date().toISOString(), min: 0, max: 25, lat: r.lat, lon: r.lon, fuente: "Google Sheets" }
+          { variable: "temperatura", nombre: "temperatura ambiente", valor: r.temperatura ?? 25, unidad: "°C", t: r.t || new Date().toISOString(), min: 5, max: 38, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
+          { variable: "velocidad", nombre: "velocidad", valor: r.velocidad ?? 5.7, unidad: "km/h", t: r.t || new Date().toISOString(), min: 0, max: 25, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
+          { variable: "humedad_suelo_pct", nombre: "humedad del suelo", valor: r.humedad_suelo ?? 24.5, unidad: "%", t: r.t || new Date().toISOString(), min: 10, max: 50, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" },
+          { variable: "temp_suelo_c", nombre: "temperatura del suelo", valor: r.temperatura_suelo ?? 21.2, unidad: "°C", t: r.t || new Date().toISOString(), min: 10, max: 35, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" },
+          { variable: "n_mg_kg", nombre: "nitrógeno (N)", valor: r.nitrogeno ?? 42, unidad: "mg/kg", t: r.t || new Date().toISOString(), min: 10, max: 120, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" },
+          { variable: "p_mg_kg", nombre: "fósforo (P)", valor: r.fosforo ?? 28, unidad: "mg/kg", t: r.t || new Date().toISOString(), min: 5, max: 80, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" },
+          { variable: "k_mg_kg", nombre: "potasio (K)", valor: r.potasio ?? 115, unidad: "mg/kg", t: r.t || new Date().toISOString(), min: 30, max: 300, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" },
+          { variable: "ph", nombre: "pH", valor: r.ph ?? 6.6, unidad: "", t: r.t || new Date().toISOString(), min: 5.5, max: 8.0, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" },
+          { variable: "ec_ms_cm", nombre: "salinidad (EC)", valor: r.salinidad ?? 320, unidad: "µS/cm", t: r.t || new Date().toISOString(), min: 100, max: 1000, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" },
+          { variable: "tds", nombre: "TDS", valor: r.tds ?? 210, unidad: "ppm", t: r.t || new Date().toISOString(), min: 50, max: 600, lat: r.lat, lon: r.lon, fuente: "Sonda NPK 8-en-1" }
         ]
       });
     }
@@ -93,6 +101,14 @@
         flat.push({ t: r.t, variable: "rotación", valor: r.rotacion ?? r["rotación"], lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°" });
         flat.push({ t: r.t, variable: "temperatura", valor: r.temperatura, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°C" });
         flat.push({ t: r.t, variable: "velocidad", valor: r.velocidad, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "km/h" });
+        if (r.nitrogeno != null) flat.push({ t: r.t, variable: "n_mg_kg", valor: r.nitrogeno, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "mg/kg" });
+        if (r.fosforo != null) flat.push({ t: r.t, variable: "p_mg_kg", valor: r.fosforo, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "mg/kg" });
+        if (r.potasio != null) flat.push({ t: r.t, variable: "k_mg_kg", valor: r.potasio, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "mg/kg" });
+        if (r.humedad_suelo != null) flat.push({ t: r.t, variable: "humedad_suelo_pct", valor: r.humedad_suelo, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "%" });
+        if (r.temperatura_suelo != null) flat.push({ t: r.t, variable: "temp_suelo_c", valor: r.temperatura_suelo, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°C" });
+        if (r.ph != null) flat.push({ t: r.t, variable: "ph", valor: r.ph, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "" });
+        if (r.salinidad != null) flat.push({ t: r.t, variable: "ec_ms_cm", valor: r.salinidad, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "µS/cm" });
+        if (r.tds != null) flat.push({ t: r.t, variable: "tds", valor: r.tds, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "ppm" });
       });
       return mockResponse({ estado: "OK", lecturas: flat });
     }
@@ -108,7 +124,7 @@
       return mockResponse({ estado: "OK", lat: 42.1045, lon: -93.6050, direccion: (q ? q.charAt(0).toUpperCase() + q.slice(1) : "Parcela") + ", Iowa, USA" });
     }
     if (url.includes("/api/v1/trabajos")) {
-      if (opts.method === "POST") {
+      if (String(opts?.method || "").toUpperCase() === "POST") {
         return mockResponse({ estado: "OK", trabajo: "job_static" });
       }
       // Generar 25 celdas con coordenadas y verdor Sentinel-2 realista
@@ -288,6 +304,10 @@
   window.fetch = async function (input, init) {
     const url = typeof input === "string" ? input : (input?.url || "");
     if (url.includes("/api/v1/")) {
+      const isLocalServer = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && (window.location.port === "8000" || window.location.port === "8080");
+      if (!isLocalServer) {
+        return handleStaticFallback(url, init);
+      }
       try {
         const r = await origFetch(input, init);
         if (r.ok || r.status === 401) return r;
