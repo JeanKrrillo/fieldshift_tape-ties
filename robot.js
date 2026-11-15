@@ -443,6 +443,153 @@ function doGet() {
     },
   };
 
+  const V2RobotStream = {
+    records: window.ROBOT_HOJA_RECORDS || [],
+    index: 0,
+    timer: null,
+    intervalMs: 2500,
+    playing: true,
+
+    init() {
+      if (!this.records || !this.records.length) {
+        if (window.ROBOT_HOJA_RECORDS) this.records = window.ROBOT_HOJA_RECORDS;
+      }
+      this.bindEvents();
+      setTimeout(() => {
+        this.applyCurrent();
+        this.play();
+      }, 800);
+    },
+
+    play() {
+      this.playing = true;
+      if (this.timer) clearInterval(this.timer);
+      this.timer = setInterval(() => this.next(), this.intervalMs);
+      this.updateControls();
+    },
+
+    pause() {
+      this.playing = false;
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
+      this.updateControls();
+    },
+
+    toggle() {
+      if (this.playing) this.pause();
+      else this.play();
+    },
+
+    setSpeed(ms) {
+      this.intervalMs = ms;
+      if (this.playing) {
+        clearInterval(this.timer);
+        this.timer = setInterval(() => this.next(), this.intervalMs);
+      }
+    },
+
+    next() {
+      if (!this.records.length) {
+        if (window.ROBOT_HOJA_RECORDS) this.records = window.ROBOT_HOJA_RECORDS;
+        if (!this.records.length) return;
+      }
+      this.index = (this.index + 1) % this.records.length;
+      this.applyCurrent();
+    },
+
+    prev() {
+      if (!this.records.length) {
+        if (window.ROBOT_HOJA_RECORDS) this.records = window.ROBOT_HOJA_RECORDS;
+        if (!this.records.length) return;
+      }
+      this.index = (this.index - 1 + this.records.length) % this.records.length;
+      this.applyCurrent();
+    },
+
+    applyCurrent() {
+      if (!this.records.length) {
+        if (window.ROBOT_HOJA_RECORDS) this.records = window.ROBOT_HOJA_RECORDS;
+        if (!this.records.length) return;
+      }
+      const rec = this.records[this.index];
+      if (!rec) return;
+
+      const ahora = new Date().toISOString();
+      const rot = rec.rotacion ?? rec["rotación"] ?? 0;
+      const vars = [
+        { variable: "humedad", nombre: "humedad", valor: rec.humedad, unidad: "%", t: rec.t || ahora, min: 20, max: 75, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
+        { variable: "rotacion", nombre: "rotación", valor: rot, unidad: "°", t: rec.t || ahora, min: 0, max: 360, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
+        { variable: "temperatura", nombre: "temperatura", valor: rec.temperatura, unidad: "°C", t: rec.t || ahora, min: 5, max: 38, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" },
+        { variable: "velocidad", nombre: "velocidad", valor: rec.velocidad, unidad: "km/h", t: rec.t || ahora, min: 0, max: 25, lat: rec.lat, lon: rec.lon, fuente: "Google Sheets" }
+      ];
+      if (window.V2Robot) window.V2Robot.ultimasLecturas = vars;
+
+      const counterEl = document.getElementById("rover-stream-counter");
+      if (counterEl) counterEl.textContent = `Muestra ${this.index + 1} / ${this.records.length}`;
+
+      const coordsEl = document.getElementById("rover-stream-coords");
+      if (coordsEl) coordsEl.textContent = `📍 Coordenadas de prueba: ${rec.lat.toFixed(5)}° N, ${rec.lon.toFixed(5)}° W (Querétaro)`;
+
+      const timeEl = document.getElementById("rover-stream-time");
+      if (timeEl) timeEl.textContent = `⏱ Timestamp: ${String(rec.t || ahora).replace("T", " ").replace("+00:00", "")} UTC`;
+
+      document.querySelectorAll(".robot-var-card").forEach(card => {
+        const nom = card.querySelector(".robot-var-name")?.textContent.trim().toLowerCase();
+        const v = vars.find(x => (x.nombre || x.variable).toLowerCase() === nom || x.variable === nom);
+        if (v) {
+          const valEl = card.querySelector(".robot-var-val");
+          if (valEl) {
+            valEl.innerHTML = `${v.valor} <small>${v.unidad}</small>`;
+          }
+          card.classList.remove("demo-late");
+          void card.offsetWidth;
+          card.classList.add("demo-late");
+        }
+      });
+
+      document.querySelectorAll(".rover-stream-table tr[data-rec-idx]").forEach(tr => {
+        const isCurrent = Number(tr.dataset.recIdx) === this.index;
+        tr.classList.toggle("active-row", isCurrent);
+        if (isCurrent && tr.offsetParent) {
+          tr.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+        }
+      });
+    },
+
+    updateControls() {
+      const playBtn = document.getElementById("rover-btn-play");
+      if (playBtn) {
+        playBtn.textContent = this.playing ? "❚❚ Pausar" : "▶ Reanudar";
+        playBtn.classList.toggle("btn-pri", this.playing);
+        playBtn.classList.toggle("btn-sec", !this.playing);
+      }
+    },
+
+    bindEvents() {
+      document.addEventListener("click", (e) => {
+        if (e.target.closest("#rover-btn-play")) {
+          this.toggle();
+        } else if (e.target.closest("#rover-btn-prev")) {
+          this.prev();
+        } else if (e.target.closest("#rover-btn-next")) {
+          this.next();
+        }
+      });
+
+      document.addEventListener("change", (e) => {
+        if (e.target.id === "rover-stream-speed") {
+          this.setSpeed(Number(e.target.value));
+        }
+      });
+    }
+  };
+
+  window.V2RobotStream = V2RobotStream;
   window.V2Robot = V2Robot;
   V2Robot.bindEvents();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => V2RobotStream.init());
+  } else {
+    V2RobotStream.init();
+  }
 })();

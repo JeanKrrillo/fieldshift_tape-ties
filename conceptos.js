@@ -731,6 +731,20 @@
       `;
     },
 
+    abrirConcepto(id) {
+      this.searchTerm = "";
+      const inp = document.getElementById("v2-con-search-q");
+      if (inp) inp.value = "";
+      if (window.V2) window.V2.renderActiveViews();
+      setTimeout(() => {
+        const el = document.getElementById(`c_${id}`) || document.getElementById(id) || document.querySelector(`[id*="${id}"]`);
+        if (el) {
+          el.open = true;
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 120);
+    },
+
     bindEvents() {
       document.addEventListener("input", (e) => {
         if (e.target.id === "v2-con-search-q") {

@@ -52,20 +52,49 @@
       return mockResponse(list);
     }
     if (url.includes("/api/v1/robot/estado")) {
-      return mockResponse({ lecturas: 48, ultima_lectura: new Date().toISOString(), robots: ["Rover Prototipo 1"], conectado: true, hoja: { conectada: true } });
+      const recs = window.ROBOT_HOJA_RECORDS || [];
+      const ult = recs[recs.length - 1] || {};
+      return mockResponse({
+        estado: "OK",
+        lecturas: recs.length * 4 || 132,
+        ultima_lectura: ult.t || new Date().toISOString(),
+        robots: ["Rover Prototipo 1"],
+        conectado: true,
+        criterio_conectado: "una lectura en los últimos 5 minutos",
+        hoja: {
+          conectada: true,
+          url: "https://docs.google.com/spreadsheets/d/1qLLcz2nqP3tsAzvgeWL7eH7EAD-h4_4QsKCYoxLfCWc/edit",
+          ultima_sincronizacion: new Date().toISOString(),
+          filas_hoja: recs.length || 33,
+          filas_nuevas: 0,
+          filas_omitidas: 0,
+          cada_s: 10,
+          proxima_en_s: 8
+        }
+      });
     }
     if (url.includes("/api/v1/robot/ultimas")) {
+      const recs = window.ROBOT_HOJA_RECORDS || [];
+      const r = recs[0] || {};
       return mockResponse({
         variables: [
-          { variable: "humedad", nombre: "humedad", valor: 40, unidad: "%", t: new Date().toISOString(), min: 30, max: 70 },
-          { variable: "rotacion", nombre: "rotación", valor: 90, unidad: "°", t: new Date().toISOString() },
-          { variable: "temperatura", nombre: "temperatura", valor: 25, unidad: "°C", t: new Date().toISOString(), min: 10, max: 35 },
-          { variable: "velocidad", nombre: "velocidad", valor: 0, unidad: "km/h", t: new Date().toISOString() }
+          { variable: "humedad", nombre: "humedad", valor: r.humedad ?? 40, unidad: "%", t: r.t || new Date().toISOString(), min: 20, max: 75, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
+          { variable: "rotacion", nombre: "rotación", valor: r.rotacion ?? r["rotación"] ?? 90, unidad: "°", t: r.t || new Date().toISOString(), min: 0, max: 360, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
+          { variable: "temperatura", nombre: "temperatura", valor: r.temperatura ?? 25, unidad: "°C", t: r.t || new Date().toISOString(), min: 5, max: 38, lat: r.lat, lon: r.lon, fuente: "Google Sheets" },
+          { variable: "velocidad", nombre: "velocidad", valor: r.velocidad ?? 5.7, unidad: "km/h", t: r.t || new Date().toISOString(), min: 0, max: 25, lat: r.lat, lon: r.lon, fuente: "Google Sheets" }
         ]
       });
     }
     if (url.includes("/api/v1/robot/lecturas")) {
-      return mockResponse({ lecturas: [] });
+      const recs = window.ROBOT_HOJA_RECORDS || [];
+      const flat = [];
+      recs.forEach(r => {
+        flat.push({ t: r.t, variable: "humedad", valor: r.humedad, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "%" });
+        flat.push({ t: r.t, variable: "rotación", valor: r.rotacion ?? r["rotación"], lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°" });
+        flat.push({ t: r.t, variable: "temperatura", valor: r.temperatura, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°C" });
+        flat.push({ t: r.t, variable: "velocidad", valor: r.velocidad, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "km/h" });
+      });
+      return mockResponse({ estado: "OK", lecturas: flat });
     }
     if (url.includes("/api/v1/alertas")) {
       return mockResponse([]);

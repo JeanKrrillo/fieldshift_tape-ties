@@ -2442,7 +2442,44 @@ body.demo-activo .pista {
 /* Contraseña del demo: se ve con puntos, sin ser campo de contraseña */
 .demo-mascara { -webkit-text-security: disc; text-security: disc; }
 
-/* Anuncio del robot simulado en el demo */
+/* Estilos de la tabla de streaming y controles del demo */
+.rover-stream-table tr.active-row {
+  background: rgba(46, 125, 50, 0.14) !important;
+  font-weight: 700;
+  border-left: 3px solid var(--primario);
+  transition: background 0.25s ease;
+}
+.rover-stream-player select {
+  background: var(--superficie);
+  color: var(--texto);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.demo-speed-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.demo-dur-btn {
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--texto-sec, #555) !important;
+  font-size: 11px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+  font-weight: 600 !important;
+  transition: all 0.15s ease;
+}
+.demo-dur-btn.active {
+  background: var(--primario) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
 #demo-anuncio { position: fixed; top: 6px; left: 50%; transform: translateX(-50%); z-index: 2996; background: #FFF4E0; color: #6B3E00; border: 1.5px solid #C77700; border-radius: 10px; padding: 6px 12px; font-size: 12.5px; max-width: min(620px, calc(100vw - 60px)); text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, .15); pointer-events: none; }
 @keyframes demo-late { 0% { background: rgba(199, 119, 0, .18); } 100% { background: transparent; } }
 .robot-var-card.demo-late { animation: demo-late 1.2s ease-out; }

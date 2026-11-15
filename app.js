@@ -1028,6 +1028,14 @@
           this.renderShellChrome();
           this.renderActiveViews();
           setTimeout(() => document.getElementById("v2-full-catalog")?.scrollIntoView({ behavior: "smooth" }), 100);
+        } else if (el.dataset.goConceptos) {
+          this.closeModal();
+          this.setSpace("conceptos");
+          setTimeout(() => {
+            if (window.V2Conceptos) {
+              window.V2Conceptos.abrirConcepto?.(el.dataset.goConceptos);
+            }
+          }, 120);
         } else if (el.dataset.favLayer) {
           const id = el.dataset.favLayer;
           if (this.favLayers.includes(id)) this.favLayers = this.favLayers.filter(x => x !== id);

@@ -1775,12 +1775,40 @@
             <div class="row-between" style="margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:8px">
                 <span class="sem-domain-ic vigor">${ic("sensor", "sm")}</span>
-                <h2 class="card-title" style="margin:0">Lecturas del robot en tiempo real</h2>
+                <h2 class="card-title" style="margin:0">${esc(m("Lecturas del robot en tiempo real", "Real-time robot readings", "Leituras do robô em tempo real"))}</h2>
               </div>
               <div class="row-wrap" style="gap:6px">
                 <span class="sem-badge ${robotEstado.conectado ? "ok" : "atencion"}">
-                  ${robotEstado.conectado ? "Robot conectado" : "Esperando lecturas"}
+                  ${robotEstado.conectado ? esc(m("Robot conectado", "Robot connected", "Robô conectado")) : esc(m("Esperando lecturas", "Awaiting readings", "Aguardando leituras"))}
                 </span>
+              </div>
+            </div>
+
+            <!-- STREAMING EN VIVO DE LA HOJA DE GOOGLE / EXCEL -->
+            <div class="rover-stream-player" style="background:var(--superficie-2, #f3f7f4);border:1px solid var(--linea);border-radius:10px;padding:12px;margin-bottom:14px">
+              <div class="row-between" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="rover-live-pulse" style="background:#2ecc71;width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 6px #2ecc71"></span>
+                  <b style="font-size:13px">${esc(m("Stream en tiempo real · Datos del prototipo IoT (Google Sheets / AppSheet)", "Real-time stream · IoT prototype data (Google Sheets / AppSheet)", "Stream em tempo real · Dados do protótipo IoT (Google Sheets / AppSheet)"))}</b>
+                  <span class="sem-badge ok" style="font-size:10px;padding:1px 6px" id="rover-stream-counter">Muestra 1 / 33</span>
+                </div>
+                <div class="row-wrap" style="gap:6px">
+                  <button type="button" class="btn btn-sec btn-sm" id="rover-btn-prev" title="${esc(m("Lectura anterior", "Previous reading", "Leitura anterior"))}" style="padding:3px 8px;font-size:12px">⏮</button>
+                  <button type="button" class="btn btn-pri btn-sm" id="rover-btn-play" style="padding:3px 10px;font-size:12px">❚❚ ${esc(m("Pausar", "Pause", "Pausar"))}</button>
+                  <button type="button" class="btn btn-sec btn-sm" id="rover-btn-next" title="${esc(m("Siguiente lectura", "Next reading", "Próxima leitura"))}" style="padding:3px 8px;font-size:12px">⏭</button>
+                  <select id="rover-stream-speed" class="field field-sm" style="font-size:11px;padding:2px 6px">
+                    <option value="1500">${esc(m("1.5s (Rápido)", "1.5s (Fast)", "1.5s (Rápido)"))}</option>
+                    <option value="2500" selected>${esc(m("2.5s (Normal)", "2.5s (Normal)", "2.5s (Normal)"))}</option>
+                    <option value="5000">${esc(m("5.0s (Pausado)", "5.0s (Slow)", "5.0s (Pausado)"))}</option>
+                  </select>
+                  <a href="https://docs.google.com/spreadsheets/d/1qLLcz2nqP3tsAzvgeWL7eH7EAD-h4_4QsKCYoxLfCWc/edit" target="_blank" rel="noopener" class="btn btn-sec btn-sm" style="font-size:11px;padding:3px 8px">
+                    📊 ${esc(m("Hoja de Google ↗", "Google Sheet ↗", "Planilha Google ↗"))}
+                  </a>
+                </div>
+              </div>
+              <div class="row-between xs mut" style="flex-wrap:wrap;gap:6px">
+                <span id="rover-stream-coords">📍 ${esc(m("Coordenadas de prueba: 20.61309° N, -100.40274° W (Querétaro)", "Test coordinates: 20.61309° N, -100.40274° W (Querétaro)", "Coordenadas de teste: 20.61309° N, -100.40274° W (Querétaro)"))}</span>
+                <span id="rover-stream-time">⏱ Timestamp: 2026-11-15 10:37:00 UTC</span>
               </div>
             </div>
 
@@ -1922,24 +1950,30 @@
                 ${ic("download", "sm")} <span>Descargar CSV completo</span>
               </button>
             </div>
-            <p class="small mut" style="margin:0 0 10px">Serie temporal de lecturas sin modificar, directa de los sensores.</p>
-            <div class="table-wrap">
-              <table class="v2-table">
+            <p class="small mut" style="margin:0 0 10px">${esc(m("Serie temporal de lecturas directas del banco y campo físico (Google Sheets · AppSheet).", "Time series of direct test bench and physical field readings (Google Sheets · AppSheet).", "Série temporal de leituras diretas de bancada e campo físico (Google Sheets · AppSheet)."))}</p>
+            <div class="table-wrap" style="max-height:280px;overflow-y:auto">
+              <table class="v2-table rover-stream-table">
                 <thead>
                   <tr>
-                    <th>Hora (UTC)</th>
-                    <th>Variable</th>
-                    <th>Valor</th>
-                    <th>Coordenadas</th>
+                    <th>#</th>
+                    <th>${esc(m("Hora (UTC)", "Time (UTC)", "Hora (UTC)"))}</th>
+                    <th>${esc(m("Velocidad", "Speed", "Velocidade"))}</th>
+                    <th>${esc(m("Rotación", "Rotation", "Rotação"))}</th>
+                    <th>${esc(m("Temperatura", "Temperature", "Temperatura"))}</th>
+                    <th>${esc(m("Humedad", "Moisture", "Umidade"))}</th>
+                    <th>${esc(m("Coordenadas", "Coordinates", "Coordenadas"))}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${(window.V2Robot?.lecturas || []).slice(-8).reverse().map(l => `
-                    <tr>
-                      <td class="xs">${l.t ? new Date(l.t).toLocaleTimeString() : "—"}</td>
-                      <td><b>${esc(l.variable)}</b></td>
-                      <td>${l.valor} ${esc(l.unidad || "")}</td>
-                      <td class="coord-mono xs">${l.lat != null ? `${l.lat.toFixed(4)}, ${l.lon.toFixed(4)}` : "—"}</td>
+                  ${(window.ROBOT_HOJA_RECORDS || []).map((r, i) => `
+                    <tr data-rec-idx="${i}" class="${i === 0 ? "active-row" : ""}">
+                      <td class="xs mut">${i + 1}</td>
+                      <td class="xs">${r.t ? new Date(r.t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—"}</td>
+                      <td><b>${r.velocidad} km/h</b></td>
+                      <td><b>${r.rotacion ?? r["rotación"]}°</b></td>
+                      <td><b>${r.temperatura} °C</b></td>
+                      <td><b>${r.humedad}%</b></td>
+                      <td class="coord-mono xs">${r.lat != null ? `${r.lat.toFixed(5)}, ${r.lon.toFixed(5)}` : "—"}</td>
                     </tr>
                   `).join("")}
                 </tbody>
