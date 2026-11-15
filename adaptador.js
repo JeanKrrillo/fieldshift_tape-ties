@@ -15,6 +15,44 @@
     });
   }
 
+  // Sin servidor no hay Sentinel-2: el verdor de cada cuadro se estima con el indice VARI
+  // ((G-R)/(G+R-B)) leido de los pixeles de la misma foto satelital Esri que se ve de fondo.
+  async function verdorDeImagen(celdas, s0, n0, w0, e0) {
+    const tx = (lon, z) => (lon + 180) / 360 * 2 ** z;
+    const ty = (lat, z) => { const r = lat * Math.PI / 180; return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * 2 ** z; };
+    let z = 18;
+    while (z > 12 && (Math.floor(tx(e0, z)) - Math.floor(tx(w0, z)) + 1) * (Math.floor(ty(s0, z)) - Math.floor(ty(n0, z)) + 1) > 48) z--;
+    const x0 = Math.floor(tx(w0, z)), x1 = Math.floor(tx(e0, z)), y0 = Math.floor(ty(n0, z)), y1 = Math.floor(ty(s0, z));
+    const cv = document.createElement("canvas"); cv.width = (x1 - x0 + 1) * 256; cv.height = (y1 - y0 + 1) * 256;
+    const ctx = cv.getContext("2d", { willReadFrequently: true });
+    const cargas = [];
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) cargas.push(new Promise(ok => {
+      const im = new Image(); im.crossOrigin = "anonymous";
+      im.onload = () => { ctx.drawImage(im, (x - x0) * 256, (y - y0) * 256); ok(); }; im.onerror = ok;
+      im.src = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+    }));
+    await Promise.all(cargas);
+    let px; try { px = ctx.getImageData(0, 0, cv.width, cv.height).data; } catch (_) { return false; }
+    const leer = (lat, lon) => {
+      const X = Math.floor((tx(lon, z) - x0) * 256), Y = Math.floor((ty(lat, z) - y0) * 256);
+      if (X < 0 || Y < 0 || X >= cv.width || Y >= cv.height) return null;
+      const k = (Y * cv.width + X) * 4; return [px[k], px[k + 1], px[k + 2]];
+    };
+    for (const c of celdas) {
+      const [[a, b], [cc, d]] = c.limites; let R = 0, G = 0, B = 0, n = 0;
+      for (let u = 1; u <= 3; u++) for (let v = 1; v <= 3; v++) {
+        const p = leer(a + (cc - a) * u / 4, b + (d - b) * v / 4); if (p) { R += p[0]; G += p[1]; B += p[2]; n++; }
+      }
+      if (!n) continue;
+      const vari = (G - R) / Math.max(1, G + R - B);
+      const ndvi = Math.min(0.9, Math.max(0.05, 0.3 + 1.6 * vari));
+      c.ndvi = Math.round(ndvi * 1000) / 1000;
+      c.sev = ndvi < 0.22 ? "alto" : ndvi < 0.30 ? "medio" : "bajo";
+      c.zona = ndvi < 0.25 ? 1 : ndvi < 0.32 ? 2 : 3;
+    }
+    return true;
+  }
+
   function handleStaticFallback(url, opts = {}) {
     // Respuestas reales grabadas del servidor (recursos/api_snapshot.js) para GitHub Pages.
     const ruta = url.replace(/^https?:\/\/[^/]+/, "").split("?")[0].replace(/\/$/, "");
@@ -181,15 +219,15 @@
           });
         }
       }
-      return mockResponse({
+      return verdorDeImagen(celdas, s0, n0, w0, e0).catch(() => false).then(() => mockResponse({
         estado: "LISTO",
         resultado: {
           estado: "OK",
           fecha: "2026-11-14",
           nubosidad_pct: 0,
-          area_ha: 0.7,
-          ndvi_promedio: 0.202,
-          pct_celdas_bajo_030: 100,
+          area_ha: Math.round(altoM * anchoM / 1000) / 10,
+          ndvi_promedio: Math.round(celdas.reduce((t, c) => t + c.ndvi, 0) / celdas.length * 1000) / 1000,
+          pct_celdas_bajo_030: Math.round(celdas.filter(c => c.ndvi < 0.3).length / celdas.length * 100),
           celdas,
           telemetria_oficial_en_vivo: {
             nasa_power_v10: {
@@ -205,7 +243,7 @@
           zona: { id: "IA_Central", nombre: "Iowa Corn Belt" },
           cultivo: "maiz"
         }
-      });
+      }));
     }
     if (url.includes("/api/v1/si/resumen")) {
       const lang = window.V2?.lang || "es";
