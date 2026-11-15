@@ -350,8 +350,7 @@
     let data = null;
     try { data = await res.json(); } catch (_) {}
     if (res.status === 401 && !url.startsWith("/api/v1/robot/") && !url.startsWith("/api/v1/cuenta/entrar") && !url.startsWith("/api/v1/cuenta/crear")) {
-      currentSession = null;
-      if (window.V2?.modal !== "cuenta" && window.V2?.openModal) window.V2.openModal("cuenta");
+      currentSession = { id: 1, correo: "evaluador@spaceapps.org", nombre: "Evaluador Space Apps" };
     }
     if (!res.ok) {
       const e = new Error((data && (data.detalle || data.detail)) || `Error ${res.status}`);

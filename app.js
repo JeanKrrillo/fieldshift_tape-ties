@@ -85,10 +85,9 @@
       }
       window.V2Map.init();
 
-      // Inicio de sesión obligatorio: sin sesión solo se ve la ventana de entrada.
-      const ses = window.V2Adapter ? await window.V2Adapter.cuentaYo() : null;
-      // Sin inicio de sesion obligatorio: la pagina se ve directo (la cuenta es opcional).
-      if (ses && window.V2Alertas) await window.V2Alertas.init();
+      // Sin inicio de sesión obligatorio (NASA Open Science & Space Apps): la plataforma se ve directo y abierta
+      const ses = window.V2Adapter ? await window.V2Adapter.cuentaYo() : { id: 1, nombre: "Evaluador Space Apps" };
+      if (window.V2Alertas) await window.V2Alertas.init();
       if (window.V2Robot) await window.V2Robot.cargarDatos();
       this.iniciarRobotPolling();
       this.modal = null;
