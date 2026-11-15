@@ -215,8 +215,7 @@
 
       const polyParam = ll.map(p => `${p.lng.toFixed(6)},${p.lat.toFixed(6)}`).join(";");
       try {
-        const lado = window.V2.cellSide;
-        const j = await window.V2.correrTrabajo({ tipo: "terreno", poly: polyParam, celdas: lado ? 2500 : cellsN, lado: lado || null }, tr("tr_terreno"));
+        const j = await window.V2.correrTrabajo({ tipo: "terreno", poly: polyParam, celdas: 25 }, tr("tr_terreno"));
         window.V2.terrainResp = j;
         window.V2.selectedCells.clear();
         if (j.estado === "OK" && Array.isArray(j.celdas)) {

@@ -51,7 +51,7 @@
     recolData: null,
     catalog: null,
     cellsCount: 25,
-    cellSide: 5,                           // lado del cuadro en metros (5 m = escala de la humedad del suelo); null = automático por cantidad
+    cellSide: null,                           // null = cuadrícula estándar 5x5 (25 cuadros); nunca 2500
     colorMode: "ndvi",
     selectedCells: new Set(),
     favLayers: lsGetJson("v2_fav_layers", []),
@@ -99,8 +99,8 @@
       this.loadCatalogAndMeta();
       this.restoreLastSession();
 
-      // Si hay terrenos guardados o en el adaptador y no hay ubicación activa, seleccionar el primero
-      if (window.V2Adapter && ses) {
+      // Si hay terrenos guardados o en el adaptador y no hay ubicación activa, seleccionar el primero y desplegar el 5x5
+      if (window.V2Adapter) {
         try {
           const terrenos = await window.V2Adapter.obtenerTerrenos();
           // El terreno activo es el último usado si sigue guardado; si no, el más reciente. Sus datos y su medición se cargan solos.
