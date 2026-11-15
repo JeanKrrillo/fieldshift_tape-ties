@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula E) — Módulo de Ubicación y Cultivo (Pantalla 2)
+// Terra Lab v2 (Cápsula E) — Módulo de Ubicación y Cultivo (Pantalla 2)
 // Cumple con la sección 2.2:
 // - Todo en una sola pantalla, con el mapa satelital interactivo a la vista.
 // - 8 campos integrados:

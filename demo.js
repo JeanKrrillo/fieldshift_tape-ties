@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift — Modo demo interactivo para presentaciones (NASA Space Apps 2026).
+// Terra Lab — Modo demo interactivo para presentaciones (NASA Space Apps 2026).
 // Un cursor recorre la aplicación de forma realista: inicia sesión, cambia de idioma,
 // coloca la ubicación en el mapa, despliega el cuadrante satelital Sentinel-2 L2A,
 // prueba los filtros y el zoom/paneo, activa las rutas de muestreo y simula 35 rovers,
@@ -513,7 +513,7 @@
       await this.leer(".concepto-card-exp, .card", "NDVI definition, satellite bands, and practical farm recommendations", 2200);
 
       // 8. REGRESO AL MAPA Y CONCLUSIÓN
-      await this.clic('[data-go-space="mapa"]', "Field Shift: complete end-to-end satellite & robotics platform", 1400);
+      await this.clic('[data-go-space="mapa"]', "Terra Lab: complete end-to-end satellite & robotics platform", 1400);
       if (V.space !== "mapa") V.setSpace("mapa");
       this.decir(window.V2?.lang === "en" ? "✓ Demo finished: North field satellite & IoT rover tour complete!"
         : window.V2?.lang === "pt" ? "✓ Demonstração concluída: mapa de satélite e robô IoT inspecionados!"
@@ -557,7 +557,7 @@
       await this.esperar(400);
 
       // Cambio de idioma (Inglés y Español)
-      await this.clic('.auth-lang [data-set-lang="en"]', "Field Shift opens in English, Spanish or Portuguese", 1400);
+      await this.clic('.auth-lang [data-set-lang="en"]', "Terra Lab opens in English, Spanish or Portuguese", 1400);
       await this.clic('.auth-lang [data-set-lang="es"]', "Interfaz completamente trilingüe sin recargar", 1000);
 
       // Iniciar sesión

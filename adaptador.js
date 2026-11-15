@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift — Adaptador de backend. SOLO datos reales: no hay modo demostración ni datos de ejemplo.
+// Terra Lab — Adaptador de backend. SOLO datos reales: no hay modo demostración ni datos de ejemplo.
 // Si el backend no responde, se lanza un error claro o se devuelve vacío; nunca se inventa un valor.
 // =============================================================================
 (function () {

@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift — La página reacciona sola. Un clic desencadena lo que la persona necesita ver, uno tras otro:
+// Terra Lab — La página reacciona sola. Un clic desencadena lo que la persona necesita ver, uno tras otro:
 // datos del cuadro en el mismo mapa, ruta y posición real del robot, ruta de muestreo, robots simulados y avisos en cadena.
 // Todo lo simulado se llama simulado; los valores que leen los robots simulados son los reales de Sentinel-2.
 // =============================================================================

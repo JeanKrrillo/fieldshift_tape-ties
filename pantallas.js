@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula D) — Renderizado de las 11 Pantallas
+// Terra Lab v2 (Cápsula D) — Renderizado de las 11 Pantallas
 // =============================================================================
 
 (function () {
@@ -1530,7 +1530,7 @@
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="v2-w-title">
           <div class="welcome-hero">
             <div class="row-between" style="margin-bottom:8px">
-              <span class="sem-badge ok">${ic("satellite", "sm")} <span>Field Shift · NASA Space Apps 2026</span></span>
+              <span class="sem-badge ok">${ic("satellite", "sm")} <span>Terra Lab · NASA Space Apps 2026</span></span>
               <button type="button" class="btn btn-txt btn-sm" data-close-modal="1" aria-label="Cerrar">${ic("close", "sm")}</button>
             </div>
             <h1 id="v2-w-title" style="font-size:22px;line-height:1.25;margin:0 0 12px">${esc(tr("w_problem"))}</h1>
@@ -1550,7 +1550,7 @@
       `;
     },
 
-    // Vitrina de lo que distingue a Field Shift. Las cifras salen del servidor (capas del catálogo, acierto medido); si no han llegado, no se muestran.
+    // Vitrina de lo que distingue a Terra Lab. Las cifras salen del servidor (capas del catálogo, acierto medido); si no han llegado, no se muestran.
     renderVitrina() {
       const V = window.V2, n = V.catalog?.gibs?.length, m1 = (V.modelsMeta?.modelos || []).find(x => x.id === "M1");
       const items = [

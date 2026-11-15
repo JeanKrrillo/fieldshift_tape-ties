@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula E) — Módulo de Conceptos Agronómicos (Sección 5)
+// Terra Lab v2 (Cápsula E) — Módulo de Conceptos Agronómicos (Sección 5)
 // Cumple con la sección 3.5:
 // - Para entender, no para decidir. Lista con buscador y tarjetas expandibles.
 // - Cada concepto incluye exactamente:
@@ -561,9 +561,9 @@
         pt: "Satélites e algoritmos podem confundir mato com lavoura: a vistoria a pé no campo é indispensável."
       },
       valores_tipicos: {
-        es: "Acierto medido real: 77.7% en bloques espaciales nunca vistos de Iowa, Illinois, Nebraska y Minnesota (86.6% en maíz/soya). Fuera de esas zonas: no validado (Fuente: Field Shift Benchmarks 2026).",
-        en: "Measured cross-validation accuracy: 77.7% on unseen spatial blocks in Iowa, Illinois, Nebraska and Minnesota (86.6% for corn/soy). Unvalidated elsewhere (Source: Field Shift 2026).",
-        pt: "Acurácia real medida: 77.7% em blocos nunca vistos em Iowa, Illinois, Nebraska e Minnesota (86.6% milho/soja). Fora dessas zonas: não validado (Fonte: Field Shift 2026)."
+        es: "Acierto medido real: 77.7% en bloques espaciales nunca vistos de Iowa, Illinois, Nebraska y Minnesota (86.6% en maíz/soya). Fuera de esas zonas: no validado (Fuente: Terra Lab Benchmarks 2026).",
+        en: "Measured cross-validation accuracy: 77.7% on unseen spatial blocks in Iowa, Illinois, Nebraska and Minnesota (86.6% for corn/soy). Unvalidated elsewhere (Source: Terra Lab 2026).",
+        pt: "Acurácia real medida: 77.7% em blocos nunca vistos em Iowa, Illinois, Nebraska e Minnesota (86.6% milho/soja). Fora dessas zonas: não validado (Fonte: Terra Lab 2026)."
       },
       que_hacer_alto: {
         es: "Alta confianza (> 85%): Gran probabilidad de acierto, útil para guiar la ruta del robot y priorizar zonas.",

@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula D) — Sistema Único de Iconos SVG en Línea (1.75 px)
+// Terra Lab v2 (Cápsula D) — Sistema Único de Iconos SVG en Línea (1.75 px)
 // Cero emojis en la interfaz final para consistencia entre sistemas operativos.
 // =============================================================================
 

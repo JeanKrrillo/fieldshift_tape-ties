@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula D) — Controlador Principal, Estado y Eventos
+// Terra Lab v2 (Cápsula D) — Controlador Principal, Estado y Eventos
 // =============================================================================
 
 (function () {
@@ -238,9 +238,9 @@
       if (nav) {
         const sp = this.space;
         nav.innerHTML = `
-          <button type="button" class="nav-brand" data-open-modal="welcome" title="Field Shift">
+          <button type="button" class="nav-brand" data-open-modal="welcome" title="Terra Lab">
             ${ic("leaf", "lg")}
-            <span>Field Shift</span>
+            <span>Terra Lab</span>
           </button>
           <div class="nav-spaces" role="navigation" aria-label="Espacios principales">
             <button type="button" class="nav-btn ${sp === "inicio" || sp === "mapa" ? "active" : ""}" ${sp === "inicio" || sp === "mapa" ? 'aria-current="page"' : ""} data-go-space="inicio" title="${esc(tr("nav_inicio"))}">

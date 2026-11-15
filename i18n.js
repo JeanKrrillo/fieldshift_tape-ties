@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula D) — Diccionario Trilingüe (ES, EN, PT), Capas Útiles,
+// Terra Lab v2 (Cápsula D) — Diccionario Trilingüe (ES, EN, PT), Capas Útiles,
 // Estrategias Agronómicas, Casos de Ejemplo y Glosario
 // =============================================================================
 
@@ -1024,7 +1024,7 @@
     why_btn: ["¿Por qué?", "Why?", "Por quê?"],
     why_rule: ["Regla:", "Rule:", "Regra:"],
     why_src: ["Fuente:", "Source:", "Fonte:"],
-    vt_aria: ["Lo que hace Field Shift", "What Field Shift does", "O que o Field Shift faz"],
+    vt_aria: ["Lo que hace Terra Lab", "What Terra Lab does", "O que o Terra Lab faz"],
     vt_si_t: ["SI de campo: pregúntale a tu terreno", "Field SI: ask your field", "SI de campo: pergunte ao seu terreno"],
     vt_si_d: ["Responde con los datos reales de tu terreno y te dice de dónde sale cada cifra. Si un dato falta, lo dice.", "It answers with your field's real data and tells you where each figure comes from. If something is missing, it says so.", "Responde com os dados reais do seu terreno e diz de onde vem cada número. Se falta um dado, ela diz."],
     vt_si_acc: ["Su modelo de cultivos acierta {a} % en zonas y años que nunca vio (adivinar al más común acierta {b} %).", "Its crop model scores {a}% on areas and years it never saw (guessing the most common scores {b}%).", "Seu modelo de culturas acerta {a} % em zonas e anos que nunca viu (chutar a mais comum acerta {b} %)."],

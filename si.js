@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift — SI de campo (Inteligencia Satelital & Agronómica de Parcela)
+// Terra Lab — SI de campo (Inteligencia Satelital & Agronómica de Parcela)
 // Responde sobre el terreno activo usando únicamente datos científicos reales de NASA POWER,
 // Sentinel-2 L2A, USDA SSURGO y telemetría de robot. Nunca bloquea al usuario.
 // =============================================================================

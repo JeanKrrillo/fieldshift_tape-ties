@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula E) — Módulo de Cuenta (Pantalla 1)
+// Terra Lab v2 (Cápsula E) — Módulo de Cuenta (Pantalla 1)
 // Cumple con la sección 2.1 y regla de oro 3:
 // - Pestañas "Entrar" y "Crear cuenta".
 // - Mostrar/ocultar contraseña con botón accesible.
@@ -68,7 +68,7 @@
       return `
         <div class="modal-card auth-card" role="dialog" aria-modal="true" aria-labelledby="v2-cuenta-title">
           <aside class="auth-brand">
-            <div class="auth-logo"><span class="auth-logo-ic">${window.ic("leaf", "sm")}</span><span>Field Shift</span></div>
+            <div class="auth-logo"><span class="auth-logo-ic">${window.ic("leaf", "sm")}</span><span>Terra Lab</span></div>
             <h2 class="auth-hero">${window.esc(T[0])}</h2>
             <p class="auth-lead">${window.esc(T[1])}</p>
             <ul class="auth-feats">
@@ -80,7 +80,7 @@
 
           <section class="auth-form-side">
             <div class="auth-lang" role="group" aria-label="Language">${["es", "en", "pt"].map(l => `<button type="button" class="${lang === l ? "on" : ""}" data-set-lang="${l}" aria-pressed="${lang === l}">${l.toUpperCase()}</button>`).join("")}</div>
-            <div class="auth-logo auth-logo-mobile"><span class="auth-logo-ic">${window.ic("leaf", "sm")}</span><span>Field Shift</span></div>
+            <div class="auth-logo auth-logo-mobile"><span class="auth-logo-ic">${window.ic("leaf", "sm")}</span><span>Terra Lab</span></div>
             <h1 id="v2-cuenta-title" class="auth-title">${window.esc(tTitle)}</h1>
             <p class="auth-sub">${window.esc(sub)}</p>
 

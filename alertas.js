@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula E) — Sistema de Alertas y Notificaciones
+// Terra Lab v2 (Cápsula E) — Sistema de Alertas y Notificaciones
 // Cumple con la sección 5:
 // - Gravedad con color + texto + icono (info, atención, alerta).
 // - Muestra qué dato la causó, umbral y fuente, y botón "¿Por qué?" a Conceptos.

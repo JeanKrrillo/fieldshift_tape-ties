@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift v2 (Cápsula D) — Módulo de Mapa, Terreno, Cuadrícula y Capas
+// Terra Lab v2 (Cápsula D) — Módulo de Mapa, Terreno, Cuadrícula y Capas
 // =============================================================================
 
 (function () {
@@ -926,7 +926,7 @@
       } else if (fmt === "kml") {
         mime = "application/vnd.google-earth.kml+xml";
         const coords = ring.map(([lo, la]) => `${lo},${la},0`).join(" ");
-        content = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${esc(this.polyLabel || "Field Shift")}</name><Placemark><name>${esc(dateStr)}</name><Polygon><outerBoundaryIs><LinearRing><coordinates>${coords}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></Document></kml>`;
+        content = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${esc(this.polyLabel || "Terra Lab")}</name><Placemark><name>${esc(dateStr)}</name><Polygon><outerBoundaryIs><LinearRing><coordinates>${coords}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></Document></kml>`;
       } else if (fmt === "csv") {
         mime = "text/csv;charset=utf-8";
         const stats = this.computeStats(cells);

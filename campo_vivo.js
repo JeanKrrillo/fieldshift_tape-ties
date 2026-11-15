@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift — Datos reales siempre a la vista sobre el mapa.
+// Terra Lab — Datos reales siempre a la vista sobre el mapa.
 // Flechas de viento con su velocidad, tablero de tiempo de ahora y las capas «altas para el campo» del catálogo a un toque.
 // Nada aquí es simulado: cada número trae su fuente y su hora.
 // =============================================================================

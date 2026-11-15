@@ -1,5 +1,5 @@
 // =============================================================================
-// Field Shift — Sección Robot. Solo muestra lo que el robot realmente envió (hoja de Google, archivo o envío en vivo).
+// Terra Lab — Sección Robot. Solo muestra lo que el robot realmente envió (hoja de Google, archivo o envío en vivo).
 // Lo que no llega no se dibuja ni se inventa: batería, señal y ruta aparecen solo si el robot manda esas columnas.
 // Las unidades no se suponen: las elige quien conoce el robot, en el paso 3 del asistente.
 // =============================================================================
@@ -89,7 +89,7 @@
       return `
         <div class="notice ${hoja.error ? "riesgo" : "ok"}" style="margin-bottom:10px">${ic(hoja.error ? "riesgo" : "ok", "sm")}<div class="small">${hoja.error
           ? `<b>${esc(this.m("La última lectura de la hoja falló:", "The last read of the sheet failed:", "A última leitura da planilha falhou:"))}</b> ${esc(hoja.error)}`
-          : `<b>${esc(this.m("Hoja conectada.", "Sheet connected.", "Planilha conectada."))}</b> ${esc(this.m("Field Shift solo la lee; nunca escribe en ella.", "Field Shift only reads it; it never writes to it.", "O Field Shift só lê; nunca escreve nela."))}`}</div></div>
+          : `<b>${esc(this.m("Hoja conectada.", "Sheet connected.", "Planilha conectada."))}</b> ${esc(this.m("Terra Lab solo la lee; nunca escribe en ella.", "Terra Lab only reads it; it never writes to it.", "O Terra Lab só lê; nunca escreve nela."))}`}</div></div>
         <div class="grid-3 small" style="margin-bottom:10px">
           ${fila(this.m("Última lectura de la hoja", "Last sheet read", "Última leitura da planilha"), esc(hoja.ultima_sincronizacion ? this.hace(hoja.ultima_sincronizacion) : this.m("pendiente", "pending", "pendente")))}
           ${fila(this.m("Próxima lectura", "Next read", "Próxima leitura"), hoja.proxima_en_s != null ? `<span id="v2-hoja-prox" data-s="${hoja.proxima_en_s}" data-t="${Date.now()}">${hoja.proxima_en_s} s</span>` : `${esc(this.m("cada", "every", "a cada"))} ${hoja.cada_s || 60} s`)}
@@ -177,7 +177,7 @@
       const cols = this.asistente?.vista?.columnas?.map(c => c.columna.trim()) || this.robotData?.hoja?.columnas || [];
       if (!cols.length) return "";
       const hora = cols.find(c => ["hora", "fecha", "tiempo", "t", "timestamp", "time", "datetime"].includes(c.toLowerCase())) || cols[0];
-      return `// Field Shift — pega esto en la hoja: Extensiones > Apps Script. Luego: Implementar > Nueva implementación > Aplicación web,
+      return `// Terra Lab — pega esto en la hoja: Extensiones > Apps Script. Luego: Implementar > Nueva implementación > Aplicación web,
 // "Ejecutar como: yo" y "Quién tiene acceso: cualquier persona". La dirección que termina en /exec es a donde el robot manda sus datos.
 const COLUMNAS = ${JSON.stringify(cols)};
 
@@ -286,7 +286,7 @@ function doGet() {
 
           ${script ? `<details class="card">
             <summary class="card-title" style="cursor:pointer">${ic("upload", "sm")} <span>${esc(this.m("Código para que la hoja reciba los datos del robot (Apps Script)", "Code for the sheet to receive the robot's data (Apps Script)", "Código para a planilha receber os dados do robô (Apps Script)"))}</span></summary>
-            <p class="small mut" style="margin:8px 0">${esc(this.m("Está armado con las columnas de tu hoja. El robot manda sus lecturas a la dirección que termina en /exec; Field Shift solo lee la hoja.", "It is built from your sheet's columns. The robot sends its readings to the address ending in /exec; Field Shift only reads the sheet.", "É montado com as colunas da sua planilha. O robô envia as leituras para o endereço que termina em /exec; o Field Shift só lê a planilha."))}</p>
+            <p class="small mut" style="margin:8px 0">${esc(this.m("Está armado con las columnas de tu hoja. El robot manda sus lecturas a la dirección que termina en /exec; Terra Lab solo lee la hoja.", "It is built from your sheet's columns. The robot sends its readings to the address ending in /exec; Terra Lab only reads the sheet.", "É montado com as colunas da sua planilha. O robô envia as leituras para o endereço que termina em /exec; o Terra Lab só lê a planilha."))}</p>
             <ol class="small" style="margin:0 0 8px 18px;padding:0">
               <li>${this.m("En la hoja abre <b>Extensiones &gt; Apps Script</b> y pega el código.", "In the sheet open <b>Extensions &gt; Apps Script</b> and paste the code.", "Na planilha abra <b>Extensões &gt; Apps Script</b> e cole o código.")}</li>
               <li>${this.m("Toca <b>Implementar &gt; Nueva implementación</b> y elige <b>Aplicación web</b>.", "Click <b>Deploy &gt; New deployment</b> and choose <b>Web app</b>.", "Toque em <b>Implantar &gt; Nova implantação</b> e escolha <b>App da Web</b>.")}</li>
