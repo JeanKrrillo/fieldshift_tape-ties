@@ -52,17 +52,12 @@
       let ll;
       if (b) {
         const cLat = b.getCenter().lat, cLon = b.getCenter().lng;
-        const dLatMax = (b.getNorth() - b.getSouth()) * 0.35;
-        const dLonMax = (b.getEast() - b.getWest()) * 0.35;
-        const p0 = pts[0];
-        ll = pts.map(p => {
-          const dy = (p.lat - p0.lat) * 600;
-          const dx = (p.lon - p0.lon) * 600;
-          return [
-            cLat + Math.max(-dLatMax, Math.min(dLatMax, dy)),
-            cLon + Math.max(-dLonMax, Math.min(dLonMax, dx))
-          ];
-        });
+        // Escala uniforme: la ruta completa cabe en el 40% central de la parcela, sin deformarse ni recortarse.
+        const la = pts.map(p => p.lat), lo = pts.map(p => p.lon);
+        const mLa = (Math.min(...la) + Math.max(...la)) / 2, mLo = (Math.min(...lo) + Math.max(...lo)) / 2;
+        const span = Math.max(Math.max(...la) - Math.min(...la), Math.max(...lo) - Math.min(...lo)) || 1e-6;
+        const k = Math.min(b.getNorth() - b.getSouth(), b.getEast() - b.getWest()) * 0.4 / span;
+        ll = pts.map(p => [cLat + (p.lat - mLa) * k, cLon + (p.lon - mLo) * k]);
       } else {
         ll = pts.map(p => [p.lat, p.lon]);
       }
@@ -70,7 +65,10 @@
 
       this.capaRobot = L.layerGroup([
         L.polyline(ll, { color: "#ffffff", weight: 6, opacity: .9 }),
-        L.polyline(ll, { color: "var(--primario)", weight: 3, dashArray: "6 6", className: "ruta-anim" }),
+        L.polyline(ll, { color: "var(--primario)", weight: 3, dashArray: "6 6", className: "ruta-anim" })
+          .bindTooltip(m("Ruta recorrida por el robot (prueba de campo, a escala dentro de la parcela)", "Path driven by the robot (field test, scaled inside the field)", "Rota percorrida pelo robô (teste de campo, em escala dentro do terreno)"), { sticky: true }),
+        L.circleMarker(ll[0], { radius: 6, color: "#fff", weight: 2, fillColor: "#2F7D32", fillOpacity: 1 })
+          .bindTooltip(m("Inicio de la ruta", "Route start", "Início da rota"), { permanent: true, direction: "left", className: "ruta-tag" }),
         L.marker(ult, { icon: L.divIcon({ className: "", html: `<div class="robot-pin" title="Robot"><span>R</span></div>`, iconSize: [34, 34], iconAnchor: [17, 17] }), zIndexOffset: 1000 })
           .bindTooltip(`<b>${esc(m("Robot · posición en parcela", "Robot · position on field", "Robô · posição no terreno"))}</b><br>${new Date(pts[pts.length - 1].t).toLocaleString()}`, { direction: "top" }),
       ]).addTo(mp);

@@ -101,9 +101,12 @@
       // Si hay terrenos guardados o en el adaptador y no hay ubicación activa, seleccionar el primero y desplegar el 5x5
       if (window.V2Adapter) {
         try {
-          const terrenos = await window.V2Adapter.obtenerTerrenos();
+          const terrenos = (await window.V2Adapter.obtenerTerrenos().catch(() => [])) || [];
+          // Visitante nuevo: parcela de ejemplo en Iowa para que todo tenga datos sin pedir nada.
+          const EJEMPLO = { id: "ejemplo", lat: 42.1045, lon: -93.605, nombre: this.lang === "en" ? "Sample field (Iowa)" : this.lang === "pt" ? "Campo de exemplo (Iowa)" : "Parcela de ejemplo (Iowa)",
+            poligono: [[42.1037, -93.6061], [42.1037, -93.6039], [42.1053, -93.6039], [42.1053, -93.6061]] };
           // El terreno activo es el último usado si sigue guardado; si no, el más reciente. Sus datos y su medición se cargan solos.
-          const t1 = (this.loc && terrenos.find(t => Math.abs(t.lat - this.loc.lat) < 1e-4 && Math.abs(t.lon - this.loc.lon) < 1e-4)) || terrenos[0];
+          const t1 = (this.loc && terrenos.find(t => Math.abs(t.lat - this.loc.lat) < 1e-4 && Math.abs(t.lon - this.loc.lon) < 1e-4)) || terrenos[0] || EJEMPLO;
           if (t1) {
             this.loc = { id: t1.id, lat: t1.lat, lon: t1.lon, kind: "real", label: t1.nombre };
             window.V2Map.setLocationMarker(t1.lat, t1.lon, "real", t1.nombre);
@@ -114,8 +117,6 @@
             } else {
               this.loadParcelIntelligence(t1.lat, t1.lon, "real", t1.nombre);
             }
-          } else if (terrenos && !terrenos.length && !this.loc && window.V2Ubicacion) {
-            window.V2Ubicacion.abrirPantalla();
           }
         } catch (_) {}
       }

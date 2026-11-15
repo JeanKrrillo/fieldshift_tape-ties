@@ -126,9 +126,12 @@
     if (url.includes("/api/v1/trabajos")) {
       if (String(opts?.method || "").toUpperCase() === "POST") {
         try { window.__fsJob = JSON.parse(opts.body || "{}"); } catch (_) {}
-        return mockResponse({ estado: "OK", trabajo: "job_static" });
+        let tipo = ""; try { tipo = JSON.parse(opts.body || "{}").tipo; } catch (_) {}
+        return mockResponse({ estado: "OK", trabajo: tipo === "parcela" ? "job_parcela" : "job_static" });
       }
       // Generar cuadrícula contigua 5x5 (25 sectores) adaptada exactamente al polígono del terreno
+      // Datos reales de clima/suelo de la parcela de Iowa, capturados del servidor (recursos/parcela_iowa.js).
+      if (url.includes("job_parcela") && window.FS_PARCELA) return mockResponse(window.FS_PARCELA);
       const job = window.__fsJob || {};
       const pts = String(job.poly || "").split(";").map(t => t.split(",").map(Number)).filter(q => q.length === 2 && q.every(isFinite));
       let s0 = 42.1037, n0 = 42.1053, w0 = -93.6061, e0 = -93.6039;
@@ -148,10 +151,13 @@
       }
 
       // Celdas de 5 m x 5 m (o el lado elegido) cubriendo todo el recuadro de la parcela.
-      const lado = Number(window.__fsJob?.lado) > 0 ? Number(window.__fsJob.lado) : 5;
       const mLat = 111320, mLon = 111320 * Math.cos((s0 + n0) / 2 * Math.PI / 180);
+      const altoM = (n0 - s0) * mLat, anchoM = (e0 - w0) * mLon;
+      // shortcut: tope de 10 000 cuadros para que el navegador no se trabe; en bloques grandes el lado crece en multiplos de 5 m.
+      let lado = Number(window.__fsJob?.lado) > 0 ? Number(window.__fsJob.lado) : 5;
+      while (Math.ceil(altoM / lado) * Math.ceil(anchoM / lado) > 10000) lado += 5;
       const dLat = lado / mLat, dLon = lado / mLon;
-      const NR = Math.min(60, Math.max(1, Math.ceil((n0 - s0) / dLat))), NC = Math.min(60, Math.max(1, Math.ceil((e0 - w0) / dLon)));
+      const NR = Math.max(1, Math.ceil(altoM / lado)), NC = Math.max(1, Math.ceil(anchoM / lado));
       const ladoM = lado;
       const celdas = [];
       for (let i = 0; i < NR; i++) {
