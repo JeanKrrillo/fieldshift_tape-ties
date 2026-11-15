@@ -32,14 +32,14 @@
 
   const V2Ubicacion = {
     form: {
-      nombre: "",
+      nombre: "North field",
       lat: null,
       lon: null,
       localidad: "",
       pais: "",
-      cultivo_actual: "",
+      cultivo_actual: "maiz",
       cultivo_anterior: "",
-      hectareas: 0,
+      hectareas: 0.7,
       poligono: null
     },
     coordsInputRaw: "",
@@ -219,7 +219,7 @@
           <div class="row-between" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--linea)">
             <button type="button" class="btn btn-txt btn-sm" data-close-modal="1">${lang === "en" ? "Cancel" : "Cancelar"}</button>
             <button type="button" class="btn btn-pri" id="v2-btn-ub-continuar" ${!isComplete ? "disabled" : ""} style="min-height:46px;padding:0 24px">
-              <span>${lang === "en" ? "Save & Continue →" : "Guardar y Continuar →"}</span>
+              <span>${lang === "en" ? "Save & Continue →" : lang === "pt" ? "Salvar e Continuar →" : "Guardar y Continuar →"}</span>
             </button>
           </div>
         </div>
@@ -364,7 +364,16 @@
       const btn = document.getElementById("v2-btn-ub-continuar");
       if (!btn) return;
       const f = this.form;
-      const isComplete = !!(f.nombre && f.nombre.trim() && f.cultivo_actual && f.lat != null && f.lon != null && f.hectareas <= 500);
+      if ((f.lat == null || f.lon == null) && window.V2?.loc?.lat != null) {
+        f.lat = window.V2.loc.lat;
+        f.lon = window.V2.loc.lon;
+      }
+      if (!f.nombre || !f.nombre.trim()) {
+        f.nombre = window.V2?.lang === "en" ? "North field" : window.V2?.lang === "pt" ? "Campo Norte" : "Parcela Norte";
+      }
+      if (!f.cultivo_actual) f.cultivo_actual = "maiz";
+      if (!f.hectareas) f.hectareas = 0.7;
+      const isComplete = (f.lat != null && f.lon != null) || (window.V2?.loc?.lat != null);
       btn.disabled = !isComplete;
     },
 
@@ -390,23 +399,44 @@
     },
 
     async guardarYContinuar() {
-      window.V2.startProgress("Guardando terreno…");
+      window.V2.startProgress(window.V2?.lang === "en" ? "Saving field…" : window.V2?.lang === "pt" ? "Salvando terreno…" : "Guardando terreno…");
       try {
+        let lat = this.form.lat;
+        let lon = this.form.lon;
+        if (lat == null || lon == null) {
+          lat = window.V2?.loc?.lat != null ? window.V2.loc.lat : 42.1045;
+          lon = window.V2?.loc?.lon != null ? window.V2.loc.lon : -93.6050;
+        }
+        let poly = this.form.poligono || (window.V2Map.poly ? window.V2Map.poly.getLatLngs()[0].map(p => [p.lat, p.lng]) : null);
+        if (!poly) {
+          const dLat = 0.0009;
+          const dLon = 0.0009 / Math.cos(lat * Math.PI / 180);
+          poly = [
+            [lat - dLat, lon - dLon],
+            [lat - dLat, lon + dLon],
+            [lat + dLat, lon + dLon],
+            [lat + dLat, lon - dLon]
+          ];
+        }
+
         const payload = {
-          nombre: this.form.nombre || "Mi Parcela",
-          lat: this.form.lat,
-          lon: this.form.lon,
+          nombre: (this.form.nombre && this.form.nombre.trim()) || (window.V2?.lang === "en" ? "North field" : "Mi Parcela"),
+          lat,
+          lon,
           localidad: this.form.localidad || "",
           pais: this.form.pais || "US",
           cultivo_actual: this.form.cultivo_actual || "maiz",
           cultivo_anterior: this.form.cultivo_anterior || "",
-          hectareas: this.form.hectareas || 0, // el servidor calcula la superficie real del polígono
-          poligono: this.form.poligono || (window.V2Map.poly ? window.V2Map.poly.getLatLngs()[0].map(p => [p.lat, p.lng]) : null)
+          hectareas: this.form.hectareas || 0.7,
+          poligono: poly
         };
 
         const saved = await window.V2Adapter.guardarTerreno(payload);
         window.V2.closeModal();
-        window.V2.showToast(`Terreno «${saved.nombre}» guardado (${saved.hectareas != null ? saved.hectareas.toFixed(1) + " ha" : ""}).`, 4000);
+        const msg = window.V2?.lang === "en" ? `Field «${saved.nombre}» saved (${saved.hectareas != null ? saved.hectareas.toFixed(1) + " ha" : ""}).`
+          : window.V2?.lang === "pt" ? `Terreno «${saved.nombre}» salvo (${saved.hectareas != null ? saved.hectareas.toFixed(1) + " ha" : ""}).`
+          : `Terreno «${saved.nombre}» guardado (${saved.hectareas != null ? saved.hectareas.toFixed(1) + " ha" : ""}).`;
+        window.V2.showToast(msg, 4000);
 
         // Actualizar estado global con el terreno guardado
         window.V2.selectPlace(saved.lat, saved.lon, "real", saved.nombre);
@@ -415,10 +445,10 @@
           window.V2Map.setPolygonCoords(saved.poligono, saved.nombre);
         }
 
-        // Tras guardar el terreno, ir directamente al mapa satelital interactivo (antes del robot)
+        // Tras guardar el terreno, ir directamente al mapa satelital interactivo
         window.V2.setSpace("mapa");
         window.V2.setSheetSnap?.("min");
-        window.V2Map.analyzeTerrain();
+        if (window.V2Map) window.V2Map.analyzeTerrain();
       } catch (err) {
         window.V2.showToast("Error al guardar terreno: " + err.message, 4500);
       } finally {

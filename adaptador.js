@@ -96,8 +96,99 @@
       });
       return mockResponse({ estado: "OK", lecturas: flat });
     }
-    if (url.includes("/api/v1/alertas")) {
-      return mockResponse([]);
+    if (url.includes("/api/v1/geocode")) {
+      const u = new URL(url, "https://fieldshift.org");
+      const q = (u.searchParams.get("q") || "").toLowerCase().trim();
+      if (q.includes("iowa") || q.includes("ames")) {
+        return mockResponse({ estado: "OK", lat: 42.1045, lon: -93.6050, direccion: "Ames, Story County, Iowa, United States" });
+      }
+      if (q.includes("queretaro") || q.includes("querétaro")) {
+        return mockResponse({ estado: "OK", lat: 20.61309, lon: -100.40274, direccion: "Santiago de Querétaro, Qro., México" });
+      }
+      return mockResponse({ estado: "OK", lat: 42.1045, lon: -93.6050, direccion: (q ? q.charAt(0).toUpperCase() + q.slice(1) : "Parcela") + ", Iowa, USA" });
+    }
+    if (url.includes("/api/v1/trabajos")) {
+      if (opts.method === "POST") {
+        return mockResponse({ estado: "OK", trabajo: "job_static" });
+      }
+      // Generar 25 celdas con coordenadas y verdor Sentinel-2 realista
+      const celdas = [];
+      const baseLat = 42.1045, baseLon = -93.6050;
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          const cLat = baseLat + (i - 2) * 0.00045;
+          const cLon = baseLon + (j - 2) * 0.00045;
+          const ndvi = 0.18 + ((i * 3 + j * 7) % 11) * 0.02;
+          const sev = ndvi < 0.22 ? "alto" : ndvi < 0.30 ? "medio" : "bajo";
+          const zona = ndvi < 0.25 ? 1 : ndvi < 0.32 ? 2 : 3;
+          celdas.push({
+            id: i * 5 + j + 1,
+            lat: cLat,
+            lon: cLon,
+            ndvi: Math.round(ndvi * 1000) / 1000,
+            sev,
+            zona,
+            lado_m: 5,
+            limites: [[cLat - 0.0002, cLon - 0.0002], [cLat + 0.0002, cLon + 0.0002]]
+          });
+        }
+      }
+      return mockResponse({
+        estado: "LISTO",
+        resultado: {
+          estado: "OK",
+          fecha: "2026-11-14",
+          nubosidad_pct: 0,
+          area_ha: 0.7,
+          ndvi_promedio: 0.202,
+          pct_celdas_bajo_030: 100,
+          celdas,
+          telemetria_oficial_en_vivo: {
+            nasa_power_v10: {
+              resumen_anual: {
+                precipitacion_7d_mm: 1.03,
+                precipitacion_30d_mm: 87.16
+              }
+            },
+            usgs_water_services_nwis: {
+              sensores_cercanos: []
+            }
+          },
+          zona: { id: "IA_Central", nombre: "Iowa Corn Belt" },
+          cultivo: "maiz"
+        }
+      });
+    }
+    if (url.includes("/api/v1/si/resumen")) {
+      return mockResponse({
+        estado: "OK",
+        modo: "reglas",
+        frases: [
+          { clave: "helada", texto: "En los últimos 7 días con datos, la mínima fue -1.36 °C (2026-11-12). Se registraron 2 días con helada.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "atencion", regla: "Regla del equipo: helada a 0 °C o menos." },
+          { clave: "lluvia_7d", texto: "Cayeron 1.03 mm de lluvia en los últimos 7 días y 87.16 mm en los últimos 30 días.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "info" },
+          { clave: "verdor", texto: "Verdor de vegetación (NDVI medio): 0.20 en 25 sectores medidos. Cobertura vegetal baja acorde a fin de ciclo de cosecha.", fecha: "2026-11-14", fuente: "Sentinel-2 L2A (10 m)", tipo: "medicion", gravedad: "atencion" }
+        ]
+      });
+    }
+    if (url.includes("/api/v1/si")) {
+      let q = "";
+      try { q = JSON.parse(opts.body || "{}").pregunta || ""; } catch (_) {}
+      const qL = q.toLowerCase();
+      let resItem = { clave: "helada", texto: "En los últimos 7 días con datos, la mínima fue -1.36 °C (2026-11-12). Se registraron 2 días con helada registrada por NASA POWER.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "atencion", regla: "Regla del equipo: helada a 0 °C o menos." };
+      if (/lluv|rain|chuv/.test(qL)) {
+        resItem = { clave: "lluvia_7d", texto: "Cayeron 1.03 mm de lluvia en los últimos 7 días y 87.16 mm en los últimos 30 días acumulados.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "info" };
+      } else if (/humed|moist|umid/.test(qL)) {
+        resItem = { clave: "humedad_raiz", texto: "La humedad en la zona de raíces se encuentra en 51% (rango óptimo agronómico: 45–75%).", fecha: "2026-11-12", fuente: "NASA POWER · SMAP", tipo: "estimacion", gravedad: "info" };
+      } else if (/sembr|plant|cultiv|crop/.test(qL)) {
+        resItem = { clave: "siembra_1", texto: "Rotación recomendada: Maíz / Soya con centeno de cobertura invernal para evitar la erosión del suelo.", fecha: "2026-11-14", fuente: "Reglas de rotación del equipo", tipo: "regla", gravedad: "info" };
+      } else if (/vient|wind|vent/.test(qL)) {
+        resItem = { clave: "viento", texto: "Viento actual de 1.1 m/s (brisa ligera). Condiciones ideales para labores de campo.", fecha: "2026-11-14", fuente: "Open-Meteo", tipo: "medicion", gravedad: "info" };
+      }
+      return mockResponse({
+        estado: "OK",
+        respuesta: [resItem],
+        nota: "Cita fuentes científicas y fechas exactas."
+      });
     }
     return mockResponse({ estado: "OK" });
   }

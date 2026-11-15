@@ -551,7 +551,10 @@ function doGet() {
         const isCurrent = Number(tr.dataset.recIdx) === this.index;
         tr.classList.toggle("active-row", isCurrent);
         if (isCurrent && tr.offsetParent) {
-          tr.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+          const wrap = tr.closest(".table-wrap");
+          if (wrap) {
+            wrap.scrollTop = tr.offsetTop - wrap.offsetTop;
+          }
         }
       });
     },

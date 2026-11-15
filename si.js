@@ -23,16 +23,21 @@
     },
 
     frase(h) {
+      if (!h) return "";
+      if (typeof h === "string") {
+        return `<div class="notice info" style="margin-bottom:8px"><div class="small"><b>${esc(h)}</b></div></div>`;
+      }
       const tipo = {
         medicion: m("medición", "measurement", "medição"),
         estimacion: m("estimación", "estimate", "estimativa"),
         regla: m("regla del equipo", "team rule", "regra da equipe")
       }[h.tipo] || "";
+      const txt = h.texto || h.frase || h.mensaje || "";
 
       return `
         <div class="notice ${h.gravedad === "atencion" ? "atencion" : "info"}" style="margin-bottom:8px">
           <div class="small">
-            <b>${esc(h.texto)}</b>
+            <b>${esc(txt)}</b>
             <div class="chip-row" style="margin-top:6px;gap:4px">
               <span class="chip xs" style="font-weight:700">${esc(h.fuente || "NASA POWER")}</span>
               ${h.fecha ? `<span class="chip xs">${esc(h.fecha)}</span>` : ""}
@@ -253,7 +258,7 @@
           })
         });
         r = await res.json();
-        if (!r || r.estado !== "OK") {
+        if (!r || r.estado !== "OK" || !Array.isArray(r.respuesta) || !r.respuesta.length) {
           r = this.responderLocal(q);
         }
       } catch (e) {
@@ -389,7 +394,7 @@
         </form>
 
         <div class="xs mut" style="padding:0 14px 10px;text-align:center">
-          ${esc(m("100% datos científicos (NASA POWER, Sentinel-2, USDA). Cita fuentes y fechas exactas.", "100% scientific data (NASA POWER, Sentinel-2, USDA). Cites exact sources and dates.", "100% dados científicos (NASA POWER, Sentinel-2, USDA). Cita fontes e datas exatas."))}
+          ${esc(m("Datos científicos (NASA POWER, Sentinel-2, USDA). Cita fuentes y fechas exactas.", "Scientific data (NASA POWER, Sentinel-2, USDA). Cites exact sources and dates.", "Dados científicos (NASA POWER, Sentinel-2, USDA). Cita fontes e datas exatas."))}
         </div>
       `;
     },

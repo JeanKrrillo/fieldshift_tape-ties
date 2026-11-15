@@ -2191,6 +2191,7 @@ details > summary { min-height: 32px; }
 /* SI: verde lleno, en esquina inferior derecha sin chocar con barras inferiores */
 .si-fab { position: fixed; right: 18px; bottom: 18px; z-index: 920; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px 0 14px; border: 2.5px solid #fff; border-radius: 26px; cursor: pointer;
   font-size: 16px; font-weight: 900; letter-spacing: .03em; color: #fff; background: var(--primario); box-shadow: 0 4px 16px rgba(0, 0, 0, .25); transition: transform .16s, opacity .2s; }
+body[data-space="mapa"] .si-fab { bottom: 74px; right: 18px; }
 .si-fab small { font-size: 12px; font-weight: 600; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width .22s; }
 .si-fab:hover small, .si-fab:focus-visible small { max-width: 200px; }
 .si-fab:hover { transform: translateY(-2px); }
@@ -2441,6 +2442,8 @@ body.demo-activo .pista {
 
 /* Contraseña del demo: se ve con puntos, sin ser campo de contraseña */
 .demo-mascara { -webkit-text-security: disc; text-security: disc; }
+
+#rover-video-bubble { display: none !important; }
 
 /* Estilos de la tabla de streaming y controles del demo */
 .rover-stream-table tr.active-row {

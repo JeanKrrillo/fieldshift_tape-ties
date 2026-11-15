@@ -168,6 +168,9 @@
       this.renderShellChrome();
       this.renderActiveViews();
       window.V2Map.updateLegend();
+      window.V2Vivo?.pintarFab?.();
+      window.V2SI?.pintar?.();
+      window.V2CampoVivo?.pintar?.();
       if (this.modal) this.renderModal();
     },
 
@@ -227,34 +230,10 @@
       document.body.dataset.space = this.space;
       setTimeout(() => window.V2Map?.map?.invalidateSize(), 150);
 
-      // Burbuja flotante de video de pruebas de hardware del rover en loop
-      const bTitle = this.lang === "en" ? "Field rover · Real hardware test video (click to view telemetry)"
-        : this.lang === "pt" ? "Robô de campo · Vídeo de teste de hardware real (clique para ver telemetria)"
-        : "Rover de campo · Pruebas de hardware en video (clic para ver telemetría)";
-      const bTag = this.lang === "en" ? "Real rover" : this.lang === "pt" ? "Robô real" : "Rover real";
+      // Eliminar cualquier burbuja flotante residual para evitar sobreposiciones
+      const bOld = document.getElementById("rover-video-bubble");
+      if (bOld) bOld.remove();
 
-      let b = document.getElementById("rover-video-bubble");
-      if (!b) {
-        b = document.createElement("div");
-        b.id = "rover-video-bubble";
-        b.addEventListener("click", () => {
-          this.setSpace("inicio");
-          const target = document.querySelector(".rover-hardware-card");
-          if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
-        });
-        document.getElementById("v2-stage")?.appendChild(b);
-      }
-      b.title = bTitle;
-      const vEl = b.querySelector("video");
-      if (!vEl) {
-        b.innerHTML = `
-          <video autoplay muted playsinline loop src="recursos/rover_prueba_1.mp4"></video>
-          <div class="bubble-tag"><span class="rover-live-pulse"></span> <span class="bubble-tag-txt">${esc(bTag)}</span></div>
-        `;
-      } else {
-        const txtEl = b.querySelector(".bubble-tag-txt");
-        if (txtEl) txtEl.textContent = bTag;
-      }
       const nav = document.getElementById("v2-nav");
       if (nav) {
         const sp = this.space;
@@ -585,7 +564,25 @@
       this.outsideUsDismissed = false;
       this.closeModal();
       window.V2Map.setLocationMarker(lat, lon, this.loc.kind, this.loc.label);
+
+      // Crear recuadro de parcela y disparar análisis satelital automático
+      if (window.V2Map) {
+        const dLat = 0.0009;
+        const dLon = 0.0009 / Math.cos(lat * Math.PI / 180);
+        const ring = [
+          [lat - dLat, lon - dLon],
+          [lat - dLat, lon + dLon],
+          [lat + dLat, lon + dLon],
+          [lat + dLat, lon - dLon]
+        ];
+        window.V2Map.setPolygonCoords(ring, this.loc.label || "Parcela");
+      }
+
       await this.loadParcelIntelligence(lat, lon, this.loc.kind, this.loc.label);
+
+      if (window.V2Map) {
+        window.V2Map.analyzeTerrain();
+      }
     },
 
     async loadParcelIntelligence(lat, lon, kind, label) {
@@ -683,16 +680,18 @@
     async searchPlace(q) {
       const query = (q || "").trim();
       if (query.length < 2) return;
-      this.startProgress(`Buscando «${query}»…`);
+      const searchTxt = this.lang === "en" ? `Searching «${query}»…` : this.lang === "pt" ? `Buscando «${query}»…` : `Buscando «${query}»…`;
+      this.startProgress(searchTxt);
       try {
         const r = await (await fetch(`/api/v1/geocode?q=${encodeURIComponent(query)}`)).json();
         if (r.lat != null && r.lon != null) {
           this.selectPlace(r.lat, r.lon, "sim", r.direccion || query);
         } else {
-          this.showToast(r.detalle || "No encontramos ese lugar. Intenta con el nombre del municipio o estado.", 4500);
+          const failMsg = this.lang === "en" ? "Could not find this place. Try town or state name." : this.lang === "pt" ? "Não encontramos esse local. Tente com o município ou estado." : "No encontramos ese lugar. Intenta con el nombre del municipio o estado.";
+          this.showToast(r.detalle || failMsg, 4500);
         }
       } catch (err) {
-        this.showToast("Error al buscar: " + err.message, 4500);
+        this.showToast("Error: " + err.message, 4500);
       } finally {
         this.stopProgress();
       }
@@ -947,6 +946,13 @@
       });
 
       document.addEventListener("click", (e) => {
+        const sBtn = e.target.closest("#v2-search-form button");
+        if (sBtn) {
+          e.preventDefault();
+          const q = document.getElementById("v2-q")?.value;
+          this.searchPlace(q);
+          return;
+        }
         const vidBtn = e.target.closest("[data-vid-src]");
         if (vidBtn) {
           const src = vidBtn.dataset.vidSrc;

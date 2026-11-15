@@ -385,7 +385,7 @@
             ${ic(r && r.estado !== "OK" ? "atencion" : "info", "lg")}
             <div class="small" style="flex:1">
               ${esc(!r ? tr("ter_none") : (window.V2.lang === "en" ? "The satellite service took too long to read this photo. Try again or reduce the number of cells." : window.V2.lang === "pt" ? "O serviço de satélite demorou para ler esta foto. Tente novamente ou reduza o número de quadros." : "El satélite tardó demasiado en responder para esta foto. Intenta de nuevo o elige menos cuadros."))}
-              ${r && r.estado !== "OK" ? `<div style="margin-top:8px"><button type="button" class="btn btn-pri btn-sm" data-action="retry-ter">Reintentar lectura satelital</button></div>` : ""}
+              ${r && r.estado !== "OK" ? `<div style="margin-top:8px"><button type="button" class="btn btn-pri btn-sm" data-action="retry-ter">${esc(m("Reintentar lectura satelital", "Retry satellite read", "Tentar leitura de satélite de novo"))}</button></div>` : ""}
             </div>
           </div>
         ` : `
@@ -1168,7 +1168,7 @@
           </div>
 
           <div class="row-wrap" style="margin-bottom:12px">
-            <button type="button" class="btn btn-pri btn-sm" data-action="robot-route">${ic("compass", "sm")} <span>Generar ruta de muestreo para robot (5 cuadros críticos)</span></button>
+            <button type="button" class="btn btn-pri btn-sm" data-action="robot-route">${ic("compass", "sm")} <span>${esc(m("Generar ruta de muestreo para robot (5 cuadros críticos)", "Generate sampling route for robot (5 critical squares)", "Gerar rota de amostragem para robô (5 quadros críticos)"))}</span></button>
             <button type="button" class="btn btn-sec btn-sm" data-go-space="robot">${ic("upload", "sm")} <span>${esc(tr("go_robot_upload"))}</span></button>
           </div>
           <div id="v2-robot-out" class="small"></div>
@@ -1360,7 +1360,7 @@
         <div class="card">
           <div class="row-between" style="margin-bottom:10px">
             <h2 class="card-title" style="margin:0">${ic("satellite", "sm")} <span>${esc(tr("src_status_title"))}</span></h2>
-            <button type="button" class="btn btn-sec btn-sm lv-sci" data-action="toggle-json">Ver JSON oficial en vivo</button>
+            <button type="button" class="btn btn-sec btn-sm lv-sci" data-action="toggle-json">${esc(m("Ver JSON oficial en vivo", "View live official JSON", "Ver JSON oficial ao vivo"))}</button>
           </div>
           <div class="chip-row">
             ${srcMap.map(([k, name]) => {
@@ -2233,7 +2233,7 @@
               </div>
             </div>
             <div class="row-wrap">
-              <button type="button" class="btn btn-pri btn-sm" data-action="run-ai">${ic("ai", "sm")} <span>Ejecutar clasificador SI sobre los cuadros</span></button>
+              <button type="button" class="btn btn-pri btn-sm" data-action="run-ai">${ic("ai", "sm")} <span>${esc(m("Ejecutar clasificador SI sobre los cuadros", "Run SI classifier over squares", "Executar classificador SI sobre os quadros"))}</span></button>
               <button type="button" class="btn btn-sec btn-sm" data-go-conceptos="ia_vs_medicion">¿Por qué una predicción no es medición? →</button>
             </div>
           </div>
