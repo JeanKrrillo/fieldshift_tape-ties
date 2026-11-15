@@ -2490,3 +2490,6 @@ body.demo-activo .pista {
 #demo-anuncio[hidden] { display: none; }
 .demo-etiqueta { margin-left: auto; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #6B3E00; background: #FFF4E0; border: 1px solid #C77700; border-radius: 99px; padding: 1px 6px; }
 #v2-ws-robot tbody tr.demo-late { animation: demo-late 1.2s ease-out; }
+
+/* Con la SI abierta, el control del demo baja a la esquina inferior izquierda para no tapar el panel */
+body.si-abierta #demo-caja { top: auto; bottom: 16px; right: auto; left: 96px; }

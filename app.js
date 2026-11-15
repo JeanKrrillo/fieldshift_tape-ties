@@ -723,11 +723,12 @@
         this.showToast("Primero dibuja o selecciona tu terreno.", 3500);
         return;
       }
-      const name = prompt("Nombre para guardar este terreno:", window.V2Map.polyLabel || `Terreno ${this.savedTerrains.length + 1}`);
-      if (!name) return;
+      // Sin prompt(): se guarda con el nombre actual; se cambia despues en "Editar terreno".
+      const name = window.V2Map.polyLabel || `${this.lang === "en" ? "Field" : this.lang === "pt" ? "Terreno" : "Terreno"} ${this.savedTerrains.length + 1}`;
       const ring = window.V2Map.poly.getLatLngs()[0].map(p => [Number(p.lat.toFixed(6)), Number(p.lng.toFixed(6))]);
       this.savedTerrains.push({ id: Date.now(), name, ring, date: new Date().toISOString().slice(0, 10) });
       lsSet("v2_saved_terrains", JSON.stringify(this.savedTerrains));
+      this.showToast(`✓ ${name}`, 2500);
       this.renderActiveViews();
     },
 
