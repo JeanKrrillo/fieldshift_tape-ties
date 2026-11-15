@@ -2425,7 +2425,7 @@ body.demo-activo .pista {
 .guia-aro, .guia-globo { display: none !important; }
 
 /* Modo demo */
-#demo-caja { position: fixed; top: 4px; right: 4px; z-index: 3000; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+#demo-caja { position: fixed; top: 70px; right: 16px; z-index: 3000; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .demo-mini { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: rgba(46, 125, 50, .55); color: #fff; font-size: 9px; line-height: 20px; cursor: pointer; opacity: .55; transition: opacity .15s; }
 .demo-mini:hover, .demo-mini:focus-visible { opacity: 1; }
 .demo-ctl { display: flex; gap: 6px; align-items: center; background: var(--superficie); border: 1px solid var(--linea); border-radius: 10px; padding: 6px 8px; box-shadow: 0 6px 16px rgba(0, 0, 0, .2); font-size: 12px; }
@@ -2436,7 +2436,7 @@ body.demo-activo .pista {
 #demo-cursor svg { display: block; transform-origin: 3px 2px; transition: transform .12s; }
 #demo-cursor.pulsa svg { transform: scale(.82); }
 #demo-cursor[hidden], #demo-letrero[hidden] { display: none; }
-#demo-letrero { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 2998; pointer-events: none; max-width: min(680px, calc(100vw - 40px)); background: rgba(16, 26, 18, 0.94); backdrop-filter: blur(14px); color: #ffffff; font-size: 13.5px; font-weight: 600; line-height: 1.4; padding: 10px 24px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); text-align: center; letter-spacing: 0.01em; transition: opacity .2s ease; }
+#demo-letrero { position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 2998; pointer-events: none; max-width: min(680px, calc(100vw - 40px)); background: rgba(16, 26, 18, 0.94); backdrop-filter: blur(14px); color: #ffffff; font-size: 13.5px; font-weight: 600; line-height: 1.4; padding: 10px 24px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); text-align: center; letter-spacing: 0.01em; transition: opacity .2s ease; }
 .demo-onda { position: fixed; z-index: 2997; width: 14px; height: 14px; margin: -7px 0 0 -7px; border: 2px solid var(--primario); border-radius: 50%; pointer-events: none; animation: demo-onda .55s ease-out forwards; }
 @keyframes demo-onda { to { transform: scale(3.2); opacity: 0; } }
 

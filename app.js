@@ -171,6 +171,9 @@
       window.V2Vivo?.pintarFab?.();
       window.V2SI?.pintar?.();
       window.V2CampoVivo?.pintar?.();
+      window.V2Campo?.tira?.();
+      window.V2Campo?.tablero?.();
+      window.FSDemo?.pintar?.();
       if (this.modal) this.renderModal();
     },
 

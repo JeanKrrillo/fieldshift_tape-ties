@@ -453,11 +453,11 @@
 
       // 4. PROBAR LA SI (INTELIGENCIA SATELITAL)
       await this.clic(".si-fab, [data-action=\"abrir-si\"]", "Ask Field SI: satellite agronomic AI assistant", 1200);
-      const siChip1 = await this.buscar(".si-chip, [data-si-q]", 1500);
+      const siChip1 = await this.buscar(".si-chip-btn, [data-si-q]", 1500);
       if (siChip1) {
         await this.clic(siChip1, "Ask: Was there frost this week?", 2400);
       }
-      const siChip2 = document.querySelectorAll(".si-chip")[1] || document.querySelectorAll("[data-si-q]")[1];
+      const siChip2 = document.querySelectorAll(".si-chip-btn, [data-si-q]")[1];
       if (siChip2) {
         await this.clic(siChip2, "Ask: How is soil moisture?", 2400);
       }

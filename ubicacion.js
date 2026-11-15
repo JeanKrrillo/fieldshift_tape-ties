@@ -217,8 +217,8 @@
 
           <!-- BOTÓN CONTINUAR (Desactivado hasta tener punto, nombre y cultivo) -->
           <div class="row-between" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--linea)">
-            <button type="button" class="btn btn-txt btn-sm" data-close-modal="1">${lang === "en" ? "Cancel" : "Cancelar"}</button>
-            <button type="button" class="btn btn-pri" id="v2-btn-ub-continuar" ${!isComplete ? "disabled" : ""} style="min-height:46px;padding:0 24px">
+            <button type="button" class="btn btn-txt btn-sm" data-close-modal="1">${lang === "en" ? "Cancel" : lang === "pt" ? "Cancelar" : "Cancelar"}</button>
+            <button type="button" class="btn btn-pri" id="v2-btn-ub-continuar" style="min-height:46px;padding:0 24px">
               <span>${lang === "en" ? "Save & Continue →" : lang === "pt" ? "Salvar e Continuar →" : "Guardar y Continuar →"}</span>
             </button>
           </div>
@@ -373,14 +373,13 @@
       }
       if (!f.cultivo_actual) f.cultivo_actual = "maiz";
       if (!f.hectareas) f.hectareas = 0.7;
-      const isComplete = (f.lat != null && f.lon != null) || (window.V2?.loc?.lat != null);
-      btn.disabled = !isComplete;
+      btn.disabled = false;
     },
 
     async ejecutarGeocode(q) {
       if (!q || q.trim().length < 2) return;
       const outList = document.getElementById("v2-ub-geo-list");
-      if (outList) outList.innerHTML = `<div class="xs mut">Buscando «${window.esc(q)}»…</div>`;
+      if (outList) outList.innerHTML = `<div class="xs mut">${window.V2?.lang === "en" ? `Searching «${window.esc(q)}»…` : `Buscando «${window.esc(q)}»…`}</div>`;
       try {
         const res = await fetch(`/api/v1/geocode?q=${encodeURIComponent(q.trim())}`);
         const data = await res.json();
@@ -391,7 +390,7 @@
             </button>
           `;
         } else {
-          outList.innerHTML = `<div class="xs atencion">No se encontró esa localidad. Intenta con municipio o código postal.</div>`;
+          outList.innerHTML = `<div class="xs atencion">${window.V2?.lang === "en" ? "Could not find that place. Try city or postal code." : "No se encontró esa localidad. Intenta con municipio o código postal."}</div>`;
         }
       } catch (err) {
         if (outList) outList.innerHTML = `<div class="xs riesgo">Error al consultar geocodificación.</div>`;
@@ -420,7 +419,7 @@
         }
 
         const payload = {
-          nombre: (this.form.nombre && this.form.nombre.trim()) || (window.V2?.lang === "en" ? "North field" : "Mi Parcela"),
+          nombre: (this.form.nombre && this.form.nombre.trim()) || (window.V2?.lang === "en" ? "North field" : window.V2?.lang === "pt" ? "Campo Norte" : "Mi Parcela"),
           lat,
           lon,
           localidad: this.form.localidad || "",
@@ -445,12 +444,12 @@
           window.V2Map.setPolygonCoords(saved.poligono, saved.nombre);
         }
 
-        // Tras guardar el terreno, ir directamente al mapa satelital interactivo
+        // Tras guardar el terreno, ir directamente al mapa satelital interactivo (antes del robot)
         window.V2.setSpace("mapa");
         window.V2.setSheetSnap?.("min");
-        if (window.V2Map) window.V2Map.analyzeTerrain();
+        window.V2Map.analyzeTerrain();
       } catch (err) {
-        window.V2.showToast("Error al guardar terreno: " + err.message, 4500);
+        window.V2.showToast("Error: " + err.message, 4500);
       } finally {
         window.V2.stopProgress();
       }

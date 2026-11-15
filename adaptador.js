@@ -160,34 +160,124 @@
       });
     }
     if (url.includes("/api/v1/si/resumen")) {
+      const lang = window.V2?.lang || "es";
       return mockResponse({
         estado: "OK",
         modo: "reglas",
         frases: [
-          { clave: "helada", texto: "En los últimos 7 días con datos, la mínima fue -1.36 °C (2026-11-12). Se registraron 2 días con helada.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "atencion", regla: "Regla del equipo: helada a 0 °C o menos." },
-          { clave: "lluvia_7d", texto: "Cayeron 1.03 mm de lluvia en los últimos 7 días y 87.16 mm en los últimos 30 días.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "info" },
-          { clave: "verdor", texto: "Verdor de vegetación (NDVI medio): 0.20 en 25 sectores medidos. Cobertura vegetal baja acorde a fin de ciclo de cosecha.", fecha: "2026-11-14", fuente: "Sentinel-2 L2A (10 m)", tipo: "medicion", gravedad: "atencion" }
+          {
+            clave: "helada",
+            texto: lang === "en" ? "In the last 7 days with data, the lowest temperature was -1.36 °C (2026-11-12). Frost occurred on 2 days."
+              : lang === "pt" ? "Nos últimos 7 dias com dados, a mínima foi de -1.36 °C (2026-11-12). Ocorreram 2 dias com geada."
+              : "En los últimos 7 días con datos, la mínima fue -1.36 °C (2026-11-12). Se registraron 2 días con helada.",
+            fecha: "2026-11-12",
+            fuente: "NASA POWER v10",
+            tipo: "estimacion",
+            gravedad: "atencion",
+            regla: lang === "en" ? "Team rule: frost at 0 °C or below." : lang === "pt" ? "Regra da equipe: geada a 0 °C ou menos." : "Regla del equipo: helada a 0 °C o menos."
+          },
+          {
+            clave: "lluvia_7d",
+            texto: lang === "en" ? "1.0 mm of rain fell in the last 7 days and 87.2 mm in the last 30 days."
+              : lang === "pt" ? "Caíram 1.0 mm de chuva nos últimos 7 dias e 87.2 mm nos últimos 30 dias."
+              : "Cayeron 1.03 mm de lluvia en los últimos 7 días y 87.16 mm en los últimos 30 días.",
+            fecha: "2026-11-12",
+            fuente: "NASA POWER v10",
+            tipo: "estimacion",
+            gravedad: "info"
+          },
+          {
+            clave: "verdor",
+            texto: lang === "en" ? "Vegetation greenness (mean NDVI): 0.20 across 25 squares. Low vegetation cover matching end of harvest cycle."
+              : lang === "pt" ? "Verdor da vegetação (NDVI médio): 0.20 em 25 setores medidos. Cobertura vegetal baixa condizente com fim de colheita."
+              : "Verdor de vegetación (NDVI medio): 0.20 en 25 sectores medidos. Cobertura vegetal baja acorde a fin de ciclo de cosecha.",
+            fecha: "2026-11-14",
+            fuente: "Sentinel-2 L2A (10 m)",
+            tipo: "medicion",
+            gravedad: "atencion"
+          }
         ]
       });
     }
     if (url.includes("/api/v1/si")) {
-      let q = "";
-      try { q = JSON.parse(opts.body || "{}").pregunta || ""; } catch (_) {}
+      let q = "", lang = window.V2?.lang || "es";
+      try {
+        const bodyParsed = JSON.parse(opts.body || "{}");
+        q = bodyParsed.pregunta || "";
+        if (bodyParsed.lang) lang = bodyParsed.lang;
+      } catch (_) {}
       const qL = q.toLowerCase();
-      let resItem = { clave: "helada", texto: "En los últimos 7 días con datos, la mínima fue -1.36 °C (2026-11-12). Se registraron 2 días con helada registrada por NASA POWER.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "atencion", regla: "Regla del equipo: helada a 0 °C o menos." };
+      let resItem = {
+        clave: "helada",
+        texto: lang === "en" ? "In the last 7 days with data, the lowest temperature was -1.36 °C (2026-11-12). Frost occurred on 2 days registered by NASA POWER."
+          : lang === "pt" ? "Nos últimos 7 dias com dados, a mínima foi de -1.36 °C (2026-11-12). Ocorreram 2 dias com geada registrada pela NASA POWER."
+          : "En los últimos 7 días con datos, la mínima fue -1.36 °C (2026-11-12). Se registraron 2 días con helada registrada por NASA POWER.",
+        fecha: "2026-11-12",
+        fuente: "NASA POWER v10",
+        tipo: "estimacion",
+        gravedad: "atencion",
+        regla: lang === "en" ? "Team rule: frost at 0 °C or below." : lang === "pt" ? "Regra da equipe: geada a 0 °C ou menos." : "Regla del equipo: helada a 0 °C o menos."
+      };
       if (/lluv|rain|chuv/.test(qL)) {
-        resItem = { clave: "lluvia_7d", texto: "Cayeron 1.03 mm de lluvia en los últimos 7 días y 87.16 mm en los últimos 30 días acumulados.", fecha: "2026-11-12", fuente: "NASA POWER v10", tipo: "estimacion", gravedad: "info" };
+        resItem = {
+          clave: "lluvia_7d",
+          texto: lang === "en" ? "1.0 mm of rain fell in the last 7 days and 87.2 mm in the last 30 days accumulated."
+            : lang === "pt" ? "Caíram 1.0 mm de chuva nos últimos 7 dias e 87.2 mm nos últimos 30 dias acumulados."
+            : "Cayeron 1.03 mm de lluvia en los últimos 7 días y 87.16 mm en los últimos 30 días acumulados.",
+          fecha: "2026-11-12",
+          fuente: "NASA POWER v10",
+          tipo: "estimacion",
+          gravedad: "info"
+        };
       } else if (/humed|moist|umid/.test(qL)) {
-        resItem = { clave: "humedad_raiz", texto: "La humedad en la zona de raíces se encuentra en 51% (rango óptimo agronómico: 45–75%).", fecha: "2026-11-12", fuente: "NASA POWER · SMAP", tipo: "estimacion", gravedad: "info" };
+        resItem = {
+          clave: "humedad_raiz",
+          texto: lang === "en" ? "Root zone soil moisture is at 51% (agronomic target range: 45–75%)."
+            : lang === "pt" ? "A umidade na zona radicular está em 51% (faixa agronômica ideal: 45–75%)."
+            : "La humedad en la zona de raíces se encuentra en 51% (rango óptimo agronómico: 45–75%).",
+          fecha: "2026-11-12",
+          fuente: "NASA POWER · SMAP",
+          tipo: "estimacion",
+          gravedad: "info"
+        };
       } else if (/sembr|plant|cultiv|crop/.test(qL)) {
-        resItem = { clave: "siembra_1", texto: "Rotación recomendada: Maíz / Soya con centeno de cobertura invernal para evitar la erosión del suelo.", fecha: "2026-11-14", fuente: "Reglas de rotación del equipo", tipo: "regla", gravedad: "info" };
+        resItem = {
+          clave: "siembra_1",
+          texto: lang === "en" ? "Recommended rotation: Maize / Soybean with winter rye cover crop to prevent soil erosion."
+            : lang === "pt" ? "Rotação recomendada: Milho / Soja com centeio de cobertura de inverno para evitar erosão."
+            : "Rotación recomendada: Maíz / Soya con centeno de cobertura invernal para evitar la erosión del suelo.",
+          fecha: "2026-11-14",
+          fuente: "Reglas de rotación del equipo",
+          tipo: "regla",
+          gravedad: "info"
+        };
       } else if (/vient|wind|vent/.test(qL)) {
-        resItem = { clave: "viento", texto: "Viento actual de 1.1 m/s (brisa ligera). Condiciones ideales para labores de campo.", fecha: "2026-11-14", fuente: "Open-Meteo", tipo: "medicion", gravedad: "info" };
+        resItem = {
+          clave: "viento",
+          texto: lang === "en" ? "Current wind speed is 1.1 m/s (light breeze). Ideal conditions for field work."
+            : lang === "pt" ? "Vento atual de 1.1 m/s (brisa leve). Condições ideais para trabalho de campo."
+            : "Viento actual de 1.1 m/s (brisa ligera). Condiciones ideales para labores de campo.",
+          fecha: "2026-11-14",
+          fuente: "Open-Meteo",
+          tipo: "medicion",
+          gravedad: "info"
+        };
+      } else if (/calor|temp|heat|quente/.test(qL)) {
+        resItem = {
+          clave: "temperatura",
+          texto: lang === "en" ? "Mean temperature over the last 7 days: 15.8 °C (high 24.5 °C, low -1.4 °C)."
+            : lang === "pt" ? "Temperatura média dos últimos 7 dias: 15.8 °C (máxima 24.5 °C, mínima -1.4 °C)."
+            : "Temperatura media de los últimos 7 días: 15.8 °C (máxima 24.5 °C, mínima -1.4 °C).",
+          fecha: "2026-11-14",
+          fuente: "NASA POWER v10",
+          tipo: "estimacion",
+          gravedad: "info"
+        };
       }
       return mockResponse({
         estado: "OK",
         respuesta: [resItem],
-        nota: "Cita fuentes científicas y fechas exactas."
+        nota: lang === "en" ? "Citing scientific sources and exact dates." : lang === "pt" ? "Citando fontes científicas e datas exatas." : "Cita fuentes científicas y fechas exactas."
       });
     }
     return mockResponse({ estado: "OK" });
