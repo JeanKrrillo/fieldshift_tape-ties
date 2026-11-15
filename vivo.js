@@ -68,7 +68,7 @@
         L.polyline(ll, { color: "var(--primario)", weight: 3, dashArray: "6 6", className: "ruta-anim" })
           .bindTooltip(m("Ruta recorrida por el robot (prueba de campo, a escala dentro de la parcela)", "Path driven by the robot (field test, scaled inside the field)", "Rota percorrida pelo robô (teste de campo, em escala dentro do terreno)"), { sticky: true }),
         L.circleMarker(ll[0], { radius: 6, color: "#fff", weight: 2, fillColor: "#2F7D32", fillOpacity: 1 })
-          .bindTooltip(m("Inicio de la ruta", "Route start", "Início da rota"), { permanent: true, direction: "left", className: "ruta-tag" }),
+          .bindTooltip(m("Inicio de la ruta", "Route start", "Início da rota"), { direction: "left" }),
         L.marker(ult, { icon: L.divIcon({ className: "", html: `<div class="robot-pin" title="Robot"><span>R</span></div>`, iconSize: [34, 34], iconAnchor: [17, 17] }), zIndexOffset: 1000 })
           .bindTooltip(`<b>${esc(m("Robot · posición en parcela", "Robot · position on field", "Robô · posição no terreno"))}</b><br>${new Date(pts[pts.length - 1].t).toLocaleString()}`, { direction: "top" }),
       ]).addTo(mp);

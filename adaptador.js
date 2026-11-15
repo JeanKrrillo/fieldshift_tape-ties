@@ -88,7 +88,7 @@
       let list = [];
       try { list = JSON.parse(localStorage.getItem("fs_terrenos") || "[]"); } catch (_) {}
       if (!list.length) {
-        list = [{ id: 1, nombre: "North field", lat: 42.1045, lon: -93.6050, area_ha: 0.7, poligono: [[42.1049, -93.6055], [42.1049, -93.6045], [42.1041, -93.6045], [42.1041, -93.6055]] }];
+        list = [{ id: 1, nombre: "North field", lat: 42.1045, lon: -93.6050, area_ha: 64, poligono: [[42.1081, -93.6098], [42.1081, -93.6002], [42.1009, -93.6002], [42.1009, -93.6098]] }];
       }
       return mockResponse(list);
     }

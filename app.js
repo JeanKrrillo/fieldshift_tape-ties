@@ -104,7 +104,7 @@
           const terrenos = (await window.V2Adapter.obtenerTerrenos().catch(() => [])) || [];
           // Visitante nuevo: parcela de ejemplo en Iowa para que todo tenga datos sin pedir nada.
           const EJEMPLO = { id: "ejemplo", lat: 42.1045, lon: -93.605, nombre: this.lang === "en" ? "Sample field (Iowa)" : this.lang === "pt" ? "Campo de exemplo (Iowa)" : "Parcela de ejemplo (Iowa)",
-            poligono: [[42.1037, -93.6061], [42.1037, -93.6039], [42.1053, -93.6039], [42.1053, -93.6061]] };
+            poligono: [[42.1081, -93.6098], [42.1081, -93.6002], [42.1009, -93.6002], [42.1009, -93.6098]] };
           // El terreno activo es el último usado si sigue guardado; si no, el más reciente. Sus datos y su medición se cargan solos.
           const t1 = (this.loc && terrenos.find(t => Math.abs(t.lat - this.loc.lat) < 1e-4 && Math.abs(t.lon - this.loc.lon) < 1e-4)) || terrenos[0] || EJEMPLO;
           if (t1) {
