@@ -125,16 +125,29 @@
     }
     if (url.includes("/api/v1/trabajos")) {
       if (String(opts?.method || "").toUpperCase() === "POST") {
+        try { window.__fsJob = JSON.parse(opts.body || "{}"); } catch (_) {}
         return mockResponse({ estado: "OK", trabajo: "job_static" });
       }
-      // Generar 25 celdas con coordenadas y verdor Sentinel-2 realista
-      // Cuadricula contigua sobre la parcela dibujada (N x N), con lado real en metros.
+      // Generar cuadrícula contigua 5x5 (25 sectores) adaptada exactamente al polígono del terreno
       const job = window.__fsJob || {};
       const pts = String(job.poly || "").split(";").map(t => t.split(",").map(Number)).filter(q => q.length === 2 && q.every(isFinite));
-      const lons = pts.length ? pts.map(q => q[0]) : [-93.6061, -93.6039];
-      const lats = pts.length ? pts.map(q => q[1]) : [42.1037, 42.1053];
-      const s0 = Math.min(...lats), n0 = Math.max(...lats), w0 = Math.min(...lons), e0 = Math.max(...lons);
-      const N = Math.max(2, Math.round(Math.sqrt(Number(job.celdas) > 0 && Number(job.celdas) <= 400 ? Number(job.celdas) : 25)));
+      let s0 = 42.1037, n0 = 42.1053, w0 = -93.6061, e0 = -93.6039;
+      if (pts.length >= 3) {
+        const lons = pts.map(q => q[0]);
+        const lats = pts.map(q => q[1]);
+        s0 = Math.min(...lats); n0 = Math.max(...lats);
+        w0 = Math.min(...lons); e0 = Math.max(...lons);
+      } else if (window.V2Map?.poly) {
+        const b = window.V2Map.poly.getBounds();
+        s0 = b.getSouth(); n0 = b.getNorth();
+        w0 = b.getWest(); e0 = b.getEast();
+      } else if (window.V2?.loc?.lat != null) {
+        const cLat = window.V2.loc.lat, cLon = window.V2.loc.lon;
+        s0 = cLat - 0.0008; n0 = cLat + 0.0008;
+        w0 = cLon - 0.0008; e0 = cLon + 0.0008;
+      }
+
+      const N = 5; // Cuadrícula 5x5 estándar del equipo
       const dLat = (n0 - s0) / N, dLon = (e0 - w0) / N;
       const ladoM = Math.round(dLat * 111320);
       const celdas = [];
@@ -143,6 +156,8 @@
           const ndvi = 0.18 + ((i * 3 + j * 7) % 11) * 0.02;
           celdas.push({
             id: i * N + j + 1,
+            fila: i,
+            col: j,
             lat: s0 + (i + 0.5) * dLat,
             lon: w0 + (j + 0.5) * dLon,
             ndvi: Math.round(ndvi * 1000) / 1000,
