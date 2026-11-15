@@ -410,8 +410,8 @@
       if (V.space !== "mapa") V.setSpace("mapa");
       V.sheetSnap = "min"; V.renderActiveViews?.();
       if (window.V2Map?.poly) mp()?.fitBounds(window.V2Map.poly.getBounds().pad(0.2), { animate: false });
-      const n = V.terrainResp?.celdas?.length;
-      this.decir(this.t(`Listo: mi terreno quedó dividido en ${n || "miles de"} cuadros de 5 × 5 m`, `Done: my field is split into ${n || "thousands of"} 5 × 5 m squares`, `Pronto: meu terreno foi dividido em ${n || "milhares de"} quadros de 5 × 5 m`));
+      const n = V.terrainResp?.celdas?.length, lado = V.terrainResp?.celdas?.[0]?.lado_m || 5;
+      this.decir(this.t(`Listo: mi terreno quedó dividido en ${n || "miles de"} cuadros de ${lado} × ${lado} m`, `Done: my field is split into ${n || "thousands of"} ${lado} × ${lado} m squares`, `Pronto: meu terreno foi dividido em ${n || "milhares de"} quadros de ${lado} × ${lado} m`));
       await this.esperar(1800);
       this.decir(this.t("El color de cada cuadro sale de la foto de satélite: verde es planta sana", "Each square's color comes from the satellite image: green means healthy plants", "A cor de cada quadro vem da foto de satélite: verde é planta saudável"));
       await this.esperar(1800);
@@ -483,6 +483,7 @@
 
       // 8. QUÉ HACER
       await this.clic('[data-go-space="recom"]', this.t("Qué hacer: hoy, esta temporada y los próximos años", "What to do: today, this season and coming years", "O que fazer: hoje, nesta safra e nos próximos anos"), 1500);
+      await this.leer("#agro-plan", this.t("Un plan calculado con mis datos: siembra, agua, suelo, nitrógeno, cosecha y números", "A plan worked out from my data: planting, water, soil, nitrogen, harvest and numbers", "Um plano calculado com meus dados: plantio, água, solo, nitrogênio, colheita e números"), 3000);
       await this.recorrerEspacio("#v2-ws-recom", this.t("Cada consejo dice de qué dato sale", "Each tip says which data it comes from", "Cada conselho diz de qual dado vem"), 2400);
 
       // 9. ECONOMÍA

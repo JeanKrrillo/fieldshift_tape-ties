@@ -2160,6 +2160,8 @@
             </div>
           </div>
 
+          ${window.V2Agro ? window.V2Agro.tarjeta() : ""}
+
           ${recoms.length ? "" : `<div class="notice info">${ic("info", "sm")}<div class="small">${this._recoms === null ? "Calculando recomendaciones con los datos reales de tu terreno…" : "Todavía no hay recomendaciones: elige o guarda un terreno y espera a que termine el análisis."}</div></div>`}
           <!-- 1. QUÉ HACER AHORA (Hoy y esta semana) -->
           <div class="card">

@@ -92,21 +92,35 @@
     rutaMuestreo(n = 5) {
       const r = window.V2.terrainResp, mp = MAPA();
       if (!r?.celdas?.length || !mp) return [];
-      const bajos = r.celdas.map((c, i) => ({ c, i })).filter(x => x.c.ndvi != null).sort((a, b) => a.c.ndvi - b.c.ndvi).slice(0, n);
-      // orden de visita: el vecino más cercano; solo incluye el robot si está dentro o muy cerca de la parcela
-      const ini = window.V2Robot?.rutaPuntos?.slice(-1)[0];
-      const enTerreno = ini && window.V2Map?.poly?.getBounds?.().pad(0.5).contains([ini.lat, ini.lon]);
-      // Sale de donde esta el robot (la entrada del lote) y visita los cuadros mas debiles, siempre al mas cercano.
-      const pb = window.V2Map?.poly?.getBounds?.();
-      const entrada = enTerreno ? [ini.lat, ini.lon] : pb ? [pb.getSouth(), pb.getWest()] : null;
-      let cur = entrada || [bajos[0]?.c.lat, bajos[0]?.c.lon];
-      const orden = [], resto = [...bajos];
-      while (resto.length) {
-        resto.sort((a, b) => Math.hypot(a.c.lat - cur[0], a.c.lon - cur[1]) - Math.hypot(b.c.lat - cur[0], b.c.lon - cur[1]));
-        const x = resto.shift(); orden.push(x); cur = [x.c.lat, x.c.lon];
+      const dist = (p, q) => { const k = Math.PI / 180, x = (q[1] - p[1]) * k * Math.cos((p[0] + q[0]) / 2 * k), y = (q[0] - p[0]) * k; return Math.hypot(x, y) * 6371000; };
+      // Paradas: los cuadros más débiles, pero separados al menos SEP m para no muestrear dos veces el mismo manchón.
+      const lado = r.celdas[0].lado_m || 10, SEP = Math.max(60, lado * 6);
+      const bajos = [];
+      for (const x of r.celdas.map((c, i) => ({ c, i, p: [c.lat, c.lon] })).filter(x => x.c.ndvi != null).sort((a, b) => a.c.ndvi - b.c.ndvi)) {
+        if (bajos.every(y => dist(x.p, y.p) >= SEP)) bajos.push(x);
+        if (bajos.length === n) break;
       }
+      // Sale de donde está el robot si está en el lote; si no, de la esquina suroeste (la entrada).
+      const ini = window.V2Robot?.rutaPuntos?.slice(-1)[0];
+      const enTerreno = ini && window.V2Map?.poly?.getBounds?.().pad(0.05).contains([ini.lat, ini.lon]);
+      const pb = window.V2Map?.poly?.getBounds?.();
+      const entrada = enTerreno ? [ini.lat, ini.lon] : pb ? [pb.getSouth(), pb.getWest()] : bajos[0]?.p;
+      // Orden: vecino más cercano y luego 2-opt sobre el circuito cerrado (salir y volver a la entrada).
+      let cur = entrada, resto = [...bajos], orden = [];
+      while (resto.length) { resto.sort((a, b) => dist(a.p, cur) - dist(b.p, cur)); const x = resto.shift(); orden.push(x); cur = x.p; }
+      const largo = (o) => [entrada, ...o.map(x => x.p), entrada].reduce((a, p, k, arr) => k ? a + dist(arr[k - 1], p) : 0, 0);
+      for (let mejora = true; mejora;) {
+        mejora = false;
+        for (let i = 0; i < orden.length - 1; i++) for (let j = i + 1; j < orden.length; j++) {
+          const o2 = [...orden.slice(0, i), ...orden.slice(i, j + 1).reverse(), ...orden.slice(j + 1)];
+          if (largo(o2) < largo(orden) - 0.5) { orden = o2; mejora = true; }
+        }
+      }
+      const vel = +(window.V2Robot?.ultimo?.velocidad) || 3;
+      const km = largo(orden) / 1000;
+      this.ultimaRuta = { paradas: orden.length, sep: Math.round(SEP), km: +km.toFixed(2), vel, min: Math.round(km / vel * 60 + orden.length * 3) };
       if (this.capaMuestreo) mp.removeLayer(this.capaMuestreo);
-      const ll = (entrada ? [entrada] : []).concat(orden.map(x => [x.c.lat, x.c.lon]));
+      const ll = [entrada, ...orden.map(x => x.p), entrada];
       this.capaMuestreo = L.layerGroup([
         L.polyline(ll, { color: "#ffffff", weight: 7, opacity: .9 }),
         L.polyline(ll, { color: "#C77700", weight: 4, dashArray: "10 8", className: "ruta-anim" }),
@@ -114,6 +128,8 @@
           .bindTooltip(`${esc(m("Parada", "Stop", "Parada"))} ${k + 1} · ${esc(m("Cuadro", "Square", "Quadro"))} #${x.i + 1} · NDVI ${x.c.ndvi.toFixed(2)}`)),
       ]).addTo(mp);
       mp.fitBounds(L.latLngBounds(ll).pad(0.35), { maxZoom: 19 });
+      const u = this.ultimaRuta;
+      window.V2.showToast?.(m(`Ruta: ${u.paradas} paradas a ${u.sep} m o más entre sí · ${u.km} km ida y vuelta · ~${u.min} min a ${u.vel} km/h (3 min por muestra)`, `Route: ${u.paradas} stops ≥ ${u.sep} m apart · ${u.km} km round trip · ~${u.min} min at ${u.vel} km/h (3 min per sample)`, `Rota: ${u.paradas} paradas a ${u.sep} m ou mais · ${u.km} km ida e volta · ~${u.min} min a ${u.vel} km/h (3 min por amostra)`), 6000);
       return orden;
     },
 

@@ -100,7 +100,10 @@ def calcular_decisiones_agronomicas_reales(clima: dict, suelo: dict, agua: dict)
     sin_datos = "Sin datos suficientes de esta parcela para justificar esta secuencia."
     just_a = hechos((agua_disp_mm, "{:.1f} mm de agua útil en el suelo"), (ph_suelo, "pH {}"),
                     (lluvia_anual_mm, "{:.0f} mm/año de lluvia"))
-    just_b = hechos((temp_max_c, "máximo mensual de {:.1f} °C reportado por NASA POWER"))
+    just_b = hechos((temp_max_c, "máxima extrema de {:.1f} °C registrada por NASA POWER"))
+    # Camino B solo tiene sentido donde llueve poco; con más de 600 mm/año el maíz no pasa sed en Iowa.
+    if lluvia_anual_mm is not None and lluvia_anual_mm >= 600:
+        just_b = f"no hace falta aquí: llueven {lluvia_anual_mm:.0f} mm al año; úsalo solo si tu lluvia baja de 600 mm"
     just_c = hechos((materia_organica, "materia orgánica de {}%"), (factor_k, "factor de erodabilidad K={}"))
 
     return {

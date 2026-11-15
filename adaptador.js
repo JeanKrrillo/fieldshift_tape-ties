@@ -48,7 +48,7 @@
       const ndvi = Math.min(0.9, Math.max(0.05, 0.3 + 1.6 * vari));
       c.ndvi = Math.round(ndvi * 1000) / 1000;
       c.sev = ndvi < 0.22 ? "alto" : ndvi < 0.30 ? "medio" : "bajo";
-      c.zona = ndvi < 0.25 ? 1 : ndvi < 0.32 ? 2 : 3;
+      c.zona = ndvi < 0.35 ? 1 : ndvi < 0.58 ? 2 : 3; // mismos cortes que la leyenda del mapa
     }
     return true;
   }
@@ -293,6 +293,15 @@
         if (bodyParsed.lang) lang = bodyParsed.lang;
       } catch (_) {}
       const qL = q.toLowerCase();
+      // Primero, las cuentas agronómicas hechas con los datos del terreno (agro.js).
+      const ag = window.V2Agro?.responder(q);
+      if (ag?.length) return mockResponse({ estado: "OK", modo: "calculo", respuesta: ag, nota: lang === "en" ? "Worked out from your field's data; guides are rules, not measurements." : lang === "pt" ? "Calculado com os dados do seu terreno; guias são regras, não medições." : "Calculado con los datos de tu terreno; las guías son reglas, no mediciones." });
+      // Si la pregunta no es de ningún tema conocido, decirlo en vez de contestar otra cosa.
+      if (!/hel|frost|gead|lluv|rain|chuv|humed|moist|umid|vient|wind|vent|calor|temperat|heat|quente/.test(qL)) {
+        return mockResponse({ estado: "OK", respuesta: [], nota: lang === "en" ? "I don't have data to answer that. I can answer about: planting date, water balance, soil, nitrogen, seed and hybrid, margin, 40-year climate, sampling route, frost, rain, moisture and wind."
+          : lang === "pt" ? "Não tenho dados para responder isso. Posso responder sobre: data de plantio, balanço de água, solo, nitrogênio, semente e híbrido, margem, clima de 40 anos, rota de amostragem, geada, chuva, umidade e vento."
+          : "No tengo datos para responder eso. Puedo responder sobre: fecha de siembra, balance de agua, suelo, nitrógeno, semilla e híbrido, margen, clima de 40 años, ruta de muestreo, helada, lluvia, humedad y viento." });
+      }
       let resItem = {
         clave: "helada",
         texto: lang === "en" ? "In the last 7 days with data, the lowest temperature was -1.36 °C (2026-11-12). Frost occurred on 2 days registered by NASA POWER."
@@ -348,7 +357,7 @@
           tipo: "medicion",
           gravedad: "info"
         };
-      } else if (/calor|temp|heat|quente/.test(qL)) {
+      } else if (/calor|temperat|heat|quente/.test(qL)) {
         resItem = {
           clave: "temperatura",
           texto: lang === "en" ? "Mean temperature over the last 7 days: 15.8 °C (high 24.5 °C, low -1.4 °C)."
