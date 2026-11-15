@@ -34,8 +34,10 @@
     init() {
       const m = L.map("v2-map", {
         worldCopyJump: true,
-        zoomControl: false
-      }).setView([41.9, -93.6], 5);
+        zoomControl: false,
+        minZoom: 12,
+        maxZoom: 19
+      }).setView([42.1045, -93.6050], 15);
 
       L.control.zoom({ position: "bottomright" }).addTo(m);
 
@@ -158,22 +160,36 @@
 
     fitBoundsSmart(bounds) {
       if (!this.map || !bounds) return;
-      const isDesk = window.innerWidth >= 1024;
+      const size = this.map.getSize();
+      const w = size.x || window.innerWidth;
+      const h = size.y || window.innerHeight;
       const snap = window.V2?.sheetSnap || "mid";
+      const isDesk = w >= 900;
+
+      let leftPad = 24, rightPad = 24, topPad = 60, botPad = 60;
       if (isDesk) {
-        const leftPad = snap === "min" ? 80 : snap === "max" ? 780 : 548;
-        this.map.fitBounds(bounds, {
-          paddingTopLeft: [leftPad, 84],
-          paddingBottomRight: [264, 48],
-          maxZoom: 17
-        });
+        // En desktop, dejar espacio para el panel lateral mid/max sin ahogar el mapa
+        const maxLeft = Math.floor(w * 0.38);
+        leftPad = snap === "min" ? 40 : Math.min(maxLeft, snap === "max" ? 460 : 340);
+        rightPad = Math.min(Math.floor(w * 0.15), 70);
+        topPad = 60;
+        botPad = 40;
       } else {
-        const botPad = snap === "min" ? 180 : 280;
-        this.map.fitBounds(bounds, {
-          paddingTopLeft: [24, 88],
-          paddingBottomRight: [24, botPad],
-          maxZoom: 17
-        });
+        leftPad = 16;
+        rightPad = 16;
+        topPad = 60;
+        botPad = snap === "min" ? 70 : Math.min(Math.floor(h * 0.38), 200);
+      }
+
+      this.map.fitBounds(bounds, {
+        paddingTopLeft: [leftPad, topPad],
+        paddingBottomRight: [rightPad, botPad],
+        maxZoom: 17
+      });
+
+      // GARANTÍA: el zoom siempre debe enfocar la parcela de cerca (entre 14 y 17)
+      if (this.map.getZoom() < 14) {
+        this.map.setZoom(15);
       }
     },
 

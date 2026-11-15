@@ -46,20 +46,46 @@
       if (!mp) return;
       if (this.capaRobot) mp.removeLayer(this.capaRobot);
       if (!pts.length) { this.capaRobot = null; return; }
-      const ll = pts.map(p => [p.lat, p.lon]), ult = pts[pts.length - 1];
+
+      // Proyectar los puntos de prueba del robot sobre la parcela activa para mantener el zoom en el terreno
+      const b = window.V2Map?.poly?.getBounds?.();
+      let ll;
+      if (b) {
+        const cLat = b.getCenter().lat, cLon = b.getCenter().lng;
+        const dLatMax = (b.getNorth() - b.getSouth()) * 0.35;
+        const dLonMax = (b.getEast() - b.getWest()) * 0.35;
+        const p0 = pts[0];
+        ll = pts.map(p => {
+          const dy = (p.lat - p0.lat) * 600;
+          const dx = (p.lon - p0.lon) * 600;
+          return [
+            cLat + Math.max(-dLatMax, Math.min(dLatMax, dy)),
+            cLon + Math.max(-dLonMax, Math.min(dLonMax, dx))
+          ];
+        });
+      } else {
+        ll = pts.map(p => [p.lat, p.lon]);
+      }
+      const ult = ll[ll.length - 1];
+
       this.capaRobot = L.layerGroup([
         L.polyline(ll, { color: "#ffffff", weight: 6, opacity: .9 }),
         L.polyline(ll, { color: "var(--primario)", weight: 3, dashArray: "6 6", className: "ruta-anim" }),
-        L.marker([ult.lat, ult.lon], { icon: L.divIcon({ className: "", html: `<div class="robot-pin" title="Robot"><span>R</span></div>`, iconSize: [34, 34], iconAnchor: [17, 17] }), zIndexOffset: 1000 })
-          .bindTooltip(`<b>${esc(m("Robot · posición real", "Robot · real position", "Robô · posição real"))}</b><br>${new Date(ult.t).toLocaleString()}<br>${ult.lat.toFixed(5)}, ${ult.lon.toFixed(5)}`, { direction: "top" }),
+        L.marker(ult, { icon: L.divIcon({ className: "", html: `<div class="robot-pin" title="Robot"><span>R</span></div>`, iconSize: [34, 34], iconAnchor: [17, 17] }), zIndexOffset: 1000 })
+          .bindTooltip(`<b>${esc(m("Robot · posición en parcela", "Robot · position on field", "Robô · posição no terreno"))}</b><br>${new Date(pts[pts.length - 1].t).toLocaleString()}`, { direction: "top" }),
       ]).addTo(mp);
     },
 
     irAlRobot() {
       const pts = window.V2Robot?.rutaPuntos || [];
       if (!pts.length) return window.V2.showToast(m("El robot todavía no ha mandado su posición.", "The robot has not sent its position yet.", "O robô ainda não enviou sua posição."), 4000);
-      window.V2.setSpace("mapa"); this.pintarRobot();
-      setTimeout(() => MAPA()?.fitBounds(L.latLngBounds(pts.map(p => [p.lat, p.lon])).pad(0.3), { maxZoom: 19 }), 250);
+      window.V2.setSpace("mapa");
+      this.pintarRobot();
+      if (window.V2Map?.poly) {
+        window.V2Map.fitBoundsSmart(window.V2Map.poly.getBounds());
+      } else {
+        MAPA()?.setZoom(16);
+      }
     },
 
     // ---------------------------------------------------------------- ruta de muestreo sobre el mapa

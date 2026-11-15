@@ -422,6 +422,7 @@
         await this.esperar(800);
         window.V2Map.map.zoomOut(1);
         await this.esperar(700);
+        if (window.V2Map.map.getZoom() < 14) window.V2Map.map.setZoom(15);
       }
 
       // Filtro de 3 Zonas
@@ -446,6 +447,7 @@
       const rCenter = window.V2Map?.poly?.getBounds?.().getCenter?.();
       if (rCenter && window.V2Map?.map) {
         window.V2Map.map.panTo(rCenter, { animate: true, duration: 0.8 });
+        if (window.V2Map.map.getZoom() < 14) window.V2Map.map.setZoom(15);
         const mp = window.V2Map.map, p = mp.latLngToContainerPoint(rCenter), b = mp.getContainer().getBoundingClientRect();
         await this.mover(b.left + p.x, b.top + p.y);
       }
