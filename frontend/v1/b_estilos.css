@@ -1,0 +1,379 @@
+/* ==========================================================================
+   Cápsula B (Antigravity) — Estilos de Producto, Accesibilidad y Celular (390px)
+   ========================================================================== */
+
+body[data-theme="dark"] {
+  --bg: #141815;
+  --card: #1c221e;
+  --ink: #e8ede9;
+  --mut: #9aa6a0;
+  --line: #2f3832;
+  --water: #5aaaf0;
+  --soil: #e0a53a;
+  --crop: #6cc070;
+  --sat: #b48ae8;
+  --bad: #ef7a6c;
+}
+body[data-theme="light"] {
+  --bg: #f3f6f1;
+  --card: #ffffff;
+  --ink: #1d2421;
+  --mut: #5b6660;
+  --line: #dfe4df;
+  --water: #1b6fb5;
+  --soil: #b9770e;
+  --crop: #2e7d32;
+  --sat: #6b3fa0;
+  --bad: #c0392b;
+}
+
+/* Regla global para que ningún display:flex/grid pise al atributo HTML hidden */
+[hidden], .b-modal-bg[hidden], .b-tour-bar[hidden] {
+  display: none !important;
+}
+
+/* Foco de teclado accesible (Área 42) */
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visible {
+  outline: 3px solid var(--water);
+  outline-offset: 2px;
+}
+
+/* Pantalla de bienvenida rápida (Área 1) */
+.b-welcome {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.12), rgba(27, 111, 181, 0.10));
+  border: 1px solid var(--crop);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.b-welcome h1 {
+  font-size: 17px;
+  margin: 0 0 4px;
+}
+.b-welcome p {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+}
+
+/* Recorrido guiado de 5 pasos (Área 2) */
+.b-tour-bar {
+  background: var(--sat);
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+.b-tour-bar button {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 4px 10px;
+  font-size: 12.5px;
+}
+.b-tour-bar button.pri {
+  background: #fff;
+  color: #222;
+  font-weight: 700;
+}
+.b-tour-highlight {
+  box-shadow: 0 0 0 3px var(--sat) !important;
+  transition: box-shadow 0.25s ease;
+}
+
+/* Tarjetas de 6 ejemplos listos con polígono (Área 3) */
+.b-cases, .b-cases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+  margin: 8px 0;
+}
+.b-cases button, .b-case-btn {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.3;
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.b-cases button:hover, .b-case-btn:hover {
+  border-color: var(--crop);
+}
+.b-cases button b, .b-case-btn b {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.b-cases button small, .b-case-btn span {
+  display: block;
+  color: var(--mut);
+  font-size: 11px;
+}
+.b-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(46, 125, 50, 0.18);
+  color: var(--crop);
+  margin-bottom: 6px;
+}
+.b-actions, .b-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.b-btn-sm {
+  padding: 4px 9px;
+  font-size: 12.5px;
+  border-radius: 8px;
+}
+.b-progress-wrap {
+  width: 100%;
+  height: 7px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.b-progress-bar {
+  height: 100%;
+  background: var(--crop);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+.b-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.b-dot.ok { background: var(--crop); }
+.b-dot.warn { background: var(--soil); }
+.b-dot.bad { background: var(--bad); }
+.b-metric {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 12px;
+}
+.b-time-bar, .b-chart-wrap {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin: 8px 0;
+}
+.b-svg-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 4px;
+}
+.b-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.b-cal-year {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+}
+.b-cal-phase {
+  display: block;
+  padding: 4px 7px;
+  border-radius: 6px;
+  font-size: 11.5px;
+}
+
+/* Resumen de 5 segundos del terreno por semáforos (Área 15) */
+.b-sem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 8px 0;
+}
+.b-sem-box {
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--crop);
+  border-radius: 10px;
+  padding: 8px;
+  background: var(--bg);
+  font-size: 12.5px;
+}
+.b-sem-box.warn { border-top-color: var(--soil); }
+.b-sem-box.bad  { border-top-color: var(--bad); }
+.b-sem-box h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+.b-sem-box .kv {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--line);
+  padding: 2px 0;
+}
+
+/* Línea de tiempo de 12 semanas y cortina comparadora (Áreas 7 y 8) */
+.b-map-tools {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.b-curtain-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #ffd200;
+  z-index: 650;
+  pointer-events: none;
+  box-shadow: 0 0 6px rgba(0,0,0,0.6);
+}
+
+/* Tabla comparativa lado a lado y calendario 3 años (Áreas 25 y 26) */
+.b-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 8px 0;
+}
+.b-rot-cal {
+  display: grid;
+  grid-template-columns: 90px repeat(12, minmax(22px, 1fr));
+  gap: 2px;
+  font-size: 11px;
+  margin: 6px 0;
+}
+.b-rot-cal div {
+  padding: 4px 2px;
+  text-align: center;
+  border-radius: 4px;
+}
+.b-cal-sow { background: var(--water); color: #fff; }
+.b-cal-grow { background: var(--crop); color: #fff; }
+.b-cal-harv { background: var(--soil); color: #fff; }
+.b-cal-cov { background: var(--sat); color: #fff; }
+.b-cal-bare { background: var(--bad); color: #fff; }
+
+/* Glosario flotante (Área 45) */
+.b-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.b-modal {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 82vh;
+  overflow: auto;
+  padding: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Etiqueta de fuente y fecha obligatoria (Regla de oro #1 y Área 24) */
+.b-src-tag {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--mut);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-left: 4px;
+}
+
+/* Barra móvil táctil para pantallas pequeñas <= 900px / 390px (Área 14) */
+.b-mob-bar {
+  display: none;
+}
+@media (max-width: 900px) {
+  header {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  header .brand {
+    font-size: 16px;
+  }
+  input, select, button {
+    padding: 6px 9px;
+    font-size: 14px;
+  }
+  .grid2, .b-sem-grid {
+    grid-template-columns: 1fr;
+  }
+  .mappanel {
+    width: 220px;
+    font-size: 11.5px;
+    max-height: 36vh;
+    overflow: auto;
+  }
+  .b-mob-bar {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    z-index: 1200;
+    background: var(--card);
+    border-top: 2px solid var(--line);
+    padding: 6px 8px;
+    gap: 6px;
+    justify-content: space-around;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.12);
+  }
+  .b-mob-bar button {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  body.b-mob-maponly #side, body.b-mob-map-full #side {
+    display: none;
+  }
+  body.b-mob-maponly #mapcol, body.b-mob-map-full #mapcol {
+    height: calc(100vh - 102px);
+  }
+}
+
+@media print {
+  header, #mapcol, .b-mob-bar, .b-tour-bar {
+    display: none !important;
+  }
+  #app {
+    display: block !important;
+    height: auto !important;
+  }
+  #side {
+    overflow: visible !important;
+    border: 0 !important;
+  }
+}
+

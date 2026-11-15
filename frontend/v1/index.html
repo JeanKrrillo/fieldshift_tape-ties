@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Field Shift</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+<link rel="stylesheet" href="b_estilos.css">
+<style>
+:root{--bg:#f3f6f1;--card:#fff;--ink:#1d2421;--mut:#5b6660;--line:#dfe4df;--water:#1b6fb5;--soil:#b9770e;--crop:#2e7d32;--sat:#6b3fa0;--bad:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#141815;--card:#1c221e;--ink:#e8ede9;--mut:#9aa6a0;--line:#2f3832;--water:#5aaaf0;--soil:#e0a53a;--crop:#6cc070;--sat:#b48ae8;--bad:#ef7a6c}}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--card)}
+header .brand{font-size:19px;font-weight:700;color:var(--crop)}
+input,select,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 12px}
+button{cursor:pointer}button.on{background:var(--crop);color:#fff;border-color:var(--crop)}button.pri{background:var(--crop);color:#fff;border-color:var(--crop);font-weight:600}
+#app{display:grid;grid-template-columns:minmax(380px,470px) 1fr;height:calc(100vh - 54px)}
+#side{overflow:auto;padding:12px;border-right:1px solid var(--line)}
+#mapcol{position:relative}#emap{position:absolute;inset:0}
+@media(max-width:900px){#app{grid-template-columns:1fr;height:auto}#side{max-height:none;border:0}#mapcol{height:60vh;order:-1}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card h2{font-size:17px;margin:0 0 8px}.card h2.sub{margin-top:16px}
+.mut{color:var(--mut)}.small{font-size:13px}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.step{display:inline-block;background:var(--crop);color:#fff;border-radius:99px;width:24px;height:24px;text-align:center;line-height:24px;font-size:14px;margin-right:6px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;background:var(--mut)}
+.ok{background:var(--crop)}.error{background:var(--bad)}.pending,.nocov{background:var(--soil)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 9px;margin:2px 4px 2px 0;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tl{display:inline-block;padding:3px 12px;border-radius:99px;color:#fff;font-weight:600}
+.VERDE{background:var(--crop)}.AMARILLO{background:var(--soil)}.ROJO{background:var(--bad)}.SIN_DATO{background:var(--mut)}
+.strat{border-left:6px solid var(--crop);background:var(--bg);border-radius:0 10px 10px 0;padding:10px 12px;margin:10px 0}.strat.match{background:rgba(46,125,50,.12)}.strat.base{border-color:var(--soil)}
+body[data-mode=farmer] .tech,body[data-mode=farmer] .sci,body[data-mode=agronomist] .sci{display:none}
+pre{max-height:320px;overflow:auto;background:var(--bg);padding:8px;border-radius:8px;font-size:12px}
+#loading{display:none;padding:8px 12px;border-radius:10px;background:var(--sat);color:#fff;margin:8px 0}
+#msg{color:var(--bad)}svg text{fill:var(--mut);font-size:10px}
+body:not([data-view=terreno]) #pane-terreno,body:not([data-view=catalogo]) #pane-catalogo,body:not([data-view=recoleccion]) #pane-recoleccion{display:none}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.tabs button{padding:8px 14px;font-weight:600;border-radius:99px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0}
+.tile{border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;background:var(--bg)}
+.tile .ic{font-size:22px;line-height:1}.tile .big{font-size:26px;font-weight:700;line-height:1.15;margin-top:4px}.tile .big small{font-size:13px;font-weight:500;color:var(--mut)}
+.tile .lb{font-size:12px;color:var(--mut)}.tile.na .big{font-size:15px;color:var(--mut);font-weight:500}
+.hero{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.hero .tl{font-size:18px;padding:6px 18px}.hero p{margin:0;flex:1;min-width:180px;font-size:15px}
+.months{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin:8px 0}
+.months div{text-align:center;border-radius:8px;padding:6px 0;color:#fff;font-size:12px;font-weight:600}
+.months .ok{background:var(--crop)}.months .maybe{background:var(--soil)}.months .sure{background:var(--bad)}.months .na{background:var(--line);color:var(--mut)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--mut);margin:6px 0}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+.badge{display:inline-block;border-radius:99px;padding:3px 11px;margin:3px 5px 3px 0;font-size:13px;font-weight:600;background:var(--line);color:var(--ink)}
+.badge.good{background:var(--crop);color:#fff}.badge.bad{background:var(--bad);color:#fff}
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px}
+.day{border:1px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center;background:var(--bg)}
+.day .t{font-size:22px;font-weight:700}.day .d{font-size:12px;color:var(--mut)}.day .bar{height:6px;border-radius:3px;background:var(--water);margin:8px auto 2px}
+.price{border-left:6px solid var(--soil)}
+details{border-top:1px solid var(--line);padding:8px 0}summary{cursor:pointer;padding:4px 0}
+.lrow{display:flex;gap:8px;align-items:flex-start;padding:6px 2px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.lrow span small{display:block;color:var(--mut);font-size:12px;word-break:break-all}.lrow input{margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.chips button{padding:4px 10px;font-size:13px;border-radius:99px}
+.act{padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}.act input[type=range]{flex:1}.act button{padding:2px 8px}
+.leaflet-popup-content button{background:var(--crop);color:#fff;border:0;margin-top:6px;cursor:pointer}
+.frow{margin:6px 0}.badges{margin:3px 0}.bd{display:inline-block;border-radius:6px;padding:1px 7px;margin:2px 4px 2px 0;font-size:11.5px;font-weight:600;background:var(--line);color:var(--ink)}
+.bd.alta,.bd.live,.bd.vis-ok{background:var(--crop);color:#fff}.bd.media{background:var(--soil);color:#fff}.bd.baja,.bd.hist{background:var(--mut);color:#fff}.bd.vis-empty,.bd.vis-none{background:var(--bad);color:#fff}.bd.vis-unk{background:transparent;border:1px dashed var(--mut);color:var(--mut)}
+.gd{margin-top:4px;border:0;padding:0}.gd summary{font-size:12px;color:var(--water)}.gd dl{margin:4px 0;font-size:12px}.gd dt{font-weight:600;color:var(--mut);margin-top:3px}.gd dd{margin:0;word-break:break-word}
+.gl{cursor:default}.gl label{cursor:pointer}
+/* capas útiles */
+.ul{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}.ul input{margin-top:5px}.ul b{font-size:15px}.ul .q{font-size:13.5px}
+.ul details{border:0;padding:0;margin-top:3px}.ul details summary{font-size:12.5px;color:var(--water)}.ul .ex{font-size:13px;margin:4px 0}.ul .ex b{font-size:13px}
+.st{display:block;font-size:12px;color:var(--bad)}
+/* datos dentro del mapa */
+.mappanel{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px;width:290px;box-shadow:0 2px 8px rgba(0,0,0,.25);font-size:13px}
+.mappanel .tiles{grid-template-columns:repeat(3,1fr);gap:6px}.mappanel .tile{padding:6px 2px}.mappanel .tile .big{font-size:18px}.mappanel .tile .lb{font-size:11px}.mappanel .hero p{font-size:12.5px}.mappanel .hero .tl{font-size:14px;padding:3px 12px}
+.mappanel h4{margin:0 0 6px;font-size:13px}.mappanel .x{float:right;cursor:pointer;border:0;padding:0 6px}
+.maplegend{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.maplegend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-3px}
+.simtag{background:var(--soil);color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600}
+</style>
+</head>
+<body data-mode="farmer" data-view="terreno">
+<header>
+  <span class="brand">🌾 Field Shift</span>
+  <span class="row" id="nav"></span>
+  <span style="flex:1"></span>
+  <span class="row" id="langs"></span>
+  <select id="mode"></select>
+</header>
+<div id="app">
+  <aside id="side">
+    <div class="card" id="c_active"><details open style="border:0;padding:0"><summary><b id="exactive_h"></b></summary>
+      <label class="small mut" style="display:block;margin:6px 0"><span id="exdate_l"></span> <input type="date" id="exdate"></label>
+      <div class="small mut" id="exdate_h"></div><div id="exactive"></div></details></div>
+
+    <div id="pane-terreno">
+      <div class="card"><h2><span class="step">1</span><span data-t="s1"></span></h2>
+        <p class="small" id="locstat"></p>
+        <div class="row"><button id="btn_gps" class="pri"></button><button id="btn_sim"></button></div>
+        <div id="simbox" hidden style="margin-top:10px">
+          <p class="small mut" data-t="sim_hint"></p>
+          <div class="row" id="pilots"></div>
+          <div class="row" style="margin-top:8px"><input id="q" maxlength="100" style="flex:1"><button id="go" data-i18n="search"></button></div>
+        </div>
+        <div id="loading" data-i18n="loading"></div><p id="msg" class="small" hidden></p><span id="coords" class="small mut"></span>
+      </div>
+
+      <div class="card"><h2><span class="step">2</span><span data-t="s2"></span></h2>
+        <p class="small mut" data-t="s2_hint"></p>
+        <div class="row"><button id="btn_draw" class="pri"></button><button id="btn_clear"></button>
+          <label class="small mut"><span data-t="cells"></span> <select id="cellsel"><option>9</option><option>16</option><option selected>25</option><option>36</option><option>64</option></select></label></div>
+        <p class="small" id="terstat" style="margin:8px 0 0"></p>
+      </div>
+
+      <div class="card" id="farm"><h2><span class="step">3</span><span data-i18n="constraints"></span></h2><div class="grid2" id="constraints"></div>
+        <p class="small mut" data-i18n="assist"></p></div>
+
+      <div class="card"><h2><span class="step">4</span><span data-t="s4"></span></h2><p class="small mut" data-t="s4_hint"></p><div id="useful"></div></div>
+
+      <div class="card" id="c_res"><h2><span class="step">5</span><span data-t="s5"></span></h2><p class="small mut" id="resnone" data-t="res_none"></p>
+        <div id="out" hidden>
+          <div id="hero" style="margin-bottom:10px"></div>
+          <div class="tabs" id="tabs"></div>
+          <div id="tab_today"></div><div id="tab_season" hidden></div><div id="tab_long" hidden></div>
+          <div id="tab_src" hidden>
+            <h2 data-i18n="sources"></h2><div id="status"></div>
+            <button class="sci" id="jsonbtn" data-i18n="viewjson"></button><pre class="sci" id="json" hidden></pre>
+            <div id="harm"></div><div id="gaps"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="pane-recoleccion"></div>
+    <div id="pane-catalogo">
+      <div class="card">
+        <h1 id="extitle" style="font-size:22px;margin:0 0 4px"></h1><p id="exsub" class="mut" style="margin:0 0 8px"></p>
+        <p id="exguide" class="small" style="background:var(--bg);padding:8px 10px;border-radius:8px;margin:0 0 12px"></p>
+        <input id="exq" style="width:100%" maxlength="80">
+      </div>
+      <div class="card" id="exlists"></div>
+    </div>
+  </aside>
+  <section id="mapcol"><div id="emap"></div></section>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="app.js"></script>
+<script src="explorer.js"></script>
+<script src="terreno.js"></script>
+<script src="b_mejoras.js"></script>
+</body>
+</html>

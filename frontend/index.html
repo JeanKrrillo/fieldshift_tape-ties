@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es" data-theme="light" translate="no" class="notranslate">
+<head>
+  <meta charset="utf-8">
+  <meta name="google" content="notranslate">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Field Shift · Libreta de campo con satélite</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+  <link rel="stylesheet" href="estilos.css?v=4.4">
+</head>
+<body data-mode="farmer" data-theme="light">
+  <div id="v2-shell">
+    <!-- Navegación de 3 espacios (barra lateral en escritorio / inferior en celular) -->
+    <nav id="v2-nav" aria-label="Espacios principales"></nav>
+
+    <!-- Escenario principal: El mapa es la casa -->
+    <main id="v2-stage">
+      <div id="v2-map" role="region" aria-label="Mapa satelital interactivo"></div>
+      <div id="v2-curtain-divider" hidden></div>
+
+      <!-- Barra superior flotante: Buscador + Selector de idioma siempre visible -->
+      <header id="v2-topbar"></header>
+
+      <!-- Botones de acción flotantes sobre el mapa -->
+      <div id="v2-map-fabs"></div>
+
+      <!-- Leyenda del mapa (forma + color + etiqueta) -->
+      <aside id="v2-map-legend" hidden aria-label="Leyenda de cuadrícula"></aside>
+
+      <!-- Hoja inferior de 3 alturas (Pantallas 2, 3, 4 y 5) -->
+      <section id="v2-sheet" data-snap="mid" aria-label="Panel del lugar y terreno">
+        <div class="sheet-handle-bar" id="v2-sheet-handle">
+          <span class="xs mut" style="font-weight:600">Panel</span>
+          <div class="sheet-pill-grab" aria-hidden="true"></div>
+          <div class="row-wrap" style="gap:4px">
+            <button type="button" class="btn btn-txt btn-sm" data-sheet-snap="min" aria-label="Minimizar hoja">Bajo</button>
+            <button type="button" class="btn btn-txt btn-sm" data-sheet-snap="mid" aria-label="Altura media">Medio</button>
+            <button type="button" class="btn btn-txt btn-sm" data-sheet-snap="max" aria-label="Expandir hoja">Alto</button>
+          </div>
+        </div>
+        <div class="sheet-tabs" id="v2-sheet-tabs" role="tablist"></div>
+        <div class="sheet-body" id="v2-sheet-body"></div>
+      </section>
+
+      <!-- Espacio 1: Inicio (Cuadrícula, lecturas del robot, crudo CSV, lado a lado, estadísticas) -->
+      <section id="v2-ws-inicio" class="v2-workspace" hidden aria-label="Inicio y tablero del terreno"></section>
+
+      <!-- Espacio 2: Robot (Mapa de ruta, estado, misiones, importar CSV/Excel con token, historial) -->
+      <section id="v2-ws-robot" class="v2-workspace" hidden aria-label="Robot y misiones de muestreo"></section>
+
+      <!-- Espacio 3: Datos de la región (Clima, pronóstico, 40 años, balance agua, suelo, capas) -->
+      <section id="v2-ws-region" class="v2-workspace" hidden aria-label="Datos de la región y clima"></section>
+
+      <!-- Espacio 4: Recomendaciones (Hoy, semana, temporada, largo plazo, IA acierto 77.7%) -->
+      <section id="v2-ws-recom" class="v2-workspace" hidden aria-label="Recomendaciones y rotación"></section>
+
+      <!-- Espacio 5: Conceptos (17 conceptos explicados en 5 preguntas con buscador) -->
+      <section id="v2-ws-conceptos" class="v2-workspace" hidden aria-label="Conceptos agronómicos"></section>
+
+      <!-- Compatibilidad retroactiva (Decidir y Datos) -->
+      <section id="v2-ws-decidir" class="v2-workspace" hidden aria-label="Decidir qué sembrar"></section>
+      <section id="v2-ws-datos" class="v2-workspace" hidden aria-label="Datos, clima, suelo, IA y catálogo"></section>
+    </main>
+  </div>
+
+  <!-- Ventana modal (Pantalla 1 Cuenta, Bienvenida, Ubicación, Emparejar, Alertas, Ajustes, Glosario) -->
+  <div id="v2-modal-backdrop" class="modal-backdrop" hidden></div>
+
+  <!-- Progreso no bloqueante y avisos (Toasts) -->
+  <div id="v2-toast-progress" role="status" aria-live="polite" hidden></div>
+
+  <!-- Barra de recorrido guiado -->
+  <div id="v2-tour-bar" role="dialog" aria-label="Recorrido guiado" hidden></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <script src="iconos.js?v=4.4"></script>
+  <script src="i18n.js?v=4.4"></script>
+  <script src="adaptador.js?v=4.4"></script>
+  <script src="cuenta.js?v=4.4"></script>
+  <script src="ubicacion.js?v=4.4"></script>
+  <script src="emparejar.js?v=4.4"></script>
+  <script src="robot.js?v=4.4"></script>
+  <script src="alertas.js?v=4.4"></script>
+  <script src="conceptos.js?v=4.4"></script>
+  <script src="mapa.js?v=4.4"></script>
+  <script src="pantallas.js?v=4.4"></script>
+  <script src="si.js?v=4.4"></script>
+  <script src="app.js?v=4.4"></script>
+  <script src="vivo.js?v=4.4"></script>
+  <script src="campo_vivo.js?v=4.4"></script>
+  <script src="demo.js?v=4.4"></script>
+</body>
+</html>
+

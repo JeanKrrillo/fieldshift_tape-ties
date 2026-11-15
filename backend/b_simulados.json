@@ -1,0 +1,97 @@
+{
+  "_aviso_obligatorio": "Fichas de los modelos que la interfaz muestra. Las cifras de M1 (acierto, línea base, por clase) no se escriben aquí: b_rutas.py las lee de privado/datos/metricas_modelo_final.json, que es lo que midió la prueba. El nombre del archivo viene de una etapa anterior; ya no contiene datos simulados.",
+  "modelos_fichas": [
+    {
+      "id": "M1",
+      "nombre": {
+        "es": "Clasificador de cultivo por punto, varios años y zonas (Sentinel-2 + CDL)",
+        "en": "Point crop classifier, multi-year and multi-region (Sentinel-2 + CDL)",
+        "pt": "Classificador de cultura por ponto, vários anos e regiões (Sentinel-2 + CDL)"
+      },
+      "tipo": "Supervisado (gradient boosting, HistGradientBoosting, sobre 5 índices (NDVI, NDMI, NDRE, EVI, NBR) en 10 fechas)",
+      "etiqueta_fuente": "USDA NASS Cropland Data Layer (CDL 2018-2021; es un mapa modelado, no verdad de campo)",
+      "entradas": "hasta 10 fechas de Sentinel-2 L2A (10 m, 10 bandas) entre finales de mayo y finales de septiembre",
+      "region_entrenamiento": "Iowa, Illinois, Nebraska y Minnesota, EE. UU. (2018-2021)",
+      "validacion": "Cada año (2018-2021) se predice con un modelo entrenado en los otros tres, en zonas de 25 km que no vio y con 5 km de separación. Por año: 2018 75.7 %, 2019 73.6 %, 2020 78.2 %, 2021 83.1 %. Por zona: Iowa 73.9 %, Illinois 80.1 %, Minnesota 77.8 %, Nebraska 82.5 %. En maíz contra soya acierta 86.6 %. Prueba extra: entrenado solo con Iowa y sin el año evaluado, acierta 77.6 % en Illinois, Nebraska y Minnesota, que nunca vio. Controles (hechos con Iowa): con etiquetas mezcladas cae a 33 % y con solo los huecos de datos a 18 % (azar).",
+      "referencia_explicacion": "Decir siempre la clase mayoritaria (maíz, alrededor de 41 %)",
+      "clases": [
+        "maiz",
+        "soya",
+        "pastizal",
+        "bosque",
+        "urbano",
+        "otro"
+      ],
+      "estado": "ACTIVO",
+      "limites": "Medido solo en Iowa, Illinois, Nebraska y Minnesota (6 clases). Pastizal y 'otro' fallan mucho porque la etiqueta CDL ya es floja ahí. Es una predicción, no una medición: confirmar siempre en campo."
+    },
+    {
+      "id": "M3",
+      "nombre": {
+        "es": "Clasificador multimodal (Sentinel-2 + MODIS + Suelo SSURGO + Elevación + Radar S1)",
+        "en": "Multimodal crop classifier (S2 + MODIS + SSURGO + DEM + S1 Radar)",
+        "pt": "Classificador multimodal (S2 + MODIS + SSURGO + DEM + Radar S1)"
+      },
+      "tipo": "Supervisado multimodal",
+      "etiqueta_fuente": "USDA CDL + ESA WorldCover",
+      "entradas": "NDVI, LST, LAI, ET MODIS, pendiente Copernicus 30 m, pH y arcilla SSURGO",
+      "region_entrenamiento": "Medio Oeste de EE. UU.",
+      "validacion": "Sin acierto medido todavía",
+      "acierto_medido_pct": null,
+      "referencia_base_pct": 40.7,
+      "estado": "NO_DISPONIBLE",
+      "limites": "No se usa en la app: hay datos recolectados pero ningún acierto medido que mostrar."
+    },
+    {
+      "id": "M7",
+      "nombre": {
+        "es": "Zonas de manejo intraparcelario (Agrupamiento sin supervisión)",
+        "en": "In-field management zones (Unsupervised clustering)",
+        "pt": "Zonas de manejo intratalhão (Agrupamento não supervisionado)"
+      },
+      "tipo": "No supervisado (Cuantiles / k-means sobre vigor NDVI real de la cuadrícula)",
+      "etiqueta_fuente": "Ninguna (agrupa celdas medidas de Sentinel-2 a 10 m)",
+      "entradas": "NDVI promedio de 9 muestras por celda y variabilidad espacial del terreno",
+      "region_entrenamiento": "Calculado en vivo sobre el polígono dibujado",
+      "validacion": "Separación estadística entre zonas de vigor Bajo, Medio y Alto",
+      "acierto_medido_pct": null,
+      "referencia_base_pct": null,
+      "estado": "ACTIVO",
+      "limites": "Agrupación orientativa sobre una escena sin nubes; requiere muestreo de suelo en campo."
+    },
+    {
+      "id": "M8",
+      "nombre": {
+        "es": "Detector de cuadros anómalos en el terreno",
+        "en": "In-field anomalous cell detector",
+        "pt": "Detector de quadros anômalos no terreno"
+      },
+      "tipo": "No supervisado (Desviación estándar z-score sobre la cuadrícula Sentinel-2)",
+      "etiqueta_fuente": "Ninguna (comparación contra la media y desviación del propio lote)",
+      "entradas": "NDVI de cada celda de la cuadrícula del terreno",
+      "region_entrenamiento": "Calculado en vivo sobre el polígono dibujado",
+      "validacion": "Umbral |z| >= 1.2 o NDVI < 0.30 (suelo descubierto)",
+      "acierto_medido_pct": null,
+      "referencia_base_pct": null,
+      "estado": "ACTIVO",
+      "limites": "Detecta manchas atípicas (encharcamiento, falla de siembra o maleza), pero no diagnostica la causa exacta sin ir al campo."
+    },
+    {
+      "id": "M12",
+      "nombre": {
+        "es": "Inspección visual de hoja / plagas por foto",
+        "en": "Leaf visual inspection / pest photo classifier",
+        "pt": "Inspeção visual de folha / pragas por foto"
+      },
+      "tipo": "Visión por computadora (Provisional: índice cromático de clorofila/necrosis en navegador)",
+      "etiqueta_fuente": "Pendiente de entrenamiento con dataset externo en Cápsula C",
+      "entradas": "Fotografía RGB subida por el agricultor",
+      "region_entrenamiento": "No entrenado aún",
+      "validacion": "Pendiente",
+      "acierto_medido_pct": null,
+      "referencia_base_pct": null,
+      "estado": "SIN_MODELO",
+      "limites": "AVISO HONESTO: El clasificador neuronal de plagas aún no está entrenado. Solo mide proporción de píxeles verdes, amarillos (clorosis) y cafés (necrosis) en la imagen subida."
+    }
+  ]
+}
