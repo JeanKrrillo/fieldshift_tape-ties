@@ -23,9 +23,9 @@
 
     // Configurador de duración
     duraciones: {
-      "30s": { factor: 5.2, limite: 36000, label: "30s" },
-      "90s": { factor: 2.1, limite: 96000, label: "90s" },
-      "3m":  { factor: 1.0, limite: 185000, label: "3 min" },
+      "30s": { factor: 5.2, limite: 36000, label: "Rápida" },
+      "90s": { factor: 2.1, limite: 96000, label: "Normal" },
+      "3m":  { factor: 1.0, limite: 185000, label: "Lenta" },
     },
     duracionActiva: sessionStorage.getItem("fs_demo_duracion") || "90s",
 
@@ -306,7 +306,7 @@
       const mp = window.V2Map.map, cs = window.V2.terrainResp.celdas, c0 = window.V2Map.poly.getBounds().getCenter();
       const idx = cs.reduce((a, c, i) => (Math.hypot(c.lat - c0.lat, c.lon - c0.lng) < Math.hypot(cs[a].lat - c0.lat, cs[a].lon - c0.lng) ? i : a), 0);
       const p = mp.latLngToContainerPoint([cs[idx].lat, cs[idx].lon]), b = mp.getContainer().getBoundingClientRect();
-      this.decir("Click one square: its data opens right on the map");
+      this.decir(this.t("Toco un cuadro: sus datos se abren ahí mismo en el mapa", "I tap a square: its data opens right on the map", "Toco um quadro: seus dados abrem ali mesmo no mapa"));
       await this.mover(b.left + p.x, b.top + p.y);
       await this.esperar(200);
       this.pulsar();
@@ -316,12 +316,14 @@
       window.V2Vivo?.popupCelda(idx);
       this.anotar("tocar un cuadro", !!document.querySelector(".pv-popup"));
       await this.esperar(2600);
+      mp.closePopup?.();
+      document.querySelectorAll(".pv-popup").forEach(e => e.closest(".leaflet-popup")?.remove());
     },
 
     async dibujar(esquinas) {
       const M = window.V2Map, mp = M?.map;
       if (!mp) return;
-      mp.setView([(esquinas[0][0] + esquinas[2][0]) / 2, (esquinas[0][1] + esquinas[2][1]) / 2], 18, { animate: false });
+      mp.fitBounds(L.latLngBounds(esquinas).pad(0.15), { animate: false });
       if (!M.drawer) M.startDraw();
       await this.esperar(500);
       const punto = (ll) => { const p = mp.latLngToContainerPoint(ll), r = mp.getContainer().getBoundingClientRect(); return [r.left + p.x, r.top + p.y]; };
@@ -334,7 +336,7 @@
         await this.esperar(350);
       }
       const [x, y] = punto(esquinas[0]);
-      this.decir("Click the first corner again to close the shape");
+      this.decir(this.t("Toco otra vez la primera esquina para cerrar la figura", "I tap the first corner again to close the shape", "Toco de novo o primeiro canto para fechar a forma"));
       await this.mover(x, y);
       await this.esperar(150);
       this.pulsar();
@@ -343,183 +345,175 @@
       this.anotar("dibujar el terreno", !!M.poly, M.poly ? null : "no se cerró la figura");
     },
 
-    // ---------------------------------------------------------------- primera vez: crear o elegir terreno
-    async primerTerreno() {
-      // Si el terreno ya está cargado con cuadrícula en el mapa, simplemente enfocar y continuar
-      if (window.V2Map?.poly && window.V2?.terrainResp?.celdas?.length) {
-        if (window.V2.space !== "mapa") window.V2.setSpace("mapa");
-        window.V2.sheetSnap = "min"; window.V2.renderActiveViews?.();
-        window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.35), { animate: true });
-        return;
-      }
+    // ---------------------------------------------------------------- narración en el idioma de la página
+    t(es, en, pt) {
+      const l = window.V2?.lang;
+      return l === "en" ? en : l === "pt" ? pt : es;
+    },
 
-      if (!(await this.buscar("#v2-ub-search-q", 3000))) await this.clic('[data-action="abrir-ubicacion"]', "Add your field: search by town or coordinates", 1000);
-      if (!(await this.buscar("#v2-ub-search-q", 3000))) return;
-      this.decir("New user setup: define the field location");
-      await this.esperar(800);
-      await this.escribir("#v2-ub-search-q", "Ames, Iowa", "Search for the town where the field is");
-      await this.clic("#v2-btn-ub-buscar", "Search place", 500);
-      if (await this.buscar("[data-geo-pick]", 4000)) await this.clic("[data-geo-pick]", "Select the exact field coordinates", 1000);
-      await this.clic("#v2-ub-btn-draw", "Draw parcel boundary: click each corner on the map", 700);
-      await this.dibujar([[42.1049, -93.6055], [42.1049, -93.6045], [42.1041, -93.6045], [42.1041, -93.6055]]);
+    // ---------------------------------------------------------------- llegar por primera vez
+    async bienvenida() {
+      const V = window.V2;
+      if (V.modal) V.closeModal();
+      if (V.space !== "inicio") V.setSpace("inicio");
+      await this.esperar(400);
+      await this.leer("header, .topbar, #v2-topbar", this.t("Llego a Terra Lab por primera vez: una libreta de campo con datos de satélite", "First time on Terra Lab: a field notebook powered by satellite data", "Chego ao Terra Lab pela primeira vez: um caderno de campo com dados de satélite"), 1800);
+      await this.clic('[data-set-lang="en"]', "It speaks English…", 1100);
+      await this.clic('[data-set-lang="pt"]', "…fala português…", 1100);
+      await this.clic('[data-set-lang="es"]', "…y español, sin recargar la página", 1100);
+      await this.clic('[data-action="toggle-theme"]', this.t("También tiene modo oscuro para usarla de noche", "There is a dark mode for night use", "Também tem modo escuro para usar à noite"), 1200);
+      await this.clic('[data-action="toggle-theme"]', this.t("Regreso al modo claro", "Back to light mode", "Volto ao modo claro"), 800);
+    },
+
+    // ---------------------------------------------------------------- dar de alta el terreno, paso a paso
+    async primerTerreno() {
+      const V = window.V2;
+      await this.clic('[data-action="abrir-ubicacion"]', this.t("Lo primero: decirle dónde está mi terreno", "First step: tell it where my field is", "Primeiro passo: dizer onde fica meu terreno"), 1000);
+      if (!(await this.buscar("#v2-ub-search-q", 4000))) return;
+      await this.leer(".modal-card", this.t("Una sola pantalla: buscar el lugar, marcar el terreno, cultivo y nombre", "One screen: find the place, mark the field, crop and name", "Uma só tela: buscar o lugar, marcar o terreno, cultura e nome"), 1600);
+      await this.escribir("#v2-ub-search-q", "Ames, Iowa", this.t("Escribo el pueblo donde está mi parcela", "I type the town where my field is", "Escrevo a cidade onde fica meu terreno"));
+      await this.clic("#v2-btn-ub-buscar", this.t("Busco el lugar", "Search for it", "Busco o lugar"), 700);
+      if (await this.buscar("[data-geo-pick]", 4000)) await this.clic("[data-geo-pick]", this.t("Elijo el resultado correcto: el mapa vuela hasta ahí", "I pick the right result: the map flies there", "Escolho o resultado certo: o mapa voa até lá"), 1400);
+      if (!(await this.buscar("#v2-ub-btn-draw", 2500))) await this.clic('[data-action="abrir-ubicacion"]', this.t("Sigo llenando los datos del terreno", "I keep filling in the field details", "Continuo preenchendo os dados do terreno"), 800);
+      await this.clic("#v2-ub-btn-draw", this.t("Ahora marco mi terreno en el mapa, esquina por esquina", "Now I mark my field on the map, corner by corner", "Agora marco meu terreno no mapa, canto por canto"), 800);
+      await this.dibujar([[42.1081, -93.6098], [42.1081, -93.6002], [42.1009, -93.6002], [42.1009, -93.6098]]);
       if (window.V2Ubicacion?.volverTrasDibujo) window.V2Ubicacion.volverTrasDibujo();
       await this.buscar("#v2-ub-nombre", 4000);
       await this.esperar(400);
-      const sel = await this.buscar("#v2-ub-cultivo-act");
-      if (sel) {
-        await this.clic("#v2-ub-cultivo-act", "Select active crop", 300);
+      if (await this.buscar("#v2-ub-cultivo-act", 1500)) {
+        await this.clic("#v2-ub-cultivo-act", this.t("¿Qué tengo sembrado? Maíz", "What is planted? Corn", "O que está plantado? Milho"), 400);
         const s2 = document.getElementById("v2-ub-cultivo-act");
-        if (s2) { s2.value = s2.options[1]?.value || ""; s2.dispatchEvent(new Event("change", { bubbles: true })); }
-        await this.esperar(600);
+        if (s2) { const o = [...s2.options].find(x => /ma[ií]z|corn|milho/i.test(x.textContent)) || s2.options[1]; s2.value = o?.value || ""; s2.dispatchEvent(new Event("change", { bubbles: true })); }
+        await this.esperar(700);
       }
-      await this.escribir("#v2-ub-nombre", "North field", "Assign field name");
-      await this.clic("#v2-btn-ub-continuar", "Save parcel: Sentinel-2 and NASA data load automatically", 1200);
-      if (await this.buscar('.modal-card [data-close-modal]', 2500)) await this.clic('.modal-card [data-close-modal]', "Skip sensor pairing for now", 600);
-      await this.buscar(() => window.V2?.terrainResp?.celdas?.length && !window.V2.modal ? document.body : null, 15000);
-
-      // Pasar DIRECTAMENTE al mapa interactivo del terreno creado
-      if (window.V2.modal) window.V2.closeModal();
-      window.V2.setSpace("mapa");
-      window.V2.sheetSnap = "min"; window.V2.renderActiveViews?.();
+      const nom = document.getElementById("v2-ub-nombre"); if (nom) nom.value = "";
+      await this.escribir("#v2-ub-nombre", this.t("Mi terreno en Iowa", "My Iowa field", "Meu terreno em Iowa"), this.t("Le pongo nombre", "I give it a name", "Dou um nome"));
+      await this.clic("#v2-btn-ub-continuar", this.t("Guardo: Terra Lab pide los datos al satélite y a la NASA", "Save: Terra Lab asks the satellite and NASA for data", "Salvo: o Terra Lab pede os dados ao satélite e à NASA"), 1200);
+      if (await this.buscar('.modal-card [data-close-modal]', 2500)) await this.clic('.modal-card [data-close-modal]', this.t("El robot lo conecto después", "I'll connect the robot later", "Conecto o robô depois"), 600);
+      this.decir(this.t("Cargando el verdor de cada cuadro y el clima de los últimos 40 años…", "Loading each square's greenness and 40 years of climate…", "Carregando o verdor de cada quadro e 40 anos de clima…"));
+      await this.buscar(() => V.terrainResp?.celdas?.length && !V.modal ? document.body : null, 15000);
+      if (V.modal) V.closeModal();
+      V.setSpace("mapa");
+      V.sheetSnap = "min"; V.renderActiveViews?.();
       document.getElementById("v2-toast-progress")?.setAttribute("hidden", "true");
       document.querySelectorAll(".vivo-aviso").forEach(e => e.remove());
-      if (window.V2Map?.poly) window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.35), { animate: false });
+      if (window.V2Map?.poly) window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.2), { animate: false });
       await this.esperar(600);
     },
 
     // ---------------------------------------------------------------- EL RECORRIDO COMPLETO
     async recorrido() {
       const V = window.V2;
+      const mp = () => window.V2Map?.map;
 
-      // 1. EL MAPA Y CONDICIONES EN VIVO
+      // 1. EL MAPA
       if (V.space !== "mapa") V.setSpace("mapa");
-      window.V2.sheetSnap = "min"; window.V2.renderActiveViews?.();
-      document.getElementById("v2-toast-progress")?.setAttribute("hidden", "true");
-      document.querySelectorAll(".vivo-aviso").forEach(e => e.remove());
-      if (window.V2Map?.poly) window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.35), { animate: false });
-      this.decir("Interactive satellite map: the whole block split into 5 m squares");
-      await this.esperar(1000);
+      V.sheetSnap = "min"; V.renderActiveViews?.();
+      if (window.V2Map?.poly) mp()?.fitBounds(window.V2Map.poly.getBounds().pad(0.2), { animate: false });
+      const n = V.terrainResp?.celdas?.length;
+      this.decir(this.t(`Listo: mi terreno quedó dividido en ${n || "miles de"} cuadros de 5 × 5 m`, `Done: my field is split into ${n || "thousands of"} 5 × 5 m squares`, `Pronto: meu terreno foi dividido em ${n || "milhares de"} quadros de 5 × 5 m`));
+      await this.esperar(1800);
+      this.decir(this.t("El color de cada cuadro sale de la foto de satélite: verde es planta sana", "Each square's color comes from the satellite image: green means healthy plants", "A cor de cada quadro vem da foto de satélite: verde é planta saudável"));
+      await this.esperar(1800);
+      await this.leer("#campo-tablero", this.t("Arriba, el clima de hoy en mi terreno: temperatura, viento, humedad, lluvia", "On top, today's weather on my field: temperature, wind, humidity, rain", "Em cima, o clima de hoje no meu terreno: temperatura, vento, umidade, chuva"), 2000);
+      await this.tocarCuadro();
 
-      // Ver tablero del clima y satélite arriba del mapa
-      await this.leer("#campo-tablero", "Live conditions: air temp, wind vector, humidity and Sentinel-2 NDVI", 1800);
-
-      // 2. EXPLORAR FILTROS, ZOOM Y PANEO DEL MAPA
-      await this.clic('[data-color-mode="sev"]', "Filter: Risk highlights severe water stress and frost danger", 1400);
-
-      // Paneo suave del mapa
-      if (window.V2Map?.map) {
-        this.decir("Explore and pan across different sectors of the parcel");
-        await this.mover(innerWidth * 0.5, innerHeight * 0.45);
-        this.pulsar();
-        window.V2Map.map.panBy([35, -25], { animate: true, duration: 0.6 });
-        await this.esperar(800);
+      // 2. FILTROS
+      await this.clic('[data-color-mode="sev"]', this.t("¿Dónde hay riesgo? Falta de agua o helada, cuadro por cuadro", "Where is the risk? Water stress or frost, square by square", "Onde há risco? Falta de água ou geada, quadro a quadro"), 1600);
+      await this.clic('[data-color-mode="zones"]', this.t("3 zonas de manejo: alta, media y baja, para tratarlas distinto", "3 management zones: high, medium and low, to treat them differently", "3 zonas de manejo: alta, média e baixa, para tratá-las diferente"), 1600);
+      await this.clic('[data-color-mode="anom"]', this.t("Cuadros raros: los que se salen del promedio de mi lote", "Odd squares: the ones far from my field's average", "Quadros estranhos: os que fogem da média do talhão"), 1600);
+      await this.clic('[data-color-mode="ndvi"]', this.t("Regreso al verdor", "Back to greenness", "Volto ao verdor"), 900);
+      if (mp()) {
+        this.decir(this.t("Me acerco para ver los cuadros uno por uno", "I zoom in to see the squares one by one", "Aproximo para ver os quadros um a um"));
+        mp().zoomIn(1); await this.esperar(1100);
+        mp().zoomOut(1); await this.esperar(800);
       }
 
-      // Zoom in y zoom out
-      if (window.V2Map?.map) {
-        this.decir("Zoom in to inspect individual 5 m squares");
-        window.V2Map.map.zoomIn(1);
-        await this.esperar(800);
-        window.V2Map.map.zoomOut(1);
-        await this.esperar(700);
-        if (window.V2Map.map.getZoom() < 14) window.V2Map.map.setZoom(15);
-      }
-
-      // Filtro de 3 Zonas
-      await this.clic('[data-color-mode="zones"]', "Filter: 3 management zones grouped by agronomic behavior", 1400);
-
-      // Explorar capas satelitales NASA (temperatura / cultivo)
-      const capaChip = document.querySelector("[data-campo-capa]");
-      if (capaChip) {
-        await this.clic("[data-campo-capa]", "Turn on NASA satellite layer: surface temperature / croplands", 1500);
-        await this.clic("[data-campo-capa].on", "Toggle layer back to field view", 800);
-      }
-
-      // Volver a Verdor (ndvi)
-      await this.clic('[data-color-mode="ndvi"]', "Field Greenness: satellite vegetation index per square", 1200);
-
-      // 3. RUTAS SUGERIDAS DE MUESTREO Y SIMULACIÓN DE FLOTA DE ROVERS
-      await this.clic("[data-vivo-ruta]", "Optimal rover sampling route generated across low-vigor squares", 1600);
-      await this.clic("[data-vivo-sim]", "Simulate fleet of 35 rovers scanning the parcel", 1200);
-
-      // Dejar que los robots se muevan por el terreno y la cámara/cursor los sigue
-      this.decir("Fleet of 35 rovers moving autonomously reading real-time NDVI");
-      const rCenter = window.V2Map?.poly?.getBounds?.().getCenter?.();
-      if (rCenter && window.V2Map?.map) {
-        window.V2Map.map.panTo(rCenter, { animate: true, duration: 0.8 });
-        if (window.V2Map.map.getZoom() < 14) window.V2Map.map.setZoom(15);
-        const mp = window.V2Map.map, p = mp.latLngToContainerPoint(rCenter), b = mp.getContainer().getBoundingClientRect();
-        await this.mover(b.left + p.x, b.top + p.y);
-      }
-      await this.esperar(2200);
-
-      // 4. PROBAR LA SI (INTELIGENCIA SATELITAL)
-      await this.clic(".si-fab, [data-action=\"abrir-si\"]", "Ask Field SI: satellite agronomic AI assistant", 1200);
-      const siChip1 = await this.buscar(".si-chip-btn, [data-si-q]", 1500);
-      if (siChip1) {
-        await this.clic(siChip1, "Ask the SI: " + siChip1.textContent.replace(/\s+/g, " ").trim(), 2400);
-      }
-      const siChip2 = document.querySelectorAll(".si-chip-btn, [data-si-q]")[1];
-      if (siChip2) {
-        await this.clic(siChip2, "Ask the SI: " + siChip2.textContent.replace(/\s+/g, " ").trim(), 2400);
-      }
-      await this.clic("#v2-si-cerrar", "Close SI panel and continue exploring", 700);
-
-      // 5. INSPECCIONAR EL ROBOT EN VIVO (HARDWARE REAL + STREAMING GOOGLE SHEETS)
-      await this.clic('[data-go-space="inicio"]', "Inspect live robot telemetry from physical IoT prototype", 1400);
-      if (V.space !== "inicio") V.setSpace("inicio");
+      // 3. PANEL DE ABAJO
+      V.sheetSnap = "mid"; V.renderActiveViews?.();
       await this.esperar(500);
+      await this.clic('[data-quick-mode="farmer"]', this.t("Puedo leerlo en lenguaje simple…", "I can read it in plain language…", "Posso ler em linguagem simples…"), 1300);
+      await this.clic('[data-quick-mode="agronomist"]', this.t("…técnico, con índices agronómicos…", "…technical, with agronomic indexes…", "…técnico, com índices agronômicos…"), 1300);
+      await this.clic('[data-quick-mode="scientist"]', this.t("…o científico, con fuentes y fechas", "…or scientific, with sources and dates", "…ou científico, com fontes e datas"), 1300);
+      await this.clic('[data-sheet-tab="terrain"]', this.t("Pestaña Mi terreno: tamaño, cultivo y datos guardados", "My field tab: size, crop and saved data", "Aba Meu terreno: tamanho, cultura e dados salvos"), 1600);
+      await this.clic('[data-sheet-tab="layers"]', this.t("Pestaña Capas: todas las capas de la NASA que puedo prender", "Layers tab: every NASA layer I can turn on", "Aba Camadas: todas as camadas da NASA que posso ligar"), 1600);
+      await this.clic('[data-sheet-tab="summary"]', this.t("Y el resumen de lo más importante", "And the summary of what matters most", "E o resumo do mais importante"), 1400);
+      V.sheetSnap = "min"; V.renderActiveViews?.();
+      await this.esperar(400);
 
-      // Video de pruebas de hardware real en bucle
-      await this.leer(".rover-hardware-card", "Looping physical test videos of the miniature IoT rover", 2200);
-      const vidBtn2 = await this.buscar('[data-vid-src*="rover_prueba_2"]', 1200);
-      if (vidBtn2) {
-        await this.clic(vidBtn2, "Switch camera: physical field trial vs laboratory bench test", 1500);
+      // 4. CAPAS NASA, RUTA Y FLOTA
+      if (await this.buscar("[data-campo-capa]", 1500)) {
+        await this.clic("[data-campo-capa]", this.t("Prendo una capa de satélite de la NASA encima de mi terreno", "I turn on a NASA satellite layer over my field", "Ligo uma camada de satélite da NASA sobre o terreno"), 1800);
+        await this.clic("[data-campo-capa].on", this.t("Y la apago", "And turn it off", "E desligo"), 800);
       }
+      await this.clic("[data-vivo-ruta]", this.t("¿Por dónde reviso? Ruta que pasa por los 5 cuadros más débiles, del más cercano al más lejano", "Where do I check? A route through the 5 weakest squares, nearest first", "Por onde verifico? Rota pelos 5 quadros mais fracos, do mais perto ao mais longe"), 2400);
+      await this.clic("[data-vivo-sim]", this.t("Simulo una flota de robots recorriendo el terreno", "I simulate a robot fleet crossing the field", "Simulo uma frota de robôs percorrendo o terreno"), 1200);
+      this.decir(this.t("Cada robot lee el verdor real del cuadro al que llega", "Each robot reads the real greenness of the square it reaches", "Cada robô lê o verdor real do quadro onde chega"));
+      await this.esperar(2600);
 
-      // STREAMING EN TIEMPO REAL DE LA HOJA DE GOOGLE
-      await this.leer(".rover-stream-player", "Live streaming ingest: stepping through actual Google Sheets (AppSheet) logs", 2000);
-      const btnNext = await this.buscar("#rover-btn-next", 1000);
-      if (btnNext) {
-        await this.clic("#rover-btn-next", "Advance live sample: updates speed, rotation, temp & humidity", 1200);
-        await this.clic("#rover-btn-next", "Next reading: real recorded Querétaro prototype telemetry", 1200);
+      // 5. LA SI
+      await this.clic(".si-fab, [data-action=\"abrir-si\"]", this.t("Tengo dudas: le pregunto a la SI, que ya leyó los datos de mi terreno", "I have questions: I ask the SI, which already read my field's data", "Tenho dúvidas: pergunto à SI, que já leu os dados do terreno"), 1200);
+      const chips = async (i) => (await this.buscar(".si-chip-btn, [data-si-q]", 1500)) && document.querySelectorAll(".si-chip-btn, [data-si-q]")[i];
+      for (const i of [0, 1, 2]) {
+        const c = await chips(i);
+        if (c) await this.clic(c, this.t("Pregunto: ", "I ask: ", "Pergunto: ") + c.textContent.replace(/\s+/g, " ").trim(), 2600);
       }
+      await this.clic("#v2-si-cerrar", this.t("Cada respuesta cita su fuente y su fecha. Cierro la SI", "Every answer cites its source and date. I close the SI", "Cada resposta cita fonte e data. Fecho a SI"), 800);
 
-      // Comparativa Lado a Lado: Sensor de Hardware vs Nube NASA
-      await this.leer(".side-by-side-card", "Local hardware sensor vs Sentinel-2 / NASA POWER regional cloud average", 2200);
-
-      // Tabla de datos en crudo
-      await this.recorrerEspacio("#v2-ws-inicio", "Raw telemetry log table highlighting each streaming row", 2200);
-
-      // Sección de conexión del robot (sincronización con Google Sheets)
-      await this.clic('[data-go-space="robot"]', "Robot settings: Google Sheets live sync, intervals and tokens", 1500);
-      await this.leer("#v2-ws-robot .card", "Sync status: last read, rows stored and next sync interval", 1600);
-
-      // Detener simulación de robots
+      // 6. INICIO: ROBOT REAL
       window.V2Vivo?.parar?.();
+      await this.clic('[data-go-space="inicio"]', this.t("En Inicio veo el robot real que construimos", "Home shows the real robot we built", "No Início vejo o robô real que construímos"), 1400);
+      if (V.space !== "inicio") V.setSpace("inicio");
+      await this.leer(".rover-hardware-card", this.t("Videos de las pruebas del robot: en banco y en campo", "Robot test videos: bench and field", "Vídeos dos testes do robô: bancada e campo"), 2000);
+      const vid2 = await this.buscar('[data-vid-src*="rover_prueba_2"]', 1200);
+      if (vid2) await this.clic(vid2, this.t("Cambio a la prueba en campo", "Switch to the field trial", "Mudo para o teste em campo"), 1500);
+      await this.leer(".rover-stream-player", this.t("Sus lecturas llegan a una hoja de Google, y aquí las reproduzco", "Its readings go to a Google Sheet, and I replay them here", "Suas leituras vão para uma planilha Google, e aqui eu as reproduzo"), 2000);
+      if (await this.buscar("#rover-btn-next", 1000)) {
+        await this.clic("#rover-btn-next", this.t("Siguiente lectura: humedad, temperatura, velocidad…", "Next reading: moisture, temperature, speed…", "Próxima leitura: umidade, temperatura, velocidade…"), 1300);
+        await this.clic("#rover-btn-next", this.t("Y otra", "And another", "E outra"), 1000);
+      }
+      await this.leer(".side-by-side-card", this.t("Lo que mide el robot en el suelo junto a lo que ve el satélite", "What the robot measures on the ground next to what the satellite sees", "O que o robô mede no solo ao lado do que o satélite vê"), 2200);
+      await this.recorrerEspacio("#v2-ws-inicio", this.t("Promedios de 24 horas, 7 y 30 días", "24-hour, 7-day and 30-day averages", "Médias de 24 horas, 7 e 30 dias"), 2000);
+      await this.clic('[data-go-space="robot"]', this.t("Pantalla Robot: conexión con la hoja y su ruta", "Robot screen: sheet connection and its route", "Tela Robô: conexão com a planilha e sua rota"), 1500);
+      await this.leer("#v2-ws-robot .card", this.t("Última lectura, filas guardadas y cada cuánto sincroniza", "Last reading, stored rows and sync interval", "Última leitura, linhas salvas e intervalo de sincronização"), 1600);
 
-      // 6. ECONOMÍA Y PLANIFICACIÓN DE CULTIVOS
-      await this.clic('[data-go-space="decidir"]', "Economics: live USDA market prices and crop profitability", 1500);
+      // 7. CLIMA Y SUELO
+      await this.clic('[data-go-space="region"]', this.t("Clima y suelo: lo que viene esta semana y lo que dicen 40 años de datos", "Climate and soil: this week ahead and 40 years of data", "Clima e solo: o que vem nesta semana e 40 anos de dados"), 1500);
+      await this.recorrerEspacio("#v2-ws-region", this.t("Pronóstico de 7 días, riesgo de helada, agua por mes y tipo de suelo", "7-day forecast, frost risk, monthly water and soil type", "Previsão de 7 dias, risco de geada, água por mês e tipo de solo"), 3000);
+
+      // 8. QUÉ HACER
+      await this.clic('[data-go-space="recom"]', this.t("Qué hacer: hoy, esta temporada y los próximos años", "What to do: today, this season and coming years", "O que fazer: hoje, nesta safra e nos próximos anos"), 1500);
+      await this.recorrerEspacio("#v2-ws-recom", this.t("Cada consejo dice de qué dato sale", "Each tip says which data it comes from", "Cada conselho diz de qual dado vem"), 2400);
+
+      // 9. ECONOMÍA
+      await this.clic('[data-go-space="decidir"]', this.t("Economía: ¿me conviene? Precios reales del USDA", "Economics: is it worth it? Real USDA prices", "Economia: compensa? Preços reais do USDA"), 1500);
       const yaHabia = { ...(V.farmExtra || {}) };
-      await this.escribir('[data-calc="costMaize"]', "420", "Input estimated production cost per hectare ($420/ha)");
-      await this.escribir('[data-calc="yieldMaize"]', "10.2", "Input expected crop yield (10.2 t/ha)");
-      await this.recorrerEspacio("#v2-ws-decidir", "Dynamic profitability calculator with live USDA MARS market prices", 2200);
+      await this.escribir('[data-calc="costMaize"]', "420", this.t("Pongo lo que me cuesta producir: 420 USD por hectárea", "I enter my cost: 420 USD per hectare", "Coloco meu custo: 420 USD por hectare"));
+      await this.escribir('[data-calc="yieldMaize"]', "10.2", this.t("Y lo que espero cosechar: 10.2 toneladas", "And my expected yield: 10.2 tonnes", "E o que espero colher: 10,2 toneladas"));
+      await this.recorrerEspacio("#v2-ws-decidir", this.t("Me calcula el margen y un calendario de 3 años", "It works out my margin and a 3-year calendar", "Calcula minha margem e um calendário de 3 anos"), 2200);
       Object.assign(V.farmExtra, { costMaize: yaHabia.costMaize ?? null, yieldMaize: yaHabia.yieldMaize ?? null });
       try { localStorage.setItem("v2_farm_extra", JSON.stringify(V.farmExtra)); } catch (_) {}
 
-      // 7. SECCIÓN DE CONCEPTOS AGRONÓMICOS
-      await this.clic('[data-go-space="conceptos"]', "Concepts: 17 agronomic topics explained simply with live search", 1500);
-      await this.escribir("#v2-con-search-q", "NDVI", "Search what NDVI (Vegetation Index) means");
-      await this.leer(".concepto-card-exp, .card", "NDVI definition, satellite bands, and practical farm recommendations", 2200);
+      // 10. DATOS Y SI
+      await this.clic('[data-go-space="datos"]', this.t("Datos y SI: de dónde sale todo", "Data and SI: where everything comes from", "Dados e SI: de onde vem tudo"), 1400);
+      await this.clic('[data-data-tab="ia"]', this.t("Cómo predice el cultivo y qué tan seguido acierta", "How it predicts the crop and how often it is right", "Como prevê a cultura e com que frequência acerta"), 1800);
+      await this.clic('[data-data-tab="fuentes"]', this.t("Todas las fuentes: Sentinel-2, NASA POWER, SMAP, USDA…", "Every source: Sentinel-2, NASA POWER, SMAP, USDA…", "Todas as fontes: Sentinel-2, NASA POWER, SMAP, USDA…"), 1800);
 
-      // 8. REGRESO AL MAPA Y CONCLUSIÓN
-      await this.clic('[data-go-space="inicio"]', "Back to the field home", 900);
-      await this.clic('[data-go-space="mapa"]', "Terra Lab: complete end-to-end satellite & robotics platform", 1400);
+      // 11. ALERTAS
+      await this.clic("#v2-btn-bell", this.t("La campana junta las alertas de mi terreno", "The bell gathers my field's alerts", "O sino reúne os alertas do terreno"), 1800);
+      if (V.modal) { V.closeModal(); await this.esperar(400); }
+
+      // 12. CONCEPTOS
+      await this.clic('[data-go-space="conceptos"]', this.t("¿No entiendo una palabra? Conceptos explicados simple", "Don't know a word? Concepts explained simply", "Não entendo uma palavra? Conceitos explicados de forma simples"), 1500);
+      await this.escribir("#v2-con-search-q", "NDVI", this.t("Busco qué es el NDVI", "I look up what NDVI is", "Procuro o que é NDVI"));
+      await this.leer(".concepto-card-exp, .card", this.t("Qué es, cómo se mide y qué hago con eso", "What it is, how it's measured and what to do", "O que é, como se mede e o que fazer"), 2200);
+
+      // 13. CIERRE
+      await this.clic('[data-go-space="inicio"]', this.t("Regreso a mi terreno", "Back to my field", "Volto ao meu terreno"), 900);
+      await this.clic('[data-go-space="mapa"]', this.t("Terra Lab: satélite, NASA, robot y SI en un solo lugar", "Terra Lab: satellite, NASA, robot and SI in one place", "Terra Lab: satélite, NASA, robô e SI em um só lugar"), 1400);
       if (V.space !== "mapa") V.setSpace("mapa");
       V.sheetSnap = "mid"; V.renderActiveViews?.();
-      this.decir(window.V2?.lang === "en" ? "✓ Demo finished: North field satellite & IoT rover tour complete!"
-        : window.V2?.lang === "pt" ? "✓ Demonstração concluída: mapa de satélite e robô IoT inspecionados!"
-        : "✓ ¡Demo completada con éxito: satélite Sentinel-2 y telemetría de rover!");
+      this.decir(this.t("✓ Fin del recorrido. Ahora te toca explorar a ti", "✓ Tour complete. Now it's your turn to explore", "✓ Fim do passeio. Agora é sua vez de explorar"));
       await this.esperar(2500);
     },
 
@@ -588,6 +582,7 @@
         if (!f || f === "entrar" || f === "recorrido") {
           try { sessionStorage.setItem("fs_demo_t0", Date.now()); } catch (_) {}
           await this.esperar(1000);
+          await this.bienvenida();
           await this.primerTerreno();
           await this.recorrido();
           await this.esperar(1200);
