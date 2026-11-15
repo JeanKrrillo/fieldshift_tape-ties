@@ -633,6 +633,10 @@
           this.renderActiveViews();
         }
       } catch (_) {}
+      // Sin servidor (GitHub Pages): catalogo real guardado en recursos/catalogo.json.
+      if (!this.catalog?.gibs) {
+        try { const r = await fetch("recursos/catalogo.json"); if (r.ok) { this.catalog = await r.json(); this.renderActiveViews(); } } catch (_) {}
+      }
 
       for (const ep of ["/api/v1/b/modelos", "/api/v1/modelos"]) {
         try {

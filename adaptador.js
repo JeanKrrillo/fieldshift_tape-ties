@@ -16,6 +16,9 @@
   }
 
   function handleStaticFallback(url, opts = {}) {
+    // Respuestas reales grabadas del servidor (recursos/api_snapshot.js) para GitHub Pages.
+    const ruta = url.replace(/^https?:\/\/[^/]+/, "").split("?")[0].replace(/\/$/, "");
+    if (String(opts?.method || "GET").toUpperCase() === "GET" && window.FS_API && ruta in window.FS_API) return mockResponse(window.FS_API[ruta]);
     if (url.includes("/api/v1/cuenta/demo")) {
       return mockResponse({ estado: "OK", correo: "demo@fieldshift.org", contrasena: "spaceapps2026" });
     }
