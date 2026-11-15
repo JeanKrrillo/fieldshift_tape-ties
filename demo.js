@@ -57,7 +57,7 @@
       const ajustado = Math.max(600, Math.round(ms / f));
       const fin = Date.now() + ajustado;
       while (Date.now() < fin) {
-        const el = typeof sel === "function" ? sel() : [...document.querySelectorAll(sel)].find(e => e.offsetParent && e.getBoundingClientRect().width);
+        const el = typeof sel === "function" ? sel() : typeof sel !== "string" ? (sel.isConnected && sel.getClientRects().length ? sel : null) : [...document.querySelectorAll(sel)].find(e => e.getClientRects().length && e.getBoundingClientRect().width);
         if (el) return el;
         await this.esperar(100);
       }
@@ -348,7 +348,7 @@
       // Si el terreno ya está cargado con cuadrícula en el mapa, simplemente enfocar y continuar
       if (window.V2Map?.poly && window.V2?.terrainResp?.celdas?.length) {
         if (window.V2.space !== "mapa") window.V2.setSpace("mapa");
-        window.V2.setSheetSnap?.("min");
+        window.V2.sheetSnap = "min"; window.V2.renderActiveViews?.();
         window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.35), { animate: true });
         return;
       }
@@ -380,7 +380,7 @@
       // Pasar DIRECTAMENTE al mapa interactivo del terreno creado
       if (window.V2.modal) window.V2.closeModal();
       window.V2.setSpace("mapa");
-      window.V2.setSheetSnap?.("min");
+      window.V2.sheetSnap = "min"; window.V2.renderActiveViews?.();
       document.getElementById("v2-toast-progress")?.setAttribute("hidden", "true");
       document.querySelectorAll(".vivo-aviso").forEach(e => e.remove());
       if (window.V2Map?.poly) window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.35), { animate: false });
@@ -393,11 +393,11 @@
 
       // 1. EL MAPA Y CONDICIONES EN VIVO
       if (V.space !== "mapa") V.setSpace("mapa");
-      window.V2.setSheetSnap?.("min");
+      window.V2.sheetSnap = "min"; window.V2.renderActiveViews?.();
       document.getElementById("v2-toast-progress")?.setAttribute("hidden", "true");
       document.querySelectorAll(".vivo-aviso").forEach(e => e.remove());
       if (window.V2Map?.poly) window.V2Map.map?.fitBounds(window.V2Map.poly.getBounds().pad(0.35), { animate: false });
-      this.decir("Interactive satellite map: North field at 10 m Sentinel-2 resolution");
+      this.decir("Interactive satellite map: the whole block split into 5 m squares");
       await this.esperar(1000);
 
       // Ver tablero del clima y satélite arriba del mapa
@@ -417,7 +417,7 @@
 
       // Zoom in y zoom out
       if (window.V2Map?.map) {
-        this.decir("Zoom in to inspect individual 10-meter agricultural cells");
+        this.decir("Zoom in to inspect individual 5 m squares");
         window.V2Map.map.zoomIn(1);
         await this.esperar(800);
         window.V2Map.map.zoomOut(1);
@@ -436,7 +436,7 @@
       }
 
       // Volver a Verdor (ndvi)
-      await this.clic('[data-color-mode="ndvi"]', "Field Greenness: 10 m Sentinel-2 vegetative index", 1200);
+      await this.clic('[data-color-mode="ndvi"]', "Field Greenness: satellite vegetation index per square", 1200);
 
       // 3. RUTAS SUGERIDAS DE MUESTREO Y SIMULACIÓN DE FLOTA DE ROVERS
       await this.clic("[data-vivo-ruta]", "Optimal rover sampling route generated across low-vigor squares", 1600);
@@ -457,11 +457,11 @@
       await this.clic(".si-fab, [data-action=\"abrir-si\"]", "Ask Field SI: satellite agronomic AI assistant", 1200);
       const siChip1 = await this.buscar(".si-chip-btn, [data-si-q]", 1500);
       if (siChip1) {
-        await this.clic(siChip1, "Ask: Was there frost this week?", 2400);
+        await this.clic(siChip1, "Ask the SI: " + siChip1.textContent.replace(/s+/g, " ").trim(), 2400);
       }
       const siChip2 = document.querySelectorAll(".si-chip-btn, [data-si-q]")[1];
       if (siChip2) {
-        await this.clic(siChip2, "Ask: How is soil moisture?", 2400);
+        await this.clic(siChip2, "Ask the SI: " + siChip2.textContent.replace(/s+/g, " ").trim(), 2400);
       }
       await this.clic("#v2-si-cerrar", "Close SI panel and continue exploring", 700);
 
@@ -513,8 +513,10 @@
       await this.leer(".concepto-card-exp, .card", "NDVI definition, satellite bands, and practical farm recommendations", 2200);
 
       // 8. REGRESO AL MAPA Y CONCLUSIÓN
+      await this.clic('[data-go-space="inicio"]', "Back to the field home", 900);
       await this.clic('[data-go-space="mapa"]', "Terra Lab: complete end-to-end satellite & robotics platform", 1400);
       if (V.space !== "mapa") V.setSpace("mapa");
+      V.sheetSnap = "mid"; V.renderActiveViews?.();
       this.decir(window.V2?.lang === "en" ? "✓ Demo finished: North field satellite & IoT rover tour complete!"
         : window.V2?.lang === "pt" ? "✓ Demonstração concluída: mapa de satélite e robô IoT inspecionados!"
         : "✓ ¡Demo completada con éxito: satélite Sentinel-2 y telemetría de rover!");

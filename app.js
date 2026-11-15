@@ -163,6 +163,7 @@
 
     setLang(l) {
       this.lang = l;
+      document.getElementById("vivo-avisos")?.replaceChildren();
       lsSet("v2_lang", l);
       this.applyThemeAndMode();
       this.renderShellChrome();

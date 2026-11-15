@@ -2393,8 +2393,6 @@ body:has(#sim-panel) #v2-map-legend { display: none !important; }
 @media (max-width: 768px) { #campo-tablero { top: 74px; left: 8px; right: 8px; width: auto; } .ct-cifras b { font-size: 18px; } #campo-capas { bottom: 140px; } }
 
 /* Cuando el sheet está desplegado (mid o max), ocultar tira de capas y botonera flotante para evitar sobreposiciones */
-body:has(#v2-sheet[data-snap="mid"]) #campo-capas,
-body:has(#v2-sheet[data-snap="mid"]) #vivo-fab,
 body:has(#v2-sheet[data-snap="max"]) #campo-capas,
 body:has(#v2-sheet[data-snap="max"]) #vivo-fab {
   display: none !important;
@@ -2551,3 +2549,6 @@ body.si-abierta #demo-caja { top: auto; bottom: 16px; right: auto; left: 96px; }
 @media (max-width: 768px) {
   body:has(#v2-sheet[data-snap="max"]) #v2-map-fabs { display: none !important; }
 }
+
+/* El panel de la flota simulada solo tiene sentido sobre el mapa. */
+body:not([data-space="mapa"]) #sim-panel { display: none; }
