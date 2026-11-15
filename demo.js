@@ -457,11 +457,11 @@
       await this.clic(".si-fab, [data-action=\"abrir-si\"]", "Ask Field SI: satellite agronomic AI assistant", 1200);
       const siChip1 = await this.buscar(".si-chip-btn, [data-si-q]", 1500);
       if (siChip1) {
-        await this.clic(siChip1, "Ask the SI: " + siChip1.textContent.replace(/s+/g, " ").trim(), 2400);
+        await this.clic(siChip1, "Ask the SI: " + siChip1.textContent.replace(/\s+/g, " ").trim(), 2400);
       }
       const siChip2 = document.querySelectorAll(".si-chip-btn, [data-si-q]")[1];
       if (siChip2) {
-        await this.clic(siChip2, "Ask the SI: " + siChip2.textContent.replace(/s+/g, " ").trim(), 2400);
+        await this.clic(siChip2, "Ask the SI: " + siChip2.textContent.replace(/\s+/g, " ").trim(), 2400);
       }
       await this.clic("#v2-si-cerrar", "Close SI panel and continue exploring", 700);
 
