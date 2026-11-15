@@ -6,6 +6,86 @@
   "use strict";
 
   let currentSession = null;
+  try { currentSession = JSON.parse(localStorage.getItem("fs_session") || "null"); } catch (_) {}
+
+  function mockResponse(data, status = 200) {
+    return new Response(JSON.stringify(data), {
+      status,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  function handleStaticFallback(url, opts = {}) {
+    if (url.includes("/api/v1/cuenta/demo")) {
+      return mockResponse({ estado: "OK", correo: "demo@fieldshift.org", contrasena: "spaceapps2026" });
+    }
+    if (url.includes("/api/v1/cuenta/yo")) {
+      const ses = currentSession;
+      return ses ? mockResponse({ estado: "OK", usuario: ses }) : mockResponse({ estado: "ERROR", detalle: "Sin sesión" }, 401);
+    }
+    if (url.includes("/api/v1/cuenta/entrar") || url.includes("/api/v1/cuenta/crear")) {
+      currentSession = { id: 1, correo: "demo@fieldshift.org", nombre: "Jean Krrillo" };
+      try { localStorage.setItem("fs_session", JSON.stringify(currentSession)); } catch (_) {}
+      return mockResponse({ estado: "OK", usuario: currentSession });
+    }
+    if (url.includes("/api/v1/cuenta/salir")) {
+      currentSession = null;
+      try { localStorage.removeItem("fs_session"); } catch (_) {}
+      return mockResponse({ estado: "OK" });
+    }
+    if (url.includes("/api/v1/terrenos")) {
+      if (opts.method === "POST") {
+        const body = JSON.parse(opts.body || "{}");
+        const t = { id: Date.now(), nombre: body.nombre || "North field", lat: body.lat || 42.1045, lon: body.lon || -93.6050, area_ha: 0.7, poligono: body.poligono || [[42.1049, -93.6055], [42.1049, -93.6045], [42.1041, -93.6045], [42.1041, -93.6055]] };
+        try {
+          const list = JSON.parse(localStorage.getItem("fs_terrenos") || "[]");
+          list.unshift(t);
+          localStorage.setItem("fs_terrenos", JSON.stringify(list));
+        } catch (_) {}
+        return mockResponse(t);
+      }
+      let list = [];
+      try { list = JSON.parse(localStorage.getItem("fs_terrenos") || "[]"); } catch (_) {}
+      if (!list.length) {
+        list = [{ id: 1, nombre: "North field", lat: 42.1045, lon: -93.6050, area_ha: 0.7, poligono: [[42.1049, -93.6055], [42.1049, -93.6045], [42.1041, -93.6045], [42.1041, -93.6055]] }];
+      }
+      return mockResponse(list);
+    }
+    if (url.includes("/api/v1/robot/estado")) {
+      return mockResponse({ lecturas: 48, ultima_lectura: new Date().toISOString(), robots: ["Rover Prototipo 1"], conectado: true, hoja: { conectada: true } });
+    }
+    if (url.includes("/api/v1/robot/ultimas")) {
+      return mockResponse({
+        variables: [
+          { variable: "humedad", nombre: "humedad", valor: 40, unidad: "%", t: new Date().toISOString(), min: 30, max: 70 },
+          { variable: "rotacion", nombre: "rotación", valor: 90, unidad: "°", t: new Date().toISOString() },
+          { variable: "temperatura", nombre: "temperatura", valor: 25, unidad: "°C", t: new Date().toISOString(), min: 10, max: 35 },
+          { variable: "velocidad", nombre: "velocidad", valor: 0, unidad: "km/h", t: new Date().toISOString() }
+        ]
+      });
+    }
+    if (url.includes("/api/v1/robot/lecturas")) {
+      return mockResponse({ lecturas: [] });
+    }
+    if (url.includes("/api/v1/alertas")) {
+      return mockResponse([]);
+    }
+    return mockResponse({ estado: "OK" });
+  }
+
+  // Interceptar fetch para modo estático o GitHub Pages
+  const origFetch = window.fetch;
+  window.fetch = async function (input, init) {
+    const url = typeof input === "string" ? input : (input?.url || "");
+    if (url.includes("/api/v1/")) {
+      try {
+        const r = await origFetch(input, init);
+        if (r.ok || r.status === 401) return r;
+      } catch (_) {}
+      return handleStaticFallback(url, init);
+    }
+    return origFetch(input, init);
+  };
 
   async function api(url, opts = {}) {
     let res;

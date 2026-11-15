@@ -355,7 +355,8 @@ from backend.si import router as si_router  # SI de campo: respuestas ancladas a
 app.include_router(si_router)
 app.middleware("http")(exigir_sesion)
 
-_WEB = Path(__file__).resolve().parents[1] / "frontend"
+_root_dir = Path(__file__).resolve().parents[1]
+_WEB = _root_dir if (_root_dir / "index.html").is_file() else (_root_dir / "frontend")
 
 
 @app.get("/")

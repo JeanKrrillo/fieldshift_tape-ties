@@ -248,7 +248,7 @@
       const vEl = b.querySelector("video");
       if (!vEl) {
         b.innerHTML = `
-          <video autoplay muted playsinline loop src="/recursos/rover_prueba_1.mp4"></video>
+          <video autoplay muted playsinline loop src="recursos/rover_prueba_1.mp4"></video>
           <div class="bubble-tag"><span class="rover-live-pulse"></span> <span class="bubble-tag-txt">${esc(bTag)}</span></div>
         `;
       } else {

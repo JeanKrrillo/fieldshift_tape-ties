@@ -1738,12 +1738,12 @@
           <!-- VIDEO EN LOOP DE HARDWARE REAL Y TELEMETRÍA IOT -->
           <div class="rover-hardware-card">
             <div class="rover-video-container">
-              <video id="rover-main-video" autoplay muted playsinline loop src="/recursos/rover_prueba_1.mp4"></video>
+              <video id="rover-main-video" autoplay muted playsinline loop src="recursos/rover_prueba_1.mp4"></video>
               <div class="rover-video-overlay">
                 <div class="rover-video-live-pill"><span class="rover-live-pulse"></span> ${esc(m("Hardware real · Pruebas IoT en loop", "Real hardware · Looping IoT test feed", "Hardware real · Testes IoT em loop"))}</div>
                 <div class="rover-video-switcher">
-                  <button type="button" class="rover-vid-btn active" data-vid-src="/recursos/rover_prueba_1.mp4">${esc(m("Prueba 1 (Banco)", "Test 1 (Bench)", "Teste 1 (Bancada)"))}</button>
-                  <button type="button" class="rover-vid-btn" data-vid-src="/recursos/rover_prueba_2.mp4">${esc(m("Prueba 2 (Campo)", "Test 2 (Field)", "Teste 2 (Campo)"))}</button>
+                  <button type="button" class="rover-vid-btn active" data-vid-src="recursos/rover_prueba_1.mp4">${esc(m("Prueba 1 (Banco)", "Test 1 (Bench)", "Teste 1 (Bancada)"))}</button>
+                  <button type="button" class="rover-vid-btn" data-vid-src="recursos/rover_prueba_2.mp4">${esc(m("Prueba 2 (Campo)", "Test 2 (Field)", "Teste 2 (Campo)"))}</button>
                 </div>
               </div>
             </div>
