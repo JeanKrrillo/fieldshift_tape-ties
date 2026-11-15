@@ -582,9 +582,8 @@
         const sesion = !!window.V2Adapter?.obtenerSesion();
         const f = this.fase();
         if (!f) try { sessionStorage.setItem("fs_demo_t0", Date.now()); sessionStorage.removeItem("fs_demo_log"); } catch (_) {}
-        if (f === "entrar" || (!f && !sesion)) await this.entrar();
-        else if (!f && sesion) await this.salir();
-        else if (f === "recorrido") {
+        // Sin login: el demo va directo al recorrido, sin pantalla de cuenta.
+        if (!f || f === "entrar" || f === "recorrido") {
           try { sessionStorage.setItem("fs_demo_t0", Date.now()); } catch (_) {}
           await this.esperar(1000);
           await this.primerTerreno();
@@ -592,7 +591,7 @@
           await this.esperar(1200);
           if (this.bucle) {
             try { sessionStorage.removeItem("fs_demo_t0"); } catch (_) {}
-            await this.salir();
+            this.fase("recorrido"); location.reload();
           } else {
             this.fase(null);
           }
