@@ -287,6 +287,26 @@
       return true;
     },
 
+    // En pantallas angostas el tablero y la leyenda están ocultos: se usa lo que sí se ve.
+    visible(sel) { return [...document.querySelectorAll(sel)].some(e => e.getClientRects().length && e.getBoundingClientRect().width); },
+    async modoColor(modo, texto, ms = 1400) {
+      if (this.visible(`[data-color-mode="${modo}"]`)) return this.clic(`[data-color-mode="${modo}"]`, texto, ms);
+      this.decir(texto);
+      const V = window.V2; V.colorMode = modo; window.V2Map?.drawGridCells?.(); V.renderActiveViews?.();
+      const mp = window.V2Map?.map; if (mp) { const b = mp.getContainer().getBoundingClientRect(); await this.mover(b.left + b.width / 2, b.top + b.height / 2); this.pulsar(); }
+      this.anotar(texto, true, "pantalla angosta: cambio de color sin leyenda");
+      await this.esperar(ms);
+      return true;
+    },
+    async leerOMostrar(sel, texto, ms) {
+      if (this.visible(sel)) return this.leer(sel, texto, ms);
+      // Sin tablero: el mismo dato está en el panel de abajo.
+      const V = window.V2; V.sheetSnap = "mid"; V.renderActiveViews?.();
+      await this.esperar(400);
+      await this.leer("#v2-sheet", texto, ms);
+      V.sheetSnap = "min"; V.renderActiveViews?.();
+    },
+
     async leer(sel, texto, ms = 2400) {
       if (this.tarde()) { this.anotar(texto, false, "sin tiempo"); return; }
       const el = await this.buscar(sel, 3000);
@@ -415,14 +435,14 @@
       await this.esperar(1800);
       this.decir(this.t("El color de cada cuadro sale de la foto de satélite: verde es planta sana", "Each square's color comes from the satellite image: green means healthy plants", "A cor de cada quadro vem da foto de satélite: verde é planta saudável"));
       await this.esperar(1800);
-      await this.leer("#campo-tablero", this.t("Arriba, el clima de hoy en mi terreno: temperatura, viento, humedad, lluvia", "On top, today's weather on my field: temperature, wind, humidity, rain", "Em cima, o clima de hoje no meu terreno: temperatura, vento, umidade, chuva"), 2000);
+      await this.leerOMostrar("#campo-tablero", this.t("Arriba, el clima de hoy en mi terreno: temperatura, viento, humedad, lluvia", "On top, today's weather on my field: temperature, wind, humidity, rain", "Em cima, o clima de hoje no meu terreno: temperatura, vento, umidade, chuva"), 2000);
       await this.tocarCuadro();
 
       // 2. FILTROS
-      await this.clic('[data-color-mode="sev"]', this.t("¿Dónde hay riesgo? Falta de agua o helada, cuadro por cuadro", "Where is the risk? Water stress or frost, square by square", "Onde há risco? Falta de água ou geada, quadro a quadro"), 1600);
-      await this.clic('[data-color-mode="zones"]', this.t("3 zonas de manejo: alta, media y baja, para tratarlas distinto", "3 management zones: high, medium and low, to treat them differently", "3 zonas de manejo: alta, média e baixa, para tratá-las diferente"), 1600);
-      await this.clic('[data-color-mode="anom"]', this.t("Cuadros raros: los que se salen del promedio de mi lote", "Odd squares: the ones far from my field's average", "Quadros estranhos: os que fogem da média do talhão"), 1600);
-      await this.clic('[data-color-mode="ndvi"]', this.t("Regreso al verdor", "Back to greenness", "Volto ao verdor"), 900);
+      await this.modoColor("sev", this.t("¿Dónde hay riesgo? Falta de agua o helada, cuadro por cuadro", "Where is the risk? Water stress or frost, square by square", "Onde há risco? Falta de água ou geada, quadro a quadro"), 1600);
+      await this.modoColor("zones", this.t("3 zonas de manejo: alta, media y baja, para tratarlas distinto", "3 management zones: high, medium and low, to treat them differently", "3 zonas de manejo: alta, média e baixa, para tratá-las diferente"), 1600);
+      await this.modoColor("anom", this.t("Cuadros raros: los que se salen del promedio de mi lote", "Odd squares: the ones far from my field's average", "Quadros estranhos: os que fogem da média do talhão"), 1600);
+      await this.modoColor("ndvi", this.t("Regreso al verdor", "Back to greenness", "Volto ao verdor"), 900);
       if (mp()) {
         this.decir(this.t("Me acerco para ver los cuadros uno por uno", "I zoom in to see the squares one by one", "Aproximo para ver os quadros um a um"));
         mp().zoomIn(1); await this.esperar(1100);
