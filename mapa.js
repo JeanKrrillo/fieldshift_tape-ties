@@ -362,8 +362,10 @@
 
         const rect = L.rectangle(cell.limites, {
           renderer: this.cellRenderer || (this.cellRenderer = L.canvas({ padding: 0.3 })), // un solo lienzo para todos los cuadros: 2500 no pesan
+          // Línea fina y tenue: el color del cuadro y la foto deben verse, no la malla.
           color: isSel ? "#FFFFFF" : "#1F2A14",
-          weight: isSel ? 5 : 1.25,
+          opacity: isSel ? 1 : 0.22,
+          weight: isSel ? 3 : 0.6,
           className: isSel ? "celda-elegida" : "",
           dashArray: st.robot?.est ? "2,4" : st.sym === "!" || st.sym === "✕" ? "4,2" : null, // estimado: borde punteado y color más tenue, para no confundirlo con lo medido
           fillColor: st.color,
@@ -403,12 +405,12 @@
 
         rect.on("mouseover", () => {
           if (!window.V2.selectedCells.has(idx)) {
-            rect.setStyle({ weight: 2.5, color: "#FFFFFF" });
+            rect.setStyle({ weight: 2, color: "#FFFFFF", opacity: 1 });
           }
         });
         rect.on("mouseout", () => {
           if (!window.V2.selectedCells.has(idx)) {
-            rect.setStyle({ weight: 1.25, color: "#1F2A14" });
+            rect.setStyle({ weight: 0.6, color: "#1F2A14", opacity: 0.22 });
           }
         });
 
