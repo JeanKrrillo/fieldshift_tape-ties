@@ -24,7 +24,7 @@
   const repintar = () => { if (window.V2?.space === "recom") window.V2.renderActiveViews(); };
 
   // Parámetros que el agrónomo puede cambiar (los valores por defecto son supuestos declarados).
-  const DEF = { costoMaiz: 2000, costoSoya: 1350, precioN: 1.1, deuda: 0, capRate: 3.5, precioCO2: 30, sueloP: "", sueloK: "", riegoCapital: 2500, tasa: 5 };
+  const DEF = { costoMaiz: 2000, costoSoya: 1350, precioN: 1.1, deuda: 0, capRate: 3.5, precioCO2: 30, sueloP: "", sueloK: "", riegoCapital: 2500, tasa: 5, drenCapital: 2200, drenGanNormal: 3, drenGanHumedo: 10 };
   const par = () => ({ ...DEF, ...(leer(claveLoc("par")) || {}) });
 
   Object.assign(A, {
@@ -232,20 +232,74 @@
       const agua = Math.max(0, 1 - ky * (1 - o.eta / Math.max(o.etc, 1)));
       return Math.exp(-kc * o.kdd) * agua;
     },
+    // Precio de cada año llevado al nivel de hoy: precio real (sin inflación) del año ÷ precio real de los últimos 12 meses × precio USDA de hoy.
+    preciosAnio() {
+      const H = window.FS_PRECIOS, e = A.calcular().economia; if (!H || !e) return null;
+      const u = H.ult12, out = {};
+      H.anios.forEach((y, i) => {
+        const fM = (H.maiz[i] / H.cpi[i]) / (u.maiz / u.cpi), fS = (H.soya[i] / H.cpi[i]) / (u.soya / u.cpi), fN = (H.ppiN[i] / H.cpi[i]) / (u.ppiN / u.cpi);
+        out[y] = { pM: e.precioT * fM, pS: (e.soyaT || 428) * fS, fN };
+      });
+      return out;
+    },
     portafolio() {
       const rd = this.resumenDiario(), e = A.calcular().economia, q = par(); if (!rd || !e) return null;
-      const pM = e.precioT, pS = e.soyaT || 428, yM = +(window.V2?.farmExtra?.yieldMaize) || 12.6, yS = 3.9;   // rendimientos promedio de Iowa (supuesto editable)
-      const rel = (c) => { const v = rd.ys.map(y => this.rendAnio(rd.D[y], c)), b = media(v); return v.map(x => 1 - 0.6 * (1 - x / b)); };   // misma calibración 0.6
+      const yM = +(window.V2?.farmExtra?.yieldMaize) || 12.6, yS = 3.9;   // rendimientos promedio de Iowa (supuesto editable)
+      const pa = this.preciosAnio();
+      const ys = pa ? rd.ys.filter(y => pa[y]) : rd.ys;   // con precios: solo los años que tienen clima y precio reales
+      const rel = (c) => { const v = ys.map(y => this.rendAnio(rd.D[y], c)), b = media(v); return v.map(x => 1 - 0.6 * (1 - x / b)); };   // misma calibración 0.6
       const rM = rel("maiz"), rS = rel("soya");
-      // Maíz tras maíz rinde ~10 % menos que tras soya (efecto rotación, ISU) y pide más N.
+      const pM = ys.map(y => pa ? pa[y].pM : e.precioT), pS = ys.map(y => pa ? pa[y].pS : e.soyaT || 428), pN = ys.map(y => q.precioN * (pa ? pa[y].fN : 1));
+      // Maíz tras maíz rinde ~10 % menos que tras soya (efecto rotación, ISU) y pide ~60 kg más de N.
       const esc = {
-        maizSoya: rd.ys.map((_, i) => ((yM * rM[i] * pM - q.costoMaiz) + (yS * rS[i] * pS - q.costoSoya)) / 2),
-        maizMaiz: rd.ys.map((_, i) => yM * 0.9 * rM[i] * pM - q.costoMaiz - 60 * q.precioN),
-        soyaSoya: rd.ys.map((_, i) => yS * 0.95 * rS[i] * pS - q.costoSoya),
+        maizSoya: ys.map((_, i) => ((yM * rM[i] * pM[i] - q.costoMaiz) + (yS * rS[i] * pS[i] - q.costoSoya)) / 2),
+        maizMaiz: ys.map((_, i) => yM * 0.9 * rM[i] * pM[i] - q.costoMaiz - 60 * pN[i]),
+        soyaSoya: ys.map((_, i) => yS * 0.95 * rS[i] * pS[i] - q.costoSoya),
       };
       const out = {};
-      for (const [k, v] of Object.entries(esc)) out[k] = { media: r0(media(v)), p5: r0(cuantil(v, 0.05)), peor: r0(Math.min(...v)), pPerdida: v.filter(x => x < 0).length / v.length };
-      return { out, n: rd.ys.length, pM, pS, yM, yS, q };
+      for (const [k, v] of Object.entries(esc)) { const peor = v.indexOf(Math.min(...v)); out[k] = { media: r0(media(v)), p5: r0(cuantil(v, 0.05)), peor: r0(v[peor]), anioPeor: ys[peor], pPerdida: v.filter(x => x < 0).length / v.length }; }
+      // ¿El precio compensa los años malos? Correlación entre rendimiento de maíz y precio del mismo año.
+      const corr = (a, b) => { const ma = media(a), mb = media(b); return a.reduce((s, x, i) => s + (x - ma) * (b[i] - mb), 0) / Math.sqrt(a.reduce((s, x) => s + (x - ma) ** 2, 0) * b.reduce((s, x) => s + (x - mb) ** 2, 0)); };
+      return { out, n: ys.length, desde: ys[0], hasta: ys[ys.length - 1], conPrecios: !!pa, corr: pa ? +corr(rM, pM).toFixed(2) : null, pM: e.precioT, pS: e.soyaT || 428, yM, yS, q };
+    },
+    insumos() {
+      const H = window.FS_PRECIOS, e = A.calcular().economia, q = par(); if (!H || !e) return null;
+      const real = H.anios.map((y, i) => H.ppiN[i] / H.cpi[i]), hoy = H.ult12.ppiN / H.ult12.cpi;
+      const cv = Math.sqrt(media(real.map(v => (v - media(real)) ** 2))) / media(real);
+      const caidas = real.slice(1).map((v, i) => v / real[i] - 1), salto = Math.max(...caidas), anioSalto = H.anios[caidas.indexOf(salto) + 1];
+      const pct = real.filter(v => v <= hoy).length / real.length;
+      // Razón de precios N:maíz (USD/lb ÷ USD/bu) de cada año, con los niveles de hoy.
+      const pa = this.preciosAnio();
+      const ratios = H.anios.map(y => (q.precioN * pa[y].fN / 2.2046) / (pa[y].pM / 39.368));
+      return { cv: +cv.toFixed(2), salto: +salto.toFixed(2), anioSalto, pct, rMin: +Math.min(...ratios).toFixed(3), rMax: +Math.max(...ratios).toFixed(3), rMed: +cuantil(ratios, 0.5).toFixed(3), desde: H.anios[0], hasta: H.anios[H.anios.length - 1] };
+    },
+    // Semivariograma del NDVI de julio: a qué distancia dos cuadros dejan de parecerse.
+    semivariograma() {
+      const an = this.analisisJulios(), J = this.julios; if (!an || !J) return null;
+      const a = J.anios[an.ultimo], R = J.rows, C = J.cols, lado = this.grilla().cs[0].lado_m || 10;
+      const v = (r, c) => { const x = a.v[r * C + c]; return x < 0 ? null : x / 255 * 2 - 1; };
+      const todos = a.v.filter(x => x >= 0).map(x => x / 255 * 2 - 1), sill = media(todos.map(x => (x - media(todos)) ** 2));
+      const gam = [];
+      for (let h = 1; h <= Math.floor(Math.min(R, C) / 2); h++) {
+        let s = 0, n = 0;
+        for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+          const x = v(r, c); if (x == null) continue;
+          if (c + h < C) { const y = v(r, c + h); if (y != null) { s += (x - y) ** 2; n++; } }
+          if (r + h < R) { const y = v(r + h, c); if (y != null) { s += (x - y) ** 2; n++; } }
+        }
+        gam.push(s / (2 * n));
+      }
+      const iR = gam.findIndex(g => g >= 0.95 * sill), rango = (iR < 0 ? gam.length : iR + 1) * lado, abierto = iR < 0;
+      const ha = A.calcular().celdas?.ha || 1, nGrid = Math.ceil(ha * 1e4 / rango ** 2);
+      return { rango, abierto, nGrid, pepita: +(gam[0] / sill).toFixed(2), sill: +sill.toFixed(4), lado };
+    },
+    drenajeVan() {
+      const rd = this.resumenDiario(), e = A.calcular().economia, q = par(); if (!rd || !e) return null;
+      const yM = +(window.V2?.farmExtra?.yieldMaize) || 12.6;
+      // Supuestos editables: +3 % de rendimiento en años normales y +10 % en primaveras muy mojadas (suelo moderadamente bien drenado).
+      const gan = rd.ys.map(y => (rd.D[y].drenPrim > 250 ? q.drenGanHumedo : q.drenGanNormal) / 100 * yM * e.precioT);
+      const fa = (1 - (1 + q.tasa / 100) ** -20) / (q.tasa / 100);
+      return { anual: r0(media(gan)), van: r0(media(gan) * fa - q.drenCapital), humedos: rd.humedos.length, n: rd.ys.length, q };
     },
     // Carbono del suelo con el modelo ICBM de dos compartimentos (Andrén y Kätterer 1997), 0–30 cm.
     carbono() {
@@ -375,11 +429,22 @@
       }
       const pf = this.portafolio();
       if (pf) {
-        const t = (k, n) => `${n}: ${pf.out[k].media} USD/ha de media, ${pf.out[k].p5} en el peor 5 %, pérdida ${pc(pf.out[k].pPerdida)} de los años`;
-        F.portafolio = m(`Riesgo por rotación con ${pf.n} años de clima real y los precios de hoy (maíz ${pf.pM}, soya ${pf.pS} USD/t; costos ${pf.q.costoMaiz} y ${pf.q.costoSoya} USD/ha, editables): ${t("maizSoya", "maíz-soya")}; ${t("maizMaiz", "maíz-maíz")}; ${t("soyaSoya", "soya-soya")}. Solo varía el clima: falta la historia de precios.`,
-          `Risk by rotation with ${pf.n} years of real weather and today's prices (corn ${pf.pM}, soy ${pf.pS} USD/t; costs ${pf.q.costoMaiz} and ${pf.q.costoSoya} USD/ha, editable): corn-soy ${pf.out.maizSoya.media} USD/ha mean, ${pf.out.maizSoya.p5} worst 5 %, loss in ${pc(pf.out.maizSoya.pPerdida)} of years; corn-corn ${pf.out.maizMaiz.media}, ${pf.out.maizMaiz.p5}, ${pc(pf.out.maizMaiz.pPerdida)}; soy-soy ${pf.out.soyaSoya.media}, ${pf.out.soyaSoya.p5}, ${pc(pf.out.soyaSoya.pPerdida)}. Only weather varies: price history is missing.`,
-          `Risco por rotação com ${pf.n} anos de clima real e os preços de hoje (milho ${pf.pM}, soja ${pf.pS} USD/t; custos ${pf.q.costoMaiz} e ${pf.q.costoSoya} USD/ha, editáveis): milho-soja ${pf.out.maizSoya.media} USD/ha de média, ${pf.out.maizSoya.p5} no pior 5 %, perda em ${pc(pf.out.maizSoya.pPerdida)} dos anos; milho-milho ${pf.out.maizMaiz.media}, ${pf.out.maizMaiz.p5}, ${pc(pf.out.maizMaiz.pPerdida)}; soja-soja ${pf.out.soyaSoya.media}, ${pf.out.soyaSoya.p5}, ${pc(pf.out.soyaSoya.pPerdida)}. Só o clima varia: falta a história de preços.`);
+        const t = (k, n2) => `${n2}: ${pf.out[k].media} USD/ha de media, ${pf.out[k].p5} en el peor 5 % (peor año ${pf.out[k].anioPeor}), pérdida en ${pc(pf.out[k].pPerdida)} de los años`;
+        const te = (k, n2) => `${n2}: ${pf.out[k].media} USD/ha mean, ${pf.out[k].p5} worst 5 % (worst year ${pf.out[k].anioPeor}), loss in ${pc(pf.out[k].pPerdida)} of years`;
+        const tp = (k, n2) => `${n2}: ${pf.out[k].media} USD/ha de média, ${pf.out[k].p5} no pior 5 % (pior ano ${pf.out[k].anioPeor}), perda em ${pc(pf.out[k].pPerdida)} dos anos`;
+        const pr = pf.conPrecios;
+        F.portafolio = m(`Riesgo por rotación con ${pf.n} años (${pf.desde}–${pf.hasta}) de clima real${pr ? " y el precio real de cada año (FRED, sin inflación, llevado al precio USDA de hoy)" : " y los precios de hoy"}; costos ${pf.q.costoMaiz} y ${pf.q.costoSoya} USD/ha (editables): ${t("maizSoya", "maíz-soya")}; ${t("maizMaiz", "maíz-maíz")}; ${t("soyaSoya", "soya-soya")}.${pr ? ` Correlación entre rendimiento de maíz y precio del mismo año: ${pf.corr} (${pf.corr < -0.2 ? "el precio sube cuando el rendimiento cae: cobertura natural parcial" : "el precio casi no compensa los años malos"}).` : " Falta la historia de precios."}`,
+          `Risk by rotation with ${pf.n} years (${pf.desde}–${pf.hasta}) of real weather${pr ? " and each year's real price (FRED, inflation-adjusted, scaled to today's USDA price)" : " and today's prices"}; costs ${pf.q.costoMaiz} and ${pf.q.costoSoya} USD/ha (editable): ${te("maizSoya", "corn-soy")}; ${te("maizMaiz", "corn-corn")}; ${te("soyaSoya", "soy-soy")}.${pr ? ` Correlation between corn yield and same-year price: ${pf.corr} (${pf.corr < -0.2 ? "price rises when yield falls: partial natural hedge" : "price barely offsets bad years"}).` : " Price history is missing."}`,
+          `Risco por rotação com ${pf.n} anos (${pf.desde}–${pf.hasta}) de clima real${pr ? " e o preço real de cada ano (FRED, sem inflação, levado ao preço USDA de hoje)" : " e os preços de hoje"}; custos ${pf.q.costoMaiz} e ${pf.q.costoSoya} USD/ha (editáveis): ${tp("maizSoya", "milho-soja")}; ${tp("maizMaiz", "milho-milho")}; ${tp("soyaSoya", "soja-soja")}.${pr ? ` Correlação entre rendimento do milho e preço do mesmo ano: ${pf.corr} (${pf.corr < -0.2 ? "o preço sobe quando o rendimento cai: hedge natural parcial" : "o preço quase não compensa os anos ruins"}).` : " Falta a história de preços."}`);
       }
+      const ins = this.insumos();
+      if (ins) F.insumos = m(`Precio del fertilizante nitrogenado (índice de precios al productor, sin inflación, ${ins.desde}–${ins.hasta}): varía ${pc(ins.cv)} en promedio; el mayor salto anual fue de +${pc(ins.salto)} en ${ins.anioSalto}. Hoy está más caro que en el ${pc(ins.pct)} de esos años. La razón de precios N:maíz fue de ${ins.rMin} a ${ins.rMax} (mediana ${ins.rMed}): comprar el N con anticipación solo conviene si se espera que la razón suba.`,
+        `Nitrogen fertilizer price (producer price index, inflation-adjusted, ${ins.desde}–${ins.hasta}): varies ${pc(ins.cv)} on average; the biggest yearly jump was +${pc(ins.salto)} in ${ins.anioSalto}. Today it is pricier than in ${pc(ins.pct)} of those years. The N:corn price ratio ranged ${ins.rMin} to ${ins.rMax} (median ${ins.rMed}): pre-buying N only pays if the ratio is expected to rise.`,
+        `Preço do fertilizante nitrogenado (índice de preços ao produtor, sem inflação, ${ins.desde}–${ins.hasta}): varia ${pc(ins.cv)} em média; o maior salto anual foi de +${pc(ins.salto)} em ${ins.anioSalto}. Hoje está mais caro que em ${pc(ins.pct)} desses anos. A razão de preços N:milho foi de ${ins.rMin} a ${ins.rMax} (mediana ${ins.rMed}): comprar N antecipado só compensa se a razão deve subir.`);
+      const sv = this.semivariograma();
+      if (sv) F.semivariograma = m(`Semivariograma del NDVI real de julio: dos cuadros dejan de parecerse a ${sv.abierto ? "más de " : "unos "}${sv.rango} m (rango); el ${pc(sv.pepita)} de la variación ocurre a menos de ${sv.lado} m. ${sv.abierto ? `No se estabiliza dentro del lote: hay una tendencia que lo cruza entero, así que una rejilla rala engaña. Conviene muestrear por zonas, o en rejilla con al menos 1 punto por hectárea (${Math.ceil(A.calcular().celdas?.ha || 0)} puntos).` : `Para un muestreo en rejilla basta un punto cada ${sv.rango} m: unos ${sv.nGrid} puntos en el lote.`}`,
+        `Semivariogram of real July NDVI: two squares stop resembling each other at ${sv.abierto ? "over " : "about "}${sv.rango} m (range); ${pc(sv.pepita)} of the variation happens within ${sv.lado} m. ${sv.abierto ? `It does not level off inside the field: a trend crosses all of it, so a sparse grid misleads. Sample by zones, or grid with at least 1 point per hectare (${Math.ceil(A.calcular().celdas?.ha || 0)} points).` : `Grid sampling needs one point every ${sv.rango} m: about ${sv.nGrid} points in the field.`}`,
+        `Semivariograma do NDVI real de julho: dois quadros deixam de se parecer a ${sv.abierto ? "mais de " : "cerca de "}${sv.rango} m (alcance); ${pc(sv.pepita)} da variação ocorre a menos de ${sv.lado} m. ${sv.abierto ? `Não se estabiliza dentro do talhão: há uma tendência que o atravessa inteiro, então uma grade rala engana. Convém amostrar por zonas, ou em grade com pelo menos 1 ponto por hectare (${Math.ceil(A.calcular().celdas?.ha || 0)} pontos).` : `Para amostragem em grade basta um ponto a cada ${sv.rango} m: cerca de ${sv.nGrid} pontos no talhão.`}`);
       const cb = this.carbono();
       if (cb) F.carbonoSuelo = m(`Carbono del suelo a 30 años (modelo ICBM; parte de ${cb.soc0} t C/ha en 0–30 cm según SSURGO): labranza convencional ${cb.conv >= 0 ? "+" : ""}${cb.conv}, siembra directa ${cb.directa >= 0 ? "+" : ""}${cb.directa}, directa con cobertura ${cb.cobertura >= 0 ? "+" : ""}${cb.cobertura} t C/ha. A ${cb.q.precioCO2} USD/t CO₂e, pasar de convencional a directa con cobertura valdría ~${cb.credito} USD/ha/año antes de verificación. Las tasas del modelo son genéricas: hay que medir el carbono inicial.`,
         `Soil carbon over 30 years (ICBM model; starts at ${cb.soc0} t C/ha in 0–30 cm from SSURGO): conventional tillage ${cb.conv >= 0 ? "+" : ""}${cb.conv}, no-till ${cb.directa >= 0 ? "+" : ""}${cb.directa}, no-till with cover ${cb.cobertura >= 0 ? "+" : ""}${cb.cobertura} t C/ha. At ${cb.q.precioCO2} USD/t CO₂e, switching from conventional to no-till with cover would be worth ~${cb.credito} USD/ha/yr before verification. Model rates are generic: measure the baseline carbon.`,
@@ -388,9 +453,10 @@
       if (ri) F.riegoVan = m(`Riego de apoyo a 20 años: el agua faltante quitó en promedio ${ri.gananciaMedia} USD/ha/año (pesó en ${ri.anios} de ${ri.n} años). Restando 150 USD/ha/año de operación y ${ri.q.riegoCapital} USD/ha de inversión al ${ri.q.tasa} %, el valor presente es ${ri.van} USD/ha: ${ri.van > 0 ? "conviene" : "no conviene"}.`,
         `Supplemental irrigation over 20 years: missing water cost on average ${ri.gananciaMedia} USD/ha/yr (mattered in ${ri.anios} of ${ri.n} years). Minus 150 USD/ha/yr to operate and ${ri.q.riegoCapital} USD/ha invested at ${ri.q.tasa} %, the net present value is ${ri.van} USD/ha: ${ri.van > 0 ? "worth it" : "not worth it"}.`,
         `Irrigação de apoio em 20 anos: a água faltante tirou em média ${ri.gananciaMedia} USD/ha/ano (pesou em ${ri.anios} de ${ri.n} anos). Descontando 150 USD/ha/ano de operação e ${ri.q.riegoCapital} USD/ha de investimento a ${ri.q.tasa} %, o valor presente é ${ri.van} USD/ha: ${ri.van > 0 ? "compensa" : "não compensa"}.`);
-      if (rd) F.drenajeTubos = m(`Drenaje con tubos: en ${rd.humedos.length} de ${rd.ys.length} años la primavera tuvo más de 250 mm de agua sobrante (${rd.decHum} por década), y en promedio sobran ${rd.drenPrim} mm de abril a junio. Hay ${rd.trab} días trabajables para sembrar. El valor presente necesita el costo por hectárea y el rendimiento en las zonas que se encharcan.`,
-        `Tile drainage: in ${rd.humedos.length} of ${rd.ys.length} years spring had over 250 mm of surplus water (${rd.decHum} per decade), averaging ${rd.drenPrim} mm April–June. There are ${rd.trab} workable days for planting. NPV needs the per-hectare cost and the yield in ponding zones.`,
-        `Drenagem com tubos: em ${rd.humedos.length} de ${rd.ys.length} anos a primavera teve mais de 250 mm de água sobrando (${rd.decHum} por década), e em média sobram ${rd.drenPrim} mm de abril a junho. Há ${rd.trab} dias trabalháveis para plantar. O VPL precisa do custo por hectare e do rendimento nas zonas que encharcam.`);
+      const dv = this.drenajeVan();
+      if (dv) F.drenajeTubos = m(`Drenaje con tubos a 20 años: en ${dv.humedos} de ${dv.n} años la primavera tuvo más de 250 mm de agua sobrante. Con +${dv.q.drenGanNormal} % de rendimiento en años normales y +${dv.q.drenGanHumedo} % en los mojados (supuestos editables para un suelo moderadamente bien drenado), gana ${dv.anual} USD/ha/año; con ${dv.q.drenCapital} USD/ha de inversión al ${dv.q.tasa} %, el valor presente es ${dv.van} USD/ha: ${dv.van > 0 ? "conviene" : "no conviene"}.`,
+        `Tile drainage over 20 years: in ${dv.humedos} of ${dv.n} years spring had over 250 mm of surplus water. With +${dv.q.drenGanNormal} % yield in normal years and +${dv.q.drenGanHumedo} % in wet ones (editable assumptions for a moderately well drained soil), it earns ${dv.anual} USD/ha/yr; with ${dv.q.drenCapital} USD/ha invested at ${dv.q.tasa} %, the NPV is ${dv.van} USD/ha: ${dv.van > 0 ? "worth it" : "not worth it"}.`,
+        `Drenagem com tubos em 20 anos: em ${dv.humedos} de ${dv.n} anos a primavera teve mais de 250 mm de água sobrando. Com +${dv.q.drenGanNormal} % de rendimento em anos normais e +${dv.q.drenGanHumedo} % nos úmidos (supostos editáveis para um solo moderadamente bem drenado), ganha ${dv.anual} USD/ha/ano; com ${dv.q.drenCapital} USD/ha de investimento a ${dv.q.tasa} %, o VPL é ${dv.van} USD/ha: ${dv.van > 0 ? "compensa" : "não compensa"}.`);
       const n = this.nitrogeno();
       if (n) F.nitrogenoAjuste = m(`Dosis de N: razón de precios ${n.ratio} (N a ${par().precioN} USD/kg ÷ maíz a ${A.calcular().economia.precioT} USD/t, en USD/lb ÷ USD/bu) → ${n.base} kg N/ha (aproximación lineal de la curva MRTN, maíz tras soya)${n.prim != null ? `; primavera de este año con ${n.prim} mm de drenaje contra ${n.primMedia} de media → ajuste ${n.extra >= 0 ? "+" : ""}${n.extra} kg` : ""}. Total ${n.total} kg N/ha.`,
         `N rate: price ratio ${n.ratio} (N at ${par().precioN} USD/kg ÷ corn at ${A.calcular().economia.precioT} USD/t) → ${n.base} kg N/ha (linear approximation of the MRTN curve, corn after soy)${n.prim != null ? `; this spring had ${n.prim} mm drainage vs ${n.primMedia} average → adjust ${n.extra >= 0 ? "+" : ""}${n.extra} kg` : ""}. Total ${n.total} kg N/ha.`,
@@ -449,10 +515,12 @@
       coberturaFechas: ["Cultivo de cobertura", "Cover crop", "Cultura de cobertura"],
       valorTierra: ["Valor de la tierra", "Land value", "Valor da terra"],
       banco: ["Para el banco", "For the bank", "Para o banco"],
+      insumos: ["Precio del fertilizante", "Fertilizer price", "Preço do fertilizante"],
+      semivariograma: ["Distancia de muestreo", "Sampling distance", "Distância de amostragem"],
       calibracion: ["Verdor contra rendimiento", "Greenness vs yield", "Verdor contra rendimento"],
       bitacora: ["Bitácora", "Field log", "Diário"],
     },
-    fuentesExtra: { zonasEstables: "Sentinel-2 L2A (Planetary Computer)", anomalias: "Sentinel-2 L2A (Planetary Computer)", etReal: "NASA POWER diario", extremos: "NASA POWER diario", nitratoAgua: "NASA POWER + IPCC", erosionReal: "NASA POWER + Open-Meteo DEM + SSURGO", sueloSiembra: "NASA POWER (TS)", portafolio: "NASA POWER + USDA AMS", carbonoSuelo: "ICBM + SSURGO", riegoVan: "NASA POWER + USDA AMS", drenajeTubos: "NASA POWER", nitrogenoAjuste: "MRTN aprox. + NASA POWER", calLargo: "SSURGO (estimación)", fosforoPotasio: "ISU PM 1688", secado: "NASA POWER", coberturaFechas: "NASA POWER + ERA5", valorTierra: "Terra Lab", banco: "Terra Lab", calibracion: "Monitor de cosecha + Sentinel-2", bitacora: "Productor" },
+    fuentesExtra: { zonasEstables: "Sentinel-2 L2A (Planetary Computer)", anomalias: "Sentinel-2 L2A (Planetary Computer)", etReal: "NASA POWER diario", extremos: "NASA POWER diario", nitratoAgua: "NASA POWER + IPCC", erosionReal: "NASA POWER + Open-Meteo DEM + SSURGO", sueloSiembra: "NASA POWER (TS)", portafolio: "NASA POWER + FRED + USDA AMS", insumos: "FRED (PPI, CPI)", semivariograma: "Sentinel-2 L2A", carbonoSuelo: "ICBM + SSURGO", riegoVan: "NASA POWER + USDA AMS", drenajeTubos: "NASA POWER", nitrogenoAjuste: "MRTN aprox. + NASA POWER", calLargo: "SSURGO (estimación)", fosforoPotasio: "ISU PM 1688", secado: "NASA POWER", coberturaFechas: "NASA POWER + ERA5", valorTierra: "Terra Lab", banco: "Terra Lab", calibracion: "Monitor de cosecha + Sentinel-2", bitacora: "Productor" },
     temasExtra: [
       [/zonas? estables|entre a[nñ]os|varias temporadas|historial de verdor|stable zone/, ["zonasEstables"]],
       [/anomal|historial|por debajo de lo normal/, ["anomalias"]],
@@ -461,6 +529,8 @@
       [/nitrato|lixivi|epa|agua potable|regulaci|leach/, ["nitratoAgua"]],
       [/erosi|p[eé]rdida de suelo|rusle|pendiente|slope/, ["erosionReal"]],
       [/temperatura del suelo|suelo a 10|10 ?°|soil temp|d[ií]as trabajables|workable/, ["sueloSiembra"]],
+      [/fertilizante.*precio|precio.*fertiliz|insumo|urea|volatil/, ["insumos", "nitrogenoAjuste"]],
+      [/semivariog|distancia de muestreo|cada cu[aá]ntos metros|rejilla/, ["semivariograma", "muestreoZonas"]],
       [/rotaci[oó]n.*riesgo|riesgo.*rotaci|portafolio|portfolio|monte carlo|menos riesgo/, ["portafolio"]],
       [/carbono.*suelo|suelo.*carbono|cr[eé]ditos? de carbono|carbon credit|secuestr/, ["carbonoSuelo"]],
       [/riego|irrig|pivote|pivot/, ["riegoVan", "agua"]],
@@ -493,6 +563,9 @@
             ${campo("sueloK", m("K (ppm)", "K (ppm)", "K (ppm)"))}
             ${campo("riegoCapital", m("Inversión riego USD/ha", "Irrigation capital USD/ha", "Investimento irrigação USD/ha"))}
             ${campo("tasa", m("Tasa de descuento %", "Discount rate %", "Taxa de desconto %"))}
+            ${campo("drenCapital", m("Inversión drenaje USD/ha", "Drainage capital USD/ha", "Investimento drenagem USD/ha"))}
+            ${campo("drenGanNormal", m("Ganancia drenaje año normal %", "Drainage gain normal year %", "Ganho drenagem ano normal %"))}
+            ${campo("drenGanHumedo", m("Ganancia drenaje año mojado %", "Drainage gain wet year %", "Ganho drenagem ano úmido %"))}
           </div>
         </details>
         <details style="margin-top:8px"><summary class="small" style="cursor:pointer;font-weight:700">${esc(m("Bitácora del lote", "Field log", "Diário do talhão"))} (${bt.length})</summary>
