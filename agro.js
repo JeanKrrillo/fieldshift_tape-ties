@@ -477,10 +477,13 @@
       const loc = window.V2?.D?.coordenadas_parcela || window.V2?.loc;
       if (!loc?.lat || this.cargandoProy) return this.proy;
       const clave = `tl_proy_${(+loc.lat).toFixed(2)}_${(+loc.lon).toFixed(2)}`;
-      try { const c = JSON.parse(localStorage.getItem(clave) || "null"); if (c && Date.now() - c.t < 30 * 864e5) return (this.proy = c); } catch (_) {}
       // El lote de la demo ya trae su resumen calculado: no hace falta esperar 30 s ni gastar el límite del servicio.
       const R = window.FS_PROY;
       if (R && Math.abs(R.lat - loc.lat) < 0.05 && Math.abs(R.lon - loc.lon) < 0.05) { this.proy = R; return R; }
+      try { const c = JSON.parse(localStorage.getItem(clave) || "null"); if (c && Object.keys(c.modelos || {}).length && Date.now() - c.t < 30 * 864e5) return (this.proy = c); } catch (_) {}
+      // Tras un rechazo por límite, no volver a pedir en una hora: cada intento gasta la cuota y alarga el bloqueo.
+      const espera = +(localStorage.getItem("tl_proy_espera") || 0);
+      if (Date.now() < espera) { this.proy = { error: "límite de Open-Meteo; se reintenta después" }; return this.proy; }
       this.cargandoProy = true;
       const la = (+loc.lat).toFixed(4), lo = (+loc.lon).toFixed(4);
       try {
@@ -499,6 +502,7 @@
         this.proy = { t: Date.now(), observado, modelos };
         try { localStorage.setItem(clave, JSON.stringify(this.proy)); } catch (_) {}
       } catch (e) {
+        try { localStorage.setItem("tl_proy_espera", String(Date.now() + 3600e3)); } catch (_) {}
         // Respaldo: resumen guardado del lote de Iowa (recursos/proyeccion_iowa.js) si el terreno está ahí.
         const R = window.FS_PROY;
         this.proy = R && Math.abs(R.lat - loc.lat) < 0.05 && Math.abs(R.lon - loc.lon) < 0.05 ? { ...R, respaldo: true } : { error: String(e) };
@@ -560,6 +564,6 @@
     else if (e.target.closest("[data-agro-gpx]")) Agro.gpx();
     else if (e.target.closest("[data-agro-presc]")) Agro.prescripcion();
   });
-  setTimeout(() => { Agro.cargarPower(); Agro.cargarProyeccion(); }, 2500);   // para que la SI ya tenga los datos de NASA POWER
+  setTimeout(() => Agro.cargarPower(), 2500);   // la proyección pesa mucho en la cuota de Open-Meteo: solo se pide al abrir "Qué hacer"   // para que la SI ya tenga los datos de NASA POWER
   window.V2Agro = Agro;
 })();
