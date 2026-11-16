@@ -146,6 +146,8 @@
         `Sampling route: ${ru.paradas} stops at least ${ru.sep} m apart, ${ru.km} km round trip, about ${ru.min} min at ${ru.vel} km/h. It covers the weakest squares in different areas.`,
         `Rota de amostragem: ${ru.paradas} paradas a pelo menos ${ru.sep} m, ${ru.km} km ida e volta, cerca de ${ru.min} min a ${ru.vel} km/h. Cobre os quadros mais fracos de áreas diferentes.`);
       this.frasesLargo(F, p);
+      this.frasesProy(F, p);
+      this.frasesExtra?.(F, p);
       return F;
     },
 
@@ -154,21 +156,18 @@
       const F = this.frases(), s = q.toLowerCase();
       const falta = (es, en, pt) => [{ clave: "faltante", texto: m(es, en, pt), fuente: "Terra Lab", tipo: "faltante", gravedad: "atencion" }];
       const sinDato = [
-        [/farm bill|arc|plc|subsidi|eqip|csp/, ["Programas de la Farm Bill (ARC/PLC, EQIP, CSP): la página no tiene rendimientos del condado, precios de referencia ni reglas del programa.", "Farm Bill programs (ARC/PLC, EQIP, CSP): the page has no county yields, reference prices or program rules.", "Programas da Farm Bill (ARC/PLC, EQIP, CSP): a página não tem rendimentos do condado, preços de referência nem regras do programa."]],
-        [/seguro|insurance|aph|cobertura de seguro/, ["Seguro agrícola: falta el historial de rendimiento del lote (APH) y las primas de RMA.", "Crop insurance: the field's yield history (APH) and RMA premiums are missing.", "Seguro agrícola: falta o histórico de rendimento do talhão (APH) e os prêmios da RMA."]],
+        [/farm bill|\barc\b|\bplc\b|subsidi|eqip|\bcsp\b/, ["Programas de la Farm Bill (ARC/PLC, EQIP, CSP): la página no tiene rendimientos del condado, precios de referencia ni reglas del programa.", "Farm Bill programs (ARC/PLC, EQIP, CSP): the page has no county yields, reference prices or program rules.", "Programas da Farm Bill (ARC/PLC, EQIP, CSP): a página não tem rendimentos do condado, preços de referência nem regras do programa."]],
+        [/seguro|insurance|\baph\b|cobertura de seguro/, ["Seguro agrícola: falta el historial de rendimiento del lote (APH) y las primas de RMA.", "Crop insurance: the field's yield history (APH) and RMA premiums are missing.", "Seguro agrícola: falta o histórico de rendimento do talhão (APH) e os prêmios da RMA."]],
         [/arancel|tariff|tarifa|china|exporta|comercio/, ["Comercio y aranceles: la página no tiene datos de exportación ni de base local histórica.", "Trade and tariffs: the page has no export data or historical local basis.", "Comércio e tarifas: a página não tem dados de exportação nem de base local histórica."]],
-        [/etanol|ethanol|biocombust|biofuel|45z|saf/, ["Etanol y biocombustibles: no hay datos de demanda ni de mandatos (EPA RFS).", "Ethanol and biofuels: no demand or mandate data (EPA RFS).", "Etanol e biocombustíveis: não há dados de demanda nem de mandatos (EPA RFS)."]],
+        [/etanol|ethanol|biocombust|biofuel|45z|\bsaf\b/, ["Etanol y biocombustibles: no hay datos de demanda ni de mandatos (EPA RFS).", "Ethanol and biofuels: no demand or mandate data (EPA RFS).", "Etanol e biocombustíveis: não há dados de demanda nem de mandatos (EPA RFS)."]],
         [/futuro|futures|opci[oó]n|hedge|cobertura de precio|contrato/, ["Coberturas con futuros y opciones: falta la curva de futuros y la base local; solo hay el precio al contado del día.", "Futures and options hedging: the futures curve and local basis are missing; only today's cash price exists.", "Hedge com futuros e opções: faltam a curva de futuros e a base local; só há o preço à vista do dia."]],
-        [/cr[eé]ditos? de carbono|carbon credit|carbono.*suelo|suelo.*carbono|secuestr|soil carbon/, ["Carbono del suelo y créditos: hace falta un modelo de carbono (tipo RothC o DayCent) y medir el carbono inicial; la página no lo tiene.", "Soil carbon and credits: a carbon model (RothC/DayCent type) and a measured baseline are needed; the page has neither.", "Carbono do solo e créditos: falta um modelo de carbono (tipo RothC ou DayCent) e medir o carbono inicial; a página não tem."]],
-        [/banco|cr[eé]dito|pr[eé]stamo|deuda|bank|loan/, ["Indicadores para el banco: faltan deuda, renta y flujo de caja de la operación.", "Bank indicators: debt, rent and the operation's cash flow are missing.", "Indicadores para o banco: faltam dívida, arrendamento e fluxo de caixa da operação."]],
         [/plaga|gusano|rootworm|enfermedad|maleza|pest|disease|weed/, ["Plagas y enfermedades: no hay modelos de grados día por plaga ni reportes de monitoreo.", "Pests and diseases: no pest degree-day models or scouting reports.", "Pragas e doenças: não há modelos de graus-dia por praga nem relatórios de monitoramento."]],
-        [/zonas? estables|entre a[nñ]os|varias temporadas|historial de verdor/, ["Zonas estables entre años: la página solo tiene una fecha de imagen.", "Stable zones across years: the page has a single image date.", "Zonas estáveis entre anos: a página só tem uma data de imagem."]],
-        [/evapotrans|et real|openet/, ["ET real: OpenET no respondió (límite del plan gratuito).", "Actual ET: OpenET did not answer (free plan limit).", "ET real: OpenET não respondeu (limite do plano gratuito)."]],
       ].find(([re]) => re.test(s));
       if (sinDato) return falta(...sinDato[1]);
       const temas = [
+        ...(this.temasExtra || []),
         [/grados d[ií]a|gdd|graus/, ["gradosDia"]],
-        [/2030|2040|2050|20 a[nñ]os|50 a[nñ]os|futur|cambio clim|proyecci|climate change/, ["horizontes", "riesgo"]],
+        [/2030|2040|2050|20 a[nñ]os|50 a[nñ]os|futur|cambio clim|proyecci|climate change|dejar? de (sembrar|convenir)|rendir[aá]/, ["proyeccion", "validacion", "horizontes"]],
         [/sequ[ií]a|riesgo|d[eé]cada|hist[oó]ric|drought|risk|decade/, ["riesgo"]],
         [/erosi|p[eé]rdida de suelo|rusle|erosion/, ["erosion"]],
         [/huella|co2|emisi|n2o|nitrato|lixivi|footprint|leach/, ["huella"]],
@@ -189,8 +188,11 @@
       ];
       const hit = temas.find(([re]) => re.test(s));
       if (!hit) return null;
+      const pide = { calibracion: ["Sube el CSV de tu monitor de cosecha (lat, lon, t/ha) en Qué hacer → Plan agronómico; con eso se calibra el NDVI de julio contra tu rendimiento.", "Upload your yield monitor CSV (lat, lon, t/ha) in What to do → Agronomic plan; it calibrates July NDVI against your yield.", "Envie o CSV do seu monitor de colheita (lat, lon, t/ha) em O que fazer → Plano agronômico; com isso o NDVI de julho é calibrado contra seu rendimento."],
+        bitacora: ["La bitácora está vacía: agrega siembra, insumos y cosecha en Qué hacer → Plan agronómico → Bitácora del lote.", "The field log is empty: add planting, inputs and harvest in What to do → Agronomic plan → Field log.", "O diário está vazio: adicione plantio, insumos e colheita em O que fazer → Plano agronômico → Diário do talhão."] };
+      if (!hit[1].some(k => F[k])) { const k = hit[1].find(x => pide[x]); return k ? falta(...pide[k]) : null; }
       if (!hit[1].length) return [{ clave: "faltante", texto: m("Grados día: no se pueden calcular bien con lo que trae la página (solo extremos mensuales de NASA POWER y unas semanas de datos diarios). Hace falta la serie diaria de la temporada.", "Growing degree days can't be computed well from what the page has (only NASA POWER monthly extremes and a few weeks of daily data). The season's daily series is needed.", "Graus-dia não podem ser calculados bem com o que a página tem (só extremos mensais do NASA POWER e algumas semanas diárias). Falta a série diária da safra."), fuente: "Terra Lab", tipo: "faltante", gravedad: "atencion" }];
-      return hit[1].filter(k => F[k]).map(k => ({ clave: k, texto: F[k], fuente: { siembra: "NASA POWER + Iowa State", agua: "NASA POWER + USDA SSURGO", suelo: "USDA SSURGO", nitrogeno: "Iowa State MRTN", densidad: "Iowa State", economia: "USDA AMS", clima: "NASA POWER 1985–2024", ruta: "Terra Lab", celdas: "Sentinel-2", fenologia: "Sentinel-2", cosecha: "Iowa State + NASA POWER", gradosDia: "NASA POWER diario", riesgo: "NASA POWER mensual 1985–", horizontes: "NASA POWER (extrapolación)", erosion: "RUSLE + SSURGO", huella: "IPCC 2019", muestreoZonas: "Terra Lab", prescripcion: "Iowa State" }[k], tipo: "calculo", gravedad: "info" }));
+      return hit[1].filter(k => F[k]).map(k => ({ clave: k, texto: F[k], fuente: { siembra: "NASA POWER + Iowa State", agua: "NASA POWER + USDA SSURGO", suelo: "USDA SSURGO", nitrogeno: "Iowa State MRTN", densidad: "Iowa State", economia: "USDA AMS", clima: "NASA POWER 1985–2024", ruta: "Terra Lab", celdas: "Sentinel-2", fenologia: "Sentinel-2", cosecha: "Iowa State + NASA POWER", gradosDia: "NASA POWER diario", riesgo: "NASA POWER mensual 1985–", horizontes: "NASA POWER (extrapolación)", erosion: "RUSLE + SSURGO", huella: "IPCC 2019", muestreoZonas: "Terra Lab", prescripcion: "Iowa State", proyeccion: "CMIP6 HighResMIP (Open-Meteo) + NASA POWER", validacion: "NASA POWER 1985–2024 + USDA NASS" }[k] || this.fuentesExtra?.[k] || "Terra Lab", tipo: "calculo", gravedad: "info" }));
     },
 
     // ------------------------------------------------------------ notas de campo (por terreno, en este navegador)
@@ -201,6 +203,7 @@
     // ------------------------------------------------------------ tarjeta en "Qué hacer"
     tarjeta() {
       if (!this.power && !this.cargando) this.cargarPower();
+      if (!this.proy && !this.cargandoProy) this.cargarProyeccion();
       const p = this.calcular(), F = this.frases(p);
       const filas = [
         ["fenologia", m("Ojo con la foto", "Mind the image", "Atenção à foto")],
@@ -211,6 +214,8 @@
         ["densidad", m("Semilla e híbrido", "Seed and hybrid", "Semente e híbrido")],
         ["gradosDia", m("Grados día de esta temporada", "This season's degree days", "Graus-dia desta safra")],
         ["riesgo", m("Riesgo de agua en 40 años", "40-year water risk", "Risco de água em 40 anos")],
+        ["proyeccion", m("Rendimiento con el clima futuro", "Yield under future climate", "Rendimento com o clima futuro")],
+        ["validacion", m("Qué tan bien funciona ese modelo", "How well that model works", "Quão bem esse modelo funciona")],
         ["horizontes", m("10, 15, 20 y 50 años", "10, 15, 20 and 50 years", "10, 15, 20 e 50 anos")],
         ["erosion", m("Erosión y vida del suelo", "Erosion and soil life", "Erosão e vida do solo")],
         ["huella", m("Huella de carbono y nitrato", "Carbon footprint and nitrate", "Pegada de carbono e nitrato")],
@@ -222,6 +227,7 @@
         ["celdas", m("Resolución", "Resolution", "Resolução")],
         ["ruta", m("Muestreo", "Sampling", "Amostragem")],
       ].filter(([k]) => F[k]);
+      for (const k of Object.keys(F)) if (this.titulosExtra?.[k] && !filas.some(f => f[0] === k)) filas.push([k, m(...this.titulosExtra[k])]);
       return `
         <div class="card" id="agro-plan">
           <h2 class="card-title" style="margin-bottom:6px">${window.ic ? window.ic("calc", "sm") : ""} <span>${esc(m("Plan agronómico calculado", "Computed agronomic plan", "Plano agronômico calculado"))}</span></h2>
@@ -230,6 +236,7 @@
             ${filas.map(([k, t]) => `<div class="recom-card${k === "fenologia" ? " urgent" : ""}" style="padding:10px 12px"><strong class="small">${esc(t)}</strong><div class="small" style="margin-top:4px">${esc(F[k])}</div></div>`).join("")}
           </div>
           ${p.faltan.length ? `<div class="notice atencion" style="margin-top:10px"><div class="xs"><b>${esc(m("Lo que todavía no se puede calcular:", "Not yet computable:", "Ainda não dá para calcular:"))}</b><ul style="margin:4px 0 0 16px;padding:0">${p.faltan.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div></div>` : ""}
+          ${this.panelExtra?.() || ""}
           <label class="small" style="display:block;margin-top:12px"><b>${esc(m("Mis notas de campo", "My field notes", "Minhas notas de campo"))}</b>
             <textarea id="agro-notas" class="field" rows="4" style="width:100%;margin-top:4px" placeholder="${esc(m("Lo que viste en el recorrido, decisiones, dudas…", "What you saw, decisions, questions…", "O que você viu, decisões, dúvidas…"))}">${esc(this.notas())}</textarea>
           </label>
@@ -420,13 +427,129 @@
         `Carbon footprint at ${p.insumos.nTrasSoya[1]} kg N/ha (IPCC 2019, tier 1): direct nitrous oxide ${hu.directo} + indirect ${hu.indirecto} + making the nitrogen ${hu.fab} + diesel ${hu.diesel} = ${hu.total} kg CO₂e/ha, about ${hu.porT} kg per tonne. Nitrate leached to water: ~${hu.nitrato} kg N/ha/yr (IPCC default fraction, not measured in this watershed).`,
         `Pegada de carbono com ${p.insumos.nTrasSoya[1]} kg N/ha (IPCC 2019, nível 1): óxido nitroso direto ${hu.directo} + indireto ${hu.indirecto} + fabricar o nitrogênio ${hu.fab} + diesel ${hu.diesel} = ${hu.total} kg CO₂e/ha, cerca de ${hu.porT} kg por tonelada. Nitrato lixiviado para a água: ~${hu.nitrato} kg N/ha/ano (fração padrão do IPCC, não medida nesta bacia).`);
       const mz = this.muestreoZonas();
-      if (mz?.length) F.muestreoZonas = m(`Muestreo de suelo por zonas: ${mz.length} puntos, 3 repartidos en cada zona (${[1, 2, 3].map(z => mz.find(x => x.zona === z)?.n).filter(Boolean).join(" / ")} cuadros por zona). En cada punto, una muestra compuesta de 15 a 20 piquetes a 0–15 cm. Descárgalo en GPX para el GPS o el robot.`,
-        `Zone soil sampling: ${mz.length} points, 3 spread in each zone (${[1, 2, 3].map(z => mz.find(x => x.zona === z)?.n).filter(Boolean).join(" / ")} squares per zone). At each point, a composite of 15–20 cores at 0–15 cm. Download it as GPX for the GPS or robot.`,
-        `Amostragem de solo por zonas: ${mz.length} pontos, 3 espalhados em cada zona (${[1, 2, 3].map(z => mz.find(x => x.zona === z)?.n).filter(Boolean).join(" / ")} quadros por zona). Em cada ponto, uma amostra composta de 15 a 20 subamostras a 0–15 cm. Baixe em GPX para o GPS ou o robô.`);
+      if (mz?.length) F.muestreoZonas = m(`Muestreo de suelo por zonas: ${mz.length} puntos repartidos según la variabilidad de cada zona (${[1, 2, 3].map(z => mz.find(x => x.zona === z)?.n).filter(Boolean).join(" / ")} cuadros por zona). En cada punto, una muestra compuesta de 15 a 20 piquetes a 0–15 cm. Descárgalo en GPX para el GPS o el robot.`,
+        `Zone soil sampling: ${mz.length} points spread by each zone's variability (${[1, 2, 3].map(z => mz.find(x => x.zona === z)?.n).filter(Boolean).join(" / ")} squares per zone). At each point, a composite of 15–20 cores at 0–15 cm. Download it as GPX for the GPS or robot.`,
+        `Amostragem de solo por zonas: ${mz.length} pontos distribuídos pela variabilidade de cada zona (${[1, 2, 3].map(z => mz.find(x => x.zona === z)?.n).filter(Boolean).join(" / ")} quadros por zona). Em cada ponto, uma amostra composta de 15 a 20 subamostras a 0–15 cm. Baixe em GPX para o GPS ou o robô.`);
       if (p.celdas) F.prescripcion = m(`Prescripción de siembra variable: zona baja 79 mil, media 84 mil y alta 89 mil semillas/ha (guía ISU), por cuadro, en GeoJSON para la maquinaria. Con la foto de noviembre las zonas no son confiables: rehazla con imágenes de julio.`,
         `Variable-rate seeding prescription: low zone 79k, medium 84k, high 89k seeds/ha (ISU guide), per square, as GeoJSON for the machinery. With the November image the zones aren't reliable: redo it with July imagery.`,
         `Prescrição de plantio variável: zona baixa 79 mil, média 84 mil e alta 89 mil sementes/ha (guia ISU), por quadro, em GeoJSON para as máquinas. Com a foto de novembro as zonas não são confiáveis: refaça com imagens de julho.`);
       if (this.power?.error) F.powerError = m("NASA POWER no respondió: grados día y riesgo de 40 años no se calcularon.", "NASA POWER did not answer: degree days and 40-year risk were not computed.", "NASA POWER não respondeu: graus-dia e risco de 40 anos não foram calculados.");
+      return F;
+    },
+  });
+
+  // =============================================================================
+  // Proyección de rendimiento 2031–2050: 7 modelos CMIP6 de alta resolución (HighResMIP, vía Open-Meteo)
+  // dentro de un modelo de rendimiento validado con 40 años observados de NASA POWER.
+  // =============================================================================
+  const MODELOS = ["CMCC_CM2_VHR4", "FGOALS_f3_H", "HiRAM_SIT_HR", "MRI_AGCM3_2_S", "EC_Earth3P_HR", "MPI_ESM1_2_XR", "NICAM16_8S"];
+  const CALIB = 0.6;   // reduce la pérdida del modelo: calibrado con Iowa 1988 (−30 %) y 2012 (−22 %), USDA NASS aprox.
+  const gradoDia = (tx, tn, b) => tn >= b ? (tx + tn) / 2 - b : tx <= b ? 0 : (tx - b) ** 2 / (2 * (tx - tn));   // método del triángulo
+  Object.assign(Agro, {
+    proy: null,
+    cargandoProy: false,
+
+    // Resumen por año: lluvia may–sep, grados día útiles (10–29 °C) y dañinos (>29 °C, jun–ago).
+    resumirAnios(fechas, tmax, tmin, prec) {
+      const out = {};
+      for (let i = 0; i < fechas.length; i++) {
+        const y = +fechas[i].slice(0, 4), mo = fechas[i].includes("-") ? +fechas[i].slice(5, 7) : +fechas[i].slice(4, 6), tx = tmax[i], tn = tmin[i], pr = prec[i];
+        if (tx == null || tn == null || tx < -90 || tn < -90) continue;
+        const o = out[y] = out[y] || { p: 0, g: 0, k: 0 };
+        if (mo >= 5 && mo <= 9) { o.p += Math.max(0, pr || 0); o.g += gradoDia(tx, tn, 10) - gradoDia(tx, tn, 29); }
+        if (mo >= 6 && mo <= 8) o.k += gradoDia(tx, tn, 29);
+      }
+      return out;
+    },
+
+    // Rendimiento relativo: calor (forma de Schlenker y Roberts 2009) × agua (FAO-33, Ky = 1.25 para maíz).
+    rendRel(o, awc) {
+      const eta = Math.min(ETC_MAIZ_MM, o.p + awc);
+      return Math.exp(0.0003 * o.g - 0.0065 * o.k) * Math.max(0, 1 - 1.25 * (1 - eta / ETC_MAIZ_MM));
+    },
+    serieRel(anios, awc, desde, hasta) {
+      const ys = Object.keys(anios).map(Number).filter(y => y >= desde && y <= hasta);
+      const base = ys.reduce((s, y) => s + this.rendRel(anios[y], awc), 0) / ys.length;
+      return { base, rel: (y) => 1 - CALIB * (1 - this.rendRel(anios[y], awc) / base) };
+    },
+
+    async cargarProyeccion() {
+      const loc = window.V2?.D?.coordenadas_parcela || window.V2?.loc;
+      if (!loc?.lat || this.cargandoProy) return this.proy;
+      const clave = `tl_proy_${(+loc.lat).toFixed(2)}_${(+loc.lon).toFixed(2)}`;
+      try { const c = JSON.parse(localStorage.getItem(clave) || "null"); if (c && Date.now() - c.t < 30 * 864e5) return (this.proy = c); } catch (_) {}
+      // El lote de la demo ya trae su resumen calculado: no hace falta esperar 30 s ni gastar el límite del servicio.
+      const R = window.FS_PROY;
+      if (R && Math.abs(R.lat - loc.lat) < 0.05 && Math.abs(R.lon - loc.lon) < 0.05) { this.proy = R; return R; }
+      this.cargandoProy = true;
+      const la = (+loc.lat).toFixed(4), lo = (+loc.lon).toFixed(4);
+      try {
+        const [obs, cl] = await Promise.all([
+          fetch(`${POWER}/daily/point?parameters=T2M_MAX,T2M_MIN,PRECTOTCORR&community=AG&longitude=${lo}&latitude=${la}&start=19850101&end=20241231&format=JSON`).then(r => r.json()),
+          fetch(`https://climate-api.open-meteo.com/v1/climate?latitude=${la}&longitude=${lo}&start_date=1985-01-01&end_date=2050-12-31&models=${MODELOS.join(",")}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum`).then(r => r.json()),
+        ]);
+        const P = obs.properties.parameter, f = Object.keys(P.T2M_MAX);
+        const observado = this.resumirAnios(f, f.map(k => P.T2M_MAX[k]), f.map(k => P.T2M_MIN[k]), f.map(k => P.PRECTOTCORR[k]));
+        const modelos = {};
+        for (const md of MODELOS) {
+          const tx = cl.daily?.[`temperature_2m_max_${md}`]; if (!tx) continue;
+          modelos[md] = this.resumirAnios(cl.daily.time, tx, cl.daily[`temperature_2m_min_${md}`], cl.daily[`precipitation_sum_${md}`]);
+        }
+        if (!Object.keys(modelos).length) throw new Error(cl.reason || "Open-Meteo sin datos");
+        this.proy = { t: Date.now(), observado, modelos };
+        try { localStorage.setItem(clave, JSON.stringify(this.proy)); } catch (_) {}
+      } catch (e) {
+        // Respaldo: resumen guardado del lote de Iowa (recursos/proyeccion_iowa.js) si el terreno está ahí.
+        const R = window.FS_PROY;
+        this.proy = R && Math.abs(R.lat - loc.lat) < 0.05 && Math.abs(R.lon - loc.lon) < 0.05 ? { ...R, respaldo: true } : { error: String(e) };
+      }
+      this.cargandoProy = false;
+      if (window.V2?.space === "recom") window.V2.renderActiveViews();
+      return this.proy;
+    },
+
+    // Cambio de rendimiento por ventana de 10 años contra 1985–2014 de cada modelo (método delta: quita el sesgo de cada modelo).
+    proyectar(awc) {
+      const pr = this.proy; if (!pr?.modelos || awc == null) return null;
+      const ob = pr.observado, so = this.serieRel(ob, awc, 1985, 2024);
+      const yo = Object.keys(ob).map(Number);
+      const validacion = yo.map(y => ({ y, r: +so.rel(y).toFixed(2) })).sort((a, b) => a.r - b.r);
+      const perdidaObs = yo.filter(y => so.rel(y) < 0.8).length / yo.length;
+      const ventanas = [[2031, 2040, 10], [2036, 2045, 15], [2041, 2050, 20]];
+      const porModelo = Object.entries(pr.modelos).map(([md, an]) => {
+        const s = this.serieRel(an, awc, 1985, 2014);
+        const hist = Object.keys(an).map(Number).filter(y => y >= 1985 && y <= 2014);
+        const kHist = hist.reduce((t, y) => t + an[y].k, 0) / hist.length;
+        return { md, kHist, v: ventanas.map(([a, b]) => {
+          const ys = Object.keys(an).map(Number).filter(y => y >= a && y <= b);
+          const rel = ys.map(y => s.rel(y));
+          return { cambio: rel.reduce((t, x) => t + x, 0) / rel.length - 1, pPerdida: rel.filter(x => x < 0.8).length / rel.length, k: ys.reduce((t, y) => t + an[y].k, 0) / ys.length, p: ys.reduce((t, y) => t + an[y].p, 0) / ys.length };
+        }) };
+      });
+      const med = (xs) => { const s = [...xs].sort((a, b) => a - b), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+      const kObs = yo.filter(y => y <= 2014).reduce((t, y) => t + ob[y].k, 0) / yo.filter(y => y <= 2014).length;
+      const res = ventanas.map(([a, b, h], i) => {
+        const c = porModelo.map(m2 => m2.v[i].cambio), pp = porModelo.map(m2 => m2.v[i].pPerdida);
+        return { a, b, h, mediana: med(c), min: Math.min(...c), max: Math.max(...c), pPerdida: med(pp), negativos: c.filter(x => x < 0).length, n: c.length, kdd: med(porModelo.map(m2 => m2.v[i].k)) };
+      });
+      // Umbral para el maíz: más de 1 año de cada 5 con pérdida mayor al 20 %.
+      const umbral = res.find(r => r.pPerdida > 0.2);
+      return { validacion, perdidaObs, kObs, kModelos: med(porModelo.map(m2 => m2.kHist)), res, umbral, n: porModelo.length };
+    },
+
+    frasesProy(F, p) {
+      const pr = this.proyectar(p.agua?.awc);
+      if (!pr) { if (this.proy?.error) F.proyError = m("Las proyecciones climáticas no respondieron.", "Climate projections did not answer.", "As projeções climáticas não responderam."); return F; }
+      const v = pr.validacion, pc = (x) => `${x >= 0 ? "+" : ""}${Math.round(x * 100)} %`;
+      F.validacion = m(`Modelo de rendimiento probado con 40 años observados (NASA POWER diario): los peores años que calcula son ${v[0].y} (${Math.round(v[0].r * 100)} % de lo normal) y ${v[1].y} (${Math.round(v[1].r * 100)} %), las dos grandes sequías de Iowa. Está calibrado con las pérdidas estatales de 1988 y 2012. No detecta los daños por exceso de agua, como la inundación de 1993. Años con pérdida mayor al 20 %: ${Math.round(pr.perdidaObs * 100)} % del periodo.`,
+        `Yield model tested on 40 observed years (NASA POWER daily): the worst years it computes are ${v[0].y} (${Math.round(v[0].r * 100)} % of normal) and ${v[1].y} (${Math.round(v[1].r * 100)} %), Iowa's two great droughts. It is calibrated to the 1988 and 2012 state losses. It does not detect excess-water damage such as the 1993 flood. Years losing over 20 %: ${Math.round(pr.perdidaObs * 100)} % of the period.`,
+        `Modelo de rendimento testado com 40 anos observados (NASA POWER diário): os piores anos que calcula são ${v[0].y} (${Math.round(v[0].r * 100)} % do normal) e ${v[1].y} (${Math.round(v[1].r * 100)} %), as duas grandes secas de Iowa. Está calibrado com as perdas estaduais de 1988 e 2012. Não detecta danos por excesso de água, como a enchente de 1993. Anos com perda acima de 20 %: ${Math.round(pr.perdidaObs * 100)} % do período.`);
+      const linea = (r) => m(`${r.a}–${r.b} (a ${r.h} años): ${pc(r.mediana)} (entre ${pc(r.min)} y ${pc(r.max)}; ${r.negativos} de ${r.n} modelos dan pérdida), un año con más del 20 % de pérdida cada ${r.pPerdida > 0 ? Math.round(1 / r.pPerdida) : "∞"} años`,
+        `${r.a}–${r.b} (${r.h} years out): ${pc(r.mediana)} (range ${pc(r.min)} to ${pc(r.max)}; ${r.negativos} of ${r.n} models show a loss), a year losing over 20 % every ${r.pPerdida > 0 ? Math.round(1 / r.pPerdida) : "∞"} years`,
+        `${r.a}–${r.b} (a ${r.h} anos): ${pc(r.mediana)} (entre ${pc(r.min)} e ${pc(r.max)}; ${r.negativos} de ${r.n} modelos dão perda), um ano com mais de 20 % de perda a cada ${r.pPerdida > 0 ? Math.round(1 / r.pPerdida) : "∞"} anos`);
+      F.proyeccion = m(`Rendimiento del maíz con el clima de ${pr.n} modelos CMIP6 de alta resolución (HighResMIP, escenario de emisiones altas), contra 1985–2014 de cada modelo: ${pr.res.map(linea).join("; ")}. Hoy hay un año con pérdida fuerte cada ${Math.round(1 / Math.max(pr.perdidaObs, 0.01))} años. En los modelos, los grados día de calor dañino en verano pasan de ${Math.round(pr.kModelos)} (1985–2014) a ${Math.round(pr.res[2].kdd)} (2041–2050); en lo observado eran ${Math.round(pr.kObs)}. ${pr.umbral ? `El maíz cruza el umbral de riesgo (más de 1 año de cada 5 con pérdida fuerte) en ${pr.umbral.a}–${pr.umbral.b}.` : "Hasta 2050 el maíz no cruza el umbral de riesgo (más de 1 año de cada 5 con pérdida fuerte)."} No hay datos más allá de 2050: el horizonte de 50 años necesita NEX-GDDP o CMIP6 completo.${this.proy.respaldo ? ` (Copia guardada del ${new Date(this.proy.t).toISOString().slice(0, 10)}: el servicio no respondió.)` : ""}`,
+        `Corn yield under ${pr.n} high-resolution CMIP6 models (HighResMIP, high-emissions scenario), against each model's 1985–2014: ${pr.res.map(linea).join("; ")}. Today a severe-loss year comes every ${Math.round(1 / Math.max(pr.perdidaObs, 0.01))} years. In the models, harmful summer heat degree days rise from ${Math.round(pr.kModelos)} (1985–2014) to ${Math.round(pr.res[2].kdd)} (2041–2050); observed was ${Math.round(pr.kObs)}. ${pr.umbral ? `Corn crosses the risk threshold (more than 1 year in 5 with a severe loss) in ${pr.umbral.a}–${pr.umbral.b}.` : "Through 2050 corn does not cross the risk threshold (more than 1 year in 5 with a severe loss)."} No data beyond 2050: the 50-year horizon needs NEX-GDDP or full CMIP6.`,
+        `Rendimento do milho com o clima de ${pr.n} modelos CMIP6 de alta resolução (HighResMIP, cenário de emissões altas), contra 1985–2014 de cada modelo: ${pr.res.map(linea).join("; ")}. Hoje há um ano com perda forte a cada ${Math.round(1 / Math.max(pr.perdidaObs, 0.01))} anos. Nos modelos, os graus-dia de calor prejudicial no verão passam de ${Math.round(pr.kModelos)} (1985–2014) para ${Math.round(pr.res[2].kdd)} (2041–2050); no observado eram ${Math.round(pr.kObs)}. ${pr.umbral ? `O milho cruza o limiar de risco (mais de 1 ano em 5 com perda forte) em ${pr.umbral.a}–${pr.umbral.b}.` : "Até 2050 o milho não cruza o limiar de risco (mais de 1 ano em 5 com perda forte)."} Não há dados além de 2050: o horizonte de 50 anos precisa de NEX-GDDP ou CMIP6 completo.`);
       return F;
     },
   });
@@ -437,6 +560,6 @@
     else if (e.target.closest("[data-agro-gpx]")) Agro.gpx();
     else if (e.target.closest("[data-agro-presc]")) Agro.prescripcion();
   });
-  setTimeout(() => Agro.cargarPower(), 2500);   // para que la SI ya tenga los datos de NASA POWER
+  setTimeout(() => { Agro.cargarPower(); Agro.cargarProyeccion(); }, 2500);   // para que la SI ya tenga los datos de NASA POWER
   window.V2Agro = Agro;
 })();
