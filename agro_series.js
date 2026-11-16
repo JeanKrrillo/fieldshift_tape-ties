@@ -69,7 +69,7 @@
     analisisJulios() {
       const J = this.julios, g = this.grilla(); if (!J?.anios || !g) return null;
       const ys = Object.keys(J.anios).map(Number).sort(); if (ys.length < 3) return null;
-      // Tercil de cada cuadro dentro de su lote, cada año (relativo: quita el efecto del año).
+      // Tercil de cada cuadro dentro de su terreno, cada año (relativo: quita el efecto del año).
       const terc = {}, medias = {};
       for (const y of ys) {
         const vals = g.cs.map(c => this.ndviJul(y, c)), ok = vals.filter(v => v != null);
@@ -209,7 +209,7 @@
       this.cargandoSR = true;
       const res = { t: Date.now() };
       try {
-        // 10 × 10 puntos de elevación sobre el lote → pendiente por diferencias finitas.
+        // 10 × 10 puntos de elevación sobre el terreno → pendiente por diferencias finitas.
         const [w, s, e, n] = g.bbox, N = 10, la = [], lo = [];
         for (let i = 0; i < N; i++) for (let j2 = 0; j2 < N; j2++) { la.push((s + (n - s) * (i + 0.5) / N).toFixed(5)); lo.push((w + (e - w) * (j2 + 0.5) / N).toFixed(5)); }
         const el = (await (await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${la.join(",")}&longitude=${lo.join(",")}`)).json()).elevation;
@@ -380,7 +380,7 @@
         const c = g.cs.find(c2 => lat >= Math.min(c2.limites[0][0], c2.limites[1][0]) && lat <= Math.max(c2.limites[0][0], c2.limites[1][0]) && lon >= Math.min(c2.limites[0][1], c2.limites[1][1]) && lon <= Math.max(c2.limites[0][1], c2.limites[1][1]));
         const v = c && this.ndviJul(an.ultimo, c); if (v != null) pares.push([v, rend]);
       }
-      if (pares.length < 10) { window.V2.showToast?.(m("Hacen falta al menos 10 puntos de cosecha dentro del lote.", "At least 10 yield points inside the field are needed.", "São necessários pelo menos 10 pontos de colheita no talhão."), 5000); return; }
+      if (pares.length < 10) { window.V2.showToast?.(m("Hacen falta al menos 10 puntos de cosecha dentro del terreno.", "At least 10 yield points inside the field are needed.", "São necessários pelo menos 10 pontos de colheita no talhão."), 5000); return; }
       const mx = media(pares.map(p => p[0])), my = media(pares.map(p => p[1]));
       const b = pares.reduce((s, p) => s + (p[0] - mx) * (p[1] - my), 0) / pares.reduce((s, p) => s + (p[0] - mx) ** 2, 0), a = my - b * mx;
       const ssr = pares.reduce((s, p) => s + (p[1] - (a + b * p[0])) ** 2, 0), sst = pares.reduce((s, p) => s + (p[1] - my) ** 2, 0);
@@ -416,7 +416,7 @@
           const pend = rel?.pend ?? 4, th = Math.atan(pend / 100), mm2 = pend >= 5 ? 0.5 : pend >= 3.5 ? 0.4 : pend >= 1 ? 0.3 : 0.2;
           const LS = (300 / 72.6) ** mm2 * (pend < 9 ? 10.8 * Math.sin(th) + 0.03 : 16.8 * Math.sin(th) - 0.5);
           const er = (C) => r1(rd.Rus * s.k * LS * C * 2.2417);
-          F.erosionReal = m(`Erosión con lluvia real: erosividad R = ${rd.Rus} (calculada con ${rd.ys.length} años de lluvia diaria)${rel ? ` y pendiente real del lote ${rel.pend} % (máx. ${rel.pendMax} %; relieve ${r0(rel.min)}–${r0(rel.max)} m, DEM de 90 m)` : ""}. Pérdida: convencional ${er(0.35)}, siembra directa ${er(0.1)}, directa con cobertura ${er(0.05)} t/ha/año; tolerancia 11.2.`,
+          F.erosionReal = m(`Erosión con lluvia real: erosividad R = ${rd.Rus} (calculada con ${rd.ys.length} años de lluvia diaria)${rel ? ` y pendiente real del terreno ${rel.pend} % (máx. ${rel.pendMax} %; relieve ${r0(rel.min)}–${r0(rel.max)} m, DEM de 90 m)` : ""}. Pérdida: convencional ${er(0.35)}, siembra directa ${er(0.1)}, directa con cobertura ${er(0.05)} t/ha/año; tolerancia 11.2.`,
             `Erosion with real rain: erosivity R = ${rd.Rus} (from ${rd.ys.length} years of daily rain)${rel ? ` and the field's real slope ${rel.pend} % (max ${rel.pendMax} %; relief ${r0(rel.min)}–${r0(rel.max)} m, 90 m DEM)` : ""}. Loss: conventional ${er(0.35)}, no-till ${er(0.1)}, no-till with cover ${er(0.05)} t/ha/yr; tolerance 11.2.`,
             `Erosão com chuva real: erosividade R = ${rd.Rus} (com ${rd.ys.length} anos de chuva diária)${rel ? ` e declividade real do talhão ${rel.pend} % (máx. ${rel.pendMax} %; relevo ${r0(rel.min)}–${r0(rel.max)} m, MDE de 90 m)` : ""}. Perda: convencional ${er(0.35)}, plantio direto ${er(0.1)}, direto com cobertura ${er(0.05)} t/ha/ano; tolerância 11,2.`);
         }
@@ -442,7 +442,7 @@
         `Nitrogen fertilizer price (producer price index, inflation-adjusted, ${ins.desde}–${ins.hasta}): varies ${pc(ins.cv)} on average; the biggest yearly jump was +${pc(ins.salto)} in ${ins.anioSalto}. Today it is pricier than in ${pc(ins.pct)} of those years. The N:corn price ratio ranged ${ins.rMin} to ${ins.rMax} (median ${ins.rMed}): pre-buying N only pays if the ratio is expected to rise.`,
         `Preço do fertilizante nitrogenado (índice de preços ao produtor, sem inflação, ${ins.desde}–${ins.hasta}): varia ${pc(ins.cv)} em média; o maior salto anual foi de +${pc(ins.salto)} em ${ins.anioSalto}. Hoje está mais caro que em ${pc(ins.pct)} desses anos. A razão de preços N:milho foi de ${ins.rMin} a ${ins.rMax} (mediana ${ins.rMed}): comprar N antecipado só compensa se a razão deve subir.`);
       const sv = this.semivariograma();
-      if (sv) F.semivariograma = m(`Semivariograma del NDVI real de julio: dos cuadros dejan de parecerse a ${sv.abierto ? "más de " : "unos "}${sv.rango} m (rango); el ${pc(sv.pepita)} de la variación ocurre a menos de ${sv.lado} m. ${sv.abierto ? `No se estabiliza dentro del lote: hay una tendencia que lo cruza entero, así que una rejilla rala engaña. Conviene muestrear por zonas, o en rejilla con al menos 1 punto por hectárea (${Math.ceil(A.calcular().celdas?.ha || 0)} puntos).` : `Para un muestreo en rejilla basta un punto cada ${sv.rango} m: unos ${sv.nGrid} puntos en el lote.`}`,
+      if (sv) F.semivariograma = m(`Semivariograma del NDVI real de julio: dos cuadros dejan de parecerse a ${sv.abierto ? "más de " : "unos "}${sv.rango} m (rango); el ${pc(sv.pepita)} de la variación ocurre a menos de ${sv.lado} m. ${sv.abierto ? `No se estabiliza dentro del terreno: hay una tendencia que lo cruza entero, así que una rejilla rala engaña. Conviene muestrear por zonas, o en rejilla con al menos 1 punto por hectárea (${Math.ceil(A.calcular().celdas?.ha || 0)} puntos).` : `Para un muestreo en rejilla basta un punto cada ${sv.rango} m: unos ${sv.nGrid} puntos en el terreno.`}`,
         `Semivariogram of real July NDVI: two squares stop resembling each other at ${sv.abierto ? "over " : "about "}${sv.rango} m (range); ${pc(sv.pepita)} of the variation happens within ${sv.lado} m. ${sv.abierto ? `It does not level off inside the field: a trend crosses all of it, so a sparse grid misleads. Sample by zones, or grid with at least 1 point per hectare (${Math.ceil(A.calcular().celdas?.ha || 0)} points).` : `Grid sampling needs one point every ${sv.rango} m: about ${sv.nGrid} points in the field.`}`,
         `Semivariograma do NDVI real de julho: dois quadros deixam de se parecer a ${sv.abierto ? "mais de " : "cerca de "}${sv.rango} m (alcance); ${pc(sv.pepita)} da variação ocorre a menos de ${sv.lado} m. ${sv.abierto ? `Não se estabiliza dentro do talhão: há uma tendência que o atravessa inteiro, então uma grade rala engana. Convém amostrar por zonas, ou em grade com pelo menos 1 ponto por hectare (${Math.ceil(A.calcular().celdas?.ha || 0)} pontos).` : `Para amostragem em grade basta um ponto a cada ${sv.rango} m: cerca de ${sv.nGrid} pontos no talhão.`}`);
       const cb = this.carbono();
@@ -492,7 +492,7 @@
       const cc = this.calibCosecha || leer(claveLoc("cal"));
       if (cc) F.calibracion = m(`Calibración con tu monitor de cosecha (${cc.n} puntos): rendimiento = ${cc.a} + ${cc.b} × NDVI de julio; R² ${cc.r2}, error típico ${cc.rmse} t/ha.`, `Calibration with your yield monitor (${cc.n} points): yield = ${cc.a} + ${cc.b} × July NDVI; R² ${cc.r2}, typical error ${cc.rmse} t/ha.`, `Calibração com seu monitor de colheita (${cc.n} pontos): rendimento = ${cc.a} + ${cc.b} × NDVI de julho; R² ${cc.r2}, erro típico ${cc.rmse} t/ha.`);
       const bt = this.bitacora();
-      if (bt.length) F.bitacora = m(`Bitácora del lote: ${bt.length} registros (${bt.slice(-3).map(e => `${e.fecha} ${e.act}`).join("; ")}).`, `Field log: ${bt.length} entries (${bt.slice(-3).map(e => `${e.fecha} ${e.act}`).join("; ")}).`, `Diário do talhão: ${bt.length} registros (${bt.slice(-3).map(e => `${e.fecha} ${e.act}`).join("; ")}).`);
+      if (bt.length) F.bitacora = m(`Bitácora del terreno: ${bt.length} registros (${bt.slice(-3).map(e => `${e.fecha} ${e.act}`).join("; ")}).`, `Field log: ${bt.length} entries (${bt.slice(-3).map(e => `${e.fecha} ${e.act}`).join("; ")}).`, `Diário do talhão: ${bt.length} registros (${bt.slice(-3).map(e => `${e.fecha} ${e.act}`).join("; ")}).`);
       return F;
     },
 
@@ -568,7 +568,7 @@
             ${campo("drenGanHumedo", m("Ganancia drenaje año mojado %", "Drainage gain wet year %", "Ganho drenagem ano úmido %"))}
           </div>
         </details>
-        <details style="margin-top:8px"><summary class="small" style="cursor:pointer;font-weight:700">${esc(m("Bitácora del lote", "Field log", "Diário do talhão"))} (${bt.length})</summary>
+        <details style="margin-top:8px"><summary class="small" style="cursor:pointer;font-weight:700">${esc(m("Bitácora del terreno", "Field log", "Diário do talhão"))} (${bt.length})</summary>
           <div class="row-wrap" style="gap:6px;margin-top:8px">
             <input type="date" class="field" id="agro-bit-fecha" style="min-height:34px">
             <input class="field" id="agro-bit-act" placeholder="${esc(m("Actividad (siembra, N, cosecha…)", "Activity (planting, N, harvest…)", "Atividade (plantio, N, colheita…)"))}" style="min-height:34px;flex:1">
@@ -598,7 +598,17 @@
 
   document.addEventListener("change", (e) => {
     const k = e.target.dataset?.agroPar;
-    if (k) { const p2 = leer(claveLoc("par")) || {}; p2[k] = e.target.value.trim() === "" ? "" : +e.target.value; guardar(claveLoc("par"), p2); repintar(); }
+    if (k) {
+      const RANGO = { costoMaiz: [0, 10000], costoSoya: [0, 10000], precioN: [0, 10], deuda: [0, 20000], capRate: [0.5, 20], precioCO2: [0, 500], sueloP: [0, 300], sueloK: [0, 1000], riegoCapital: [0, 20000], tasa: [0, 30], drenCapital: [0, 20000], drenGanNormal: [0, 100], drenGanHumedo: [0, 100] };
+      const txt = e.target.value.trim().replace(",", "."), v = +txt, [lo, hi] = RANGO[k] || [-Infinity, Infinity];
+      if (txt !== "" && (Number.isNaN(v) || v < lo || v > hi)) {
+        e.target.setAttribute("aria-invalid", "true");
+        window.V2?.showToast?.(m(`Escribe un número entre ${lo} y ${hi}.`, `Enter a number between ${lo} and ${hi}.`, `Escreva um número entre ${lo} e ${hi}.`), 4000);
+        return;
+      }
+      e.target.removeAttribute("aria-invalid");
+      const p2 = leer(claveLoc("par")) || {}; p2[k] = txt === "" ? "" : v; guardar(claveLoc("par"), p2); repintar();
+    }
     if (e.target.matches?.("[data-agro-csv]") && e.target.files[0]) A.cargarCosechaCSV(e.target.files[0]);
   });
   document.addEventListener("click", (e) => {
@@ -607,7 +617,7 @@
       const f = document.getElementById("agro-bit-fecha")?.value, a = document.getElementById("agro-bit-act")?.value.trim();
       if (f && a) A.agregarBitacora({ fecha: f, act: a, cant: document.getElementById("agro-bit-cant")?.value.trim() });
     } else if (e.target.closest("[data-agro-exportar]")) {
-      A.descargar("terra_lab_lote.json", "application/json", JSON.stringify({ lote: loc(), notas: A.notas(), bitacora: A.bitacora(), parametros: par(), plan: A.frases() }, null, 2));
+      A.descargar("terra_lab_lote.json", "application/json", JSON.stringify({ terreno: loc(), notas: A.notas(), bitacora: A.bitacora(), parametros: par(), plan: A.frases() }, null, 2));
     }
   });
 })();

@@ -971,15 +971,15 @@
     // ESPACIO 3: Datos y Modelos (Pantallas 8, 9 y 10)
     // -------------------------------------------------------------------------
     renderDataWorkspace() {
-      const sub = window.V2.dataSubTab || "clima";
+      // El clima, el agua y el suelo ya están en "Clima y suelo": aquí solo predicciones y fuentes.
+      const sub = window.V2.dataSubTab === "fuentes" ? "fuentes" : "ia";
       return `
         <div class="workspace-inner">
           <div class="row-wrap card" style="padding:10px 16px">
-            <button type="button" class="btn ${sub === "clima" ? "btn-pri" : "btn-sec"}" data-data-tab="clima">${ic("water", "sm")} <span>${esc(tr("tab_clima"))}</span></button>
             <button type="button" class="btn ${sub === "ia" ? "btn-pri" : "btn-sec"}" data-data-tab="ia">${ic("ai", "sm")} <span>${esc(tr("tab_ia"))}</span></button>
             <button type="button" class="btn ${sub === "fuentes" ? "btn-pri" : "btn-sec"}" data-data-tab="fuentes">${ic("satellite", "sm")} <span>${esc(tr("tab_fuentes"))}</span></button>
           </div>
-          ${sub === "clima" ? this.renderScreen8ClimaAgua() : sub === "ia" ? this.renderScreen9IA() : this.renderScreen10FuentesCatalogo()}
+          ${sub === "ia" ? this.renderScreen9IA() : this.renderScreen10FuentesCatalogo()}
         </div>
       `;
     },
@@ -1936,6 +1936,7 @@
           <!-- 5. PROMEDIOS Y ESTADÍSTICAS (24 h, 7 días, 30 días) -->
           <div class="card">
             <h2 class="card-title">${ic("chart", "sm")} <span>Promedios del robot: 24 horas, 7 y 30 días</span></h2>
+            <details class="plan-mas"><summary>${esc(m("Ver los promedios", "Show the averages", "Ver as médias"))}</summary>
             <div class="table-wrap">
               <table class="v2-table">
                 <thead>
@@ -1946,6 +1947,7 @@
                 </tbody>
               </table>
             </div>
+            </details>
             <div class="xs mut" style="margin-top:8px">Calculado solo con las lecturas que el robot ha enviado.</div>
           </div>
 

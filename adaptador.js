@@ -99,7 +99,7 @@
         estado: "OK",
         lecturas: recs.length * 4 || 132,
         ultima_lectura: ult.t || new Date().toISOString(),
-        robots: ["Rover Prototipo 1"],
+        robots: ["Robot prototipo 1"],
         conectado: true,
         criterio_conectado: "una lectura en los últimos 5 minutos",
         hoja: {
@@ -138,18 +138,18 @@
       const recs = window.ROBOT_HOJA_RECORDS || [];
       const flat = [];
       recs.forEach(r => {
-        flat.push({ t: r.t, variable: "humedad", valor: r.humedad, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "%" });
-        flat.push({ t: r.t, variable: "rotación", valor: r.rotacion ?? r["rotación"], lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°" });
-        flat.push({ t: r.t, variable: "temperatura", valor: r.temperatura, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°C" });
-        flat.push({ t: r.t, variable: "velocidad", valor: r.velocidad, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "km/h" });
-        if (r.nitrogeno != null) flat.push({ t: r.t, variable: "n_mg_kg", valor: r.nitrogeno, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "mg/kg" });
-        if (r.fosforo != null) flat.push({ t: r.t, variable: "p_mg_kg", valor: r.fosforo, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "mg/kg" });
-        if (r.potasio != null) flat.push({ t: r.t, variable: "k_mg_kg", valor: r.potasio, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "mg/kg" });
-        if (r.humedad_suelo != null) flat.push({ t: r.t, variable: "humedad_suelo_pct", valor: r.humedad_suelo, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "%" });
-        if (r.temperatura_suelo != null) flat.push({ t: r.t, variable: "temp_suelo_c", valor: r.temperatura_suelo, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "°C" });
-        if (r.ph != null) flat.push({ t: r.t, variable: "ph", valor: r.ph, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "" });
-        if (r.salinidad != null) flat.push({ t: r.t, variable: "ec_ms_cm", valor: r.salinidad, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "µS/cm" });
-        if (r.tds != null) flat.push({ t: r.t, variable: "tds", valor: r.tds, lat: r.lat, lon: r.lon, robot: "Rover Prototipo 1", unidad: "ppm" });
+        flat.push({ t: r.t, variable: "humedad", valor: r.humedad, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "%" });
+        flat.push({ t: r.t, variable: "rotación", valor: r.rotacion ?? r["rotación"], lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "°" });
+        flat.push({ t: r.t, variable: "temperatura", valor: r.temperatura, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "°C" });
+        flat.push({ t: r.t, variable: "velocidad", valor: r.velocidad, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "km/h" });
+        if (r.nitrogeno != null) flat.push({ t: r.t, variable: "n_mg_kg", valor: r.nitrogeno, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "mg/kg" });
+        if (r.fosforo != null) flat.push({ t: r.t, variable: "p_mg_kg", valor: r.fosforo, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "mg/kg" });
+        if (r.potasio != null) flat.push({ t: r.t, variable: "k_mg_kg", valor: r.potasio, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "mg/kg" });
+        if (r.humedad_suelo != null) flat.push({ t: r.t, variable: "humedad_suelo_pct", valor: r.humedad_suelo, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "%" });
+        if (r.temperatura_suelo != null) flat.push({ t: r.t, variable: "temp_suelo_c", valor: r.temperatura_suelo, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "°C" });
+        if (r.ph != null) flat.push({ t: r.t, variable: "ph", valor: r.ph, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "" });
+        if (r.salinidad != null) flat.push({ t: r.t, variable: "ec_ms_cm", valor: r.salinidad, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "µS/cm" });
+        if (r.tds != null) flat.push({ t: r.t, variable: "tds", valor: r.tds, lat: r.lat, lon: r.lon, robot: "Robot prototipo 1", unidad: "ppm" });
       });
       return mockResponse({ estado: "OK", lecturas: flat });
     }

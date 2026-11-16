@@ -129,7 +129,7 @@
       ]).addTo(mp);
       mp.fitBounds(L.latLngBounds(ll).pad(0.35), { maxZoom: 19 });
       const u = this.ultimaRuta;
-      window.V2.showToast?.(m(`Ruta: ${u.paradas} paradas a ${u.sep} m o más entre sí · ${u.km} km ida y vuelta · ~${u.min} min a ${u.vel} km/h (3 min por muestra)`, `Route: ${u.paradas} stops ≥ ${u.sep} m apart · ${u.km} km round trip · ~${u.min} min at ${u.vel} km/h (3 min per sample)`, `Rota: ${u.paradas} paradas a ${u.sep} m ou mais · ${u.km} km ida e volta · ~${u.min} min a ${u.vel} km/h (3 min por amostra)`), 6000);
+      window.V2.showToast?.(m(`Ruta: ${u.paradas} paradas · ${u.km} km · unos ${u.min} min`, `Route: ${u.paradas} stops · ${u.km} km · about ${u.min} min`, `Rota: ${u.paradas} paradas · ${u.km} km · cerca de ${u.min} min`), 8000);
       return orden;
     },
 
@@ -258,11 +258,10 @@
       if (window.FSDemo?.corriendo || document.body.classList.contains("demo-activo")) return;
       const vistas = []; // salen en cada carga de la página, una tras otra
       const lista = [
-        // Las pistas van siempre en inglés, para quien llega desde EE. UU.; el resto de la app sigue el idioma elegido
-        [".lang-pill", "idioma", "Switch language here: English, Spanish or Portuguese"],
-        ["#v2-si-btn", "si", "The SI answers with your field's data"],
-        ["#v2-btn-bell", "avisos", "Your alerts arrive here"],
-        ["#vivo-fab", "mapa", "Robot, route and simulated robots"],
+        [".lang-pill", "idioma", m("Aquí cambias el idioma: español, inglés o portugués", "Switch language here: English, Spanish or Portuguese", "Aqui você muda o idioma: português, inglês ou espanhol")],
+        ["#v2-si-btn", "si", m("La SI responde con los datos de tu terreno", "The SI answers with your field's data", "A SI responde com os dados do seu terreno")],
+        ["#v2-btn-bell", "avisos", m("Aquí llegan tus alertas", "Your alerts arrive here", "Seus alertas chegam aqui")],
+        ["#vivo-fab", "mapa", m("Robot, ruta y robots simulados", "Robot, route and simulated robots", "Robô, rota e robôs simulados")],
       ].filter(x => !vistas.includes(x[1]));
       const una = (k) => {
         const x = lista[k]; if (!x) return;

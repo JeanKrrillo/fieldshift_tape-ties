@@ -148,7 +148,18 @@
       this.frasesLargo(F, p);
       this.frasesProy(F, p);
       this.frasesExtra?.(F, p);
+      for (const k of Object.keys(F)) F[k] = this.fechasLegibles(F[k]);
       return F;
+    },
+
+    // 2026-04-20 → 20 de abril de 2026; 04-21 → 21 de abril (en el idioma elegido).
+    fechasLegibles(t) {
+      const l = window.V2?.lang || "es";
+      const M = { es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"], en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], pt: ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"] }[l] || [];
+      const ok = (mo, d) => mo >= 1 && mo <= 12 && d >= 1 && d <= 31;
+      return String(t)
+        .replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (x, y, mo, d) => ok(+mo, +d) ? (l === "en" ? `${M[mo - 1]} ${+d}, ${y}` : `${+d} de ${M[mo - 1]} de ${y}`) : x)
+        .replace(/(^|[^\d\-])(\d{2})-(\d{2})(?![\d\-])/g, (x, pre, mo, d) => ok(+mo, +d) ? pre + (l === "en" ? `${M[mo - 1]} ${+d}` : `${+d} de ${M[mo - 1]}`) : x);
     },
 
     // Respuesta de la SI a una pregunta libre. Devuelve [] si no sabe.
@@ -157,7 +168,7 @@
       const falta = (es, en, pt) => [{ clave: "faltante", texto: m(es, en, pt), fuente: "Terra Lab", tipo: "faltante", gravedad: "atencion" }];
       const sinDato = [
         [/farm bill|\barc\b|\bplc\b|subsidi|eqip|\bcsp\b/, ["Programas de la Farm Bill (ARC/PLC, EQIP, CSP): la página no tiene rendimientos del condado, precios de referencia ni reglas del programa.", "Farm Bill programs (ARC/PLC, EQIP, CSP): the page has no county yields, reference prices or program rules.", "Programas da Farm Bill (ARC/PLC, EQIP, CSP): a página não tem rendimentos do condado, preços de referência nem regras do programa."]],
-        [/seguro|insurance|\baph\b|cobertura de seguro/, ["Seguro agrícola: falta el historial de rendimiento del lote (APH) y las primas de RMA.", "Crop insurance: the field's yield history (APH) and RMA premiums are missing.", "Seguro agrícola: falta o histórico de rendimento do talhão (APH) e os prêmios da RMA."]],
+        [/seguro|insurance|\baph\b|cobertura de seguro/, ["Seguro agrícola: falta el historial de rendimiento del terreno (APH) y las primas de RMA.", "Crop insurance: the field's yield history (APH) and RMA premiums are missing.", "Seguro agrícola: falta o histórico de rendimento do talhão (APH) e os prêmios da RMA."]],
         [/arancel|tariff|tarifa|china|exporta|comercio/, ["Comercio y aranceles: la página no tiene datos de exportación ni de base local histórica.", "Trade and tariffs: the page has no export data or historical local basis.", "Comércio e tarifas: a página não tem dados de exportação nem de base local histórica."]],
         [/etanol|ethanol|biocombust|biofuel|45z|\bsaf\b/, ["Etanol y biocombustibles: no hay datos de demanda ni de mandatos (EPA RFS).", "Ethanol and biofuels: no demand or mandate data (EPA RFS).", "Etanol e biocombustíveis: não há dados de demanda nem de mandatos (EPA RFS)."]],
         [/futuro|futures|opci[oó]n|hedge|cobertura de precio|contrato/, ["Coberturas con futuros y opciones: falta la curva de futuros y la base local; solo hay el precio al contado del día.", "Futures and options hedging: the futures curve and local basis are missing; only today's cash price exists.", "Hedge com futuros e opções: faltam a curva de futuros e a base local; só há o preço à vista do dia."]],
@@ -189,7 +200,7 @@
       const hit = temas.find(([re]) => re.test(s));
       if (!hit) return null;
       const pide = { calibracion: ["Sube el CSV de tu monitor de cosecha (lat, lon, t/ha) en Qué hacer → Plan agronómico; con eso se calibra el NDVI de julio contra tu rendimiento.", "Upload your yield monitor CSV (lat, lon, t/ha) in What to do → Agronomic plan; it calibrates July NDVI against your yield.", "Envie o CSV do seu monitor de colheita (lat, lon, t/ha) em O que fazer → Plano agronômico; com isso o NDVI de julho é calibrado contra seu rendimento."],
-        bitacora: ["La bitácora está vacía: agrega siembra, insumos y cosecha en Qué hacer → Plan agronómico → Bitácora del lote.", "The field log is empty: add planting, inputs and harvest in What to do → Agronomic plan → Field log.", "O diário está vazio: adicione plantio, insumos e colheita em O que fazer → Plano agronômico → Diário do talhão."] };
+        bitacora: ["La bitácora está vacía: agrega siembra, insumos y cosecha en Qué hacer → Plan agronómico → Bitácora del terreno.", "The field log is empty: add planting, inputs and harvest in What to do → Agronomic plan → Field log.", "O diário está vazio: adicione plantio, insumos e colheita em O que fazer → Plano agronômico → Diário do talhão."] };
       if (!hit[1].some(k => F[k])) { const k = hit[1].find(x => pide[x]); return k ? falta(...pide[k]) : null; }
       if (!hit[1].length) return [{ clave: "faltante", texto: m("Grados día: no se pueden calcular bien con lo que trae la página (solo extremos mensuales de NASA POWER y unas semanas de datos diarios). Hace falta la serie diaria de la temporada.", "Growing degree days can't be computed well from what the page has (only NASA POWER monthly extremes and a few weeks of daily data). The season's daily series is needed.", "Graus-dia não podem ser calculados bem com o que a página tem (só extremos mensais do NASA POWER e algumas semanas diárias). Falta a série diária da safra."), fuente: "Terra Lab", tipo: "faltante", gravedad: "atencion" }];
       return hit[1].filter(k => F[k]).map(k => ({ clave: k, texto: F[k], fuente: { siembra: "NASA POWER + Iowa State", agua: "NASA POWER + USDA SSURGO", suelo: "USDA SSURGO", nitrogeno: "Iowa State MRTN", densidad: "Iowa State", economia: "USDA AMS", clima: "NASA POWER 1985–2024", ruta: "Terra Lab", celdas: "Sentinel-2", fenologia: "Sentinel-2", cosecha: "Iowa State + NASA POWER", gradosDia: "NASA POWER diario", riesgo: "NASA POWER mensual 1985–", horizontes: "NASA POWER (extrapolación)", erosion: "RUSLE + SSURGO", huella: "IPCC 2019", muestreoZonas: "Terra Lab", prescripcion: "Iowa State", proyeccion: "CMIP6 HighResMIP (Open-Meteo) + NASA POWER", validacion: "NASA POWER 1985–2024 + USDA NASS" }[k] || this.fuentesExtra?.[k] || "Terra Lab", tipo: "calculo", gravedad: "info" }));
@@ -279,6 +290,7 @@
       return GR.map(([id, nom, ks], i) => {
         const ok = ks.filter(k => F[k] && titulo[k]); if (!ok.length) return "";
         let f = ""; try { f = frase[id]?.() || ""; } catch (_) {}
+        if (!f && (this.cargandoJul || this.cargandoDia || this.cargando || this.cargandoProy)) f = m("Calculando con datos reales…", "Working it out with real data…", "Calculando com dados reais…");
         return `<details class="plan-sec" ${i === 0 ? "open" : ""}><summary><span class="plan-sec-n">${esc(nom)}</span><span class="plan-sec-f">${esc(f)}</span><span class="plan-sec-c">${ok.length}</span></summary><div class="plan-sec-body">${ok.map(fila).join("")}</div></details>`;
       }).join("");
     },
@@ -525,7 +537,7 @@
       const loc = window.V2?.D?.coordenadas_parcela || window.V2?.loc;
       if (!loc?.lat || this.cargandoProy) return this.proy;
       const clave = `tl_proy_${(+loc.lat).toFixed(2)}_${(+loc.lon).toFixed(2)}`;
-      // El lote de la demo ya trae su resumen calculado: no hace falta esperar 30 s ni gastar el límite del servicio.
+      // El terreno de la demo ya trae su resumen calculado: no hace falta esperar 30 s ni gastar el límite del servicio.
       const R = window.FS_PROY;
       if (R && Math.abs(R.lat - loc.lat) < 0.05 && Math.abs(R.lon - loc.lon) < 0.05) { this.proy = R; return R; }
       try { const c = JSON.parse(localStorage.getItem(clave) || "null"); if (c && Object.keys(c.modelos || {}).length && Date.now() - c.t < 30 * 864e5) return (this.proy = c); } catch (_) {}
@@ -551,7 +563,7 @@
         try { localStorage.setItem(clave, JSON.stringify(this.proy)); } catch (_) {}
       } catch (e) {
         try { localStorage.setItem("tl_proy_espera", String(Date.now() + 3600e3)); } catch (_) {}
-        // Respaldo: resumen guardado del lote de Iowa (recursos/proyeccion_iowa.js) si el terreno está ahí.
+        // Respaldo: resumen guardado del terreno de Iowa (recursos/proyeccion_iowa.js) si el terreno está ahí.
         const R = window.FS_PROY;
         this.proy = R && Math.abs(R.lat - loc.lat) < 0.05 && Math.abs(R.lon - loc.lon) < 0.05 ? { ...R, respaldo: true } : { error: String(e) };
       }

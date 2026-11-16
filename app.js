@@ -439,8 +439,8 @@
               : this.lang === "pt"
               ? [["min", "Baixo"], ["mid", "Médio"], ["max", "Alto"]]
               : [["min", "Bajo"], ["mid", "Medio"], ["max", "Alto"]];
-            const modeHdr = this.lang === "en" ? "Detail:" : this.lang === "pt" ? "Detalhe:" : "Detalle:";
-            const sizeHdr = this.lang === "en" ? "Panel:" : "Panel:";
+            const modeHdr = this.lang === "en" ? "Wording:" : this.lang === "pt" ? "Linguagem:" : "Lenguaje:";
+            const sizeHdr = this.lang === "en" ? "Size:" : this.lang === "pt" ? "Tamanho:" : "Tamaño:";
             handleEl.innerHTML = `
               <div class="handle-group" title="Elige cuánto detalle técnico quieres leer en las tarjetas">
                 <span class="handle-lbl">${esc(modeHdr)}</span>
