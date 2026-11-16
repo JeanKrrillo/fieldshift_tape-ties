@@ -706,8 +706,10 @@
       // Puntaje transparente de las 3 estrategias según las 4 respuestas de "Tu granja"
       const rows = Object.entries(window.STRAT_V2).map(([id, s]) => {
         const machBad = s.notill && C.machine !== "notill";
-        const watBad = id === "A" && C.water !== "irrig";
-        const watOk = id === "B" && C.water !== "irrig";
+        // Ahorrar agua solo cuenta donde llueve poco: con más de 600 mm al año el maíz de temporal no pasa sed.
+        const seco = (pw.precipitacion_anual_mm ?? 0) > 0 && pw.precipitacion_anual_mm < 600;
+        const watBad = id === "A" && C.water !== "irrig" && seco;
+        const watOk = id === "B" && C.water !== "irrig" && seco;
         const score = (s.tag === C.priority ? 2 : 0) - (machBad ? 3 : 0) - (watBad ? 1 : 0) + (watOk ? 1 : 0);
         return { id, s, score, machBad, watBad, watOk };
       }).sort((a, b) => b.score - a.score);
@@ -973,9 +975,9 @@
       return `
         <div class="workspace-inner">
           <div class="row-wrap card" style="padding:10px 16px">
-            <button type="button" class="btn ${sub === "clima" ? "btn-pri" : "btn-sec"}" data-data-tab="clima">${ic("water", "sm")} <span>8 · ${esc(tr("tab_clima"))}</span></button>
-            <button type="button" class="btn ${sub === "ia" ? "btn-pri" : "btn-sec"}" data-data-tab="ia">${ic("ai", "sm")} <span>9 · ${esc(tr("tab_ia"))}</span></button>
-            <button type="button" class="btn ${sub === "fuentes" ? "btn-pri" : "btn-sec"}" data-data-tab="fuentes">${ic("satellite", "sm")} <span>10 · ${esc(tr("tab_fuentes"))}</span></button>
+            <button type="button" class="btn ${sub === "clima" ? "btn-pri" : "btn-sec"}" data-data-tab="clima">${ic("water", "sm")} <span>${esc(tr("tab_clima"))}</span></button>
+            <button type="button" class="btn ${sub === "ia" ? "btn-pri" : "btn-sec"}" data-data-tab="ia">${ic("ai", "sm")} <span>${esc(tr("tab_ia"))}</span></button>
+            <button type="button" class="btn ${sub === "fuentes" ? "btn-pri" : "btn-sec"}" data-data-tab="fuentes">${ic("satellite", "sm")} <span>${esc(tr("tab_fuentes"))}</span></button>
           </div>
           ${sub === "clima" ? this.renderScreen8ClimaAgua() : sub === "ia" ? this.renderScreen9IA() : this.renderScreen10FuentesCatalogo()}
         </div>
@@ -1733,7 +1735,7 @@
               <span class="small"><b>Colorear sectores del terreno por:</b></span>
               <div class="row-wrap" style="gap:4px">
                 <button type="button" class="btn btn-sec btn-sm ${window.V2.colorMode === "ndvi" ? "btn-pri" : ""}" data-color-mode="ndvi">Verdor (NDVI)</button>
-                <button type="button" class="btn btn-sec btn-sm ${window.V2.colorMode === "sev" ? "btn-pri" : ""}" data-color-mode="sev">Riesgo / Severidad</button>
+                <button type="button" class="btn btn-sec btn-sm ${window.V2.colorMode === "sev" ? "btn-pri" : ""}" data-color-mode="sev">Riesgo</button>
                 <button type="button" class="btn btn-sec btn-sm ${window.V2.colorMode === "zones" ? "btn-pri" : ""}" data-color-mode="zones">3 Zonas</button>
                 <button type="button" class="btn btn-sec btn-sm ${window.V2.colorMode === "anom" ? "btn-pri" : ""}" data-color-mode="anom">Anomalías</button>
               </div>
@@ -1754,7 +1756,7 @@
             </div>
             <div class="rover-hardware-meta">
               <div class="rover-hardware-title">
-                <b>${ic("sensor", "sm")} ${esc(m("Ensayos físicos del prototipo robótico", "Physical trials of the prototype rover", "Testes físicos do protótipo robótico"))}</b>
+                <b>${ic("sensor", "sm")} ${esc(m("Pruebas del robot que construimos", "Tests of the robot we built", "Testes do robô que construímos"))}</b>
                 <span class="sem-badge ok" style="font-size:11px">${esc(m("Telemetría de pruebas", "Test telemetry", "Telemetria de testes"))}</span>
               </div>
               <p class="small mut" style="margin:4px 0 8px">
@@ -1798,9 +1800,9 @@
                   <span class="sem-badge ok" style="font-size:10px;padding:1px 6px" id="rover-stream-counter">Muestra 1 / 33</span>
                 </div>
                 <div class="row-wrap" style="gap:6px">
-                  <button type="button" class="btn btn-sec btn-sm" id="rover-btn-prev" title="${esc(m("Lectura anterior", "Previous reading", "Leitura anterior"))}" style="padding:3px 8px;font-size:12px">⏮</button>
+                  <button type="button" class="btn btn-sec btn-sm" id="rover-btn-prev" aria-label="${esc(m("Lectura anterior", "Previous reading", "Leitura anterior"))}" title="${esc(m("Lectura anterior", "Previous reading", "Leitura anterior"))}" style="padding:3px 8px;font-size:12px">⏮</button>
                   <button type="button" class="btn btn-pri btn-sm" id="rover-btn-play" style="padding:3px 10px;font-size:12px">❚❚ ${esc(m("Pausar", "Pause", "Pausar"))}</button>
-                  <button type="button" class="btn btn-sec btn-sm" id="rover-btn-next" title="${esc(m("Siguiente lectura", "Next reading", "Próxima leitura"))}" style="padding:3px 8px;font-size:12px">⏭</button>
+                  <button type="button" class="btn btn-sec btn-sm" id="rover-btn-next" aria-label="${esc(m("Siguiente lectura", "Next reading", "Próxima leitura"))}" title="${esc(m("Siguiente lectura", "Next reading", "Próxima leitura"))}" style="padding:3px 8px;font-size:12px">⏭</button>
                   <select id="rover-stream-speed" class="field field-sm" style="font-size:11px;padding:2px 6px">
                     <option value="1500">${esc(m("1.5s (Rápido)", "1.5s (Fast)", "1.5s (Rápido)"))}</option>
                     <option value="2500" selected>${esc(m("2.5s (Normal)", "2.5s (Normal)", "2.5s (Normal)"))}</option>
@@ -1871,7 +1873,7 @@
 
           <!-- 4. DATOS LOCALES Y NUBE LADO A LADO -->
           <div class="card side-by-side-card">
-            <h2 class="card-title">${ic("satellite", "sm")} <span>${esc(m("Datos del sensor de hardware y datos de la nube", "Hardware sensor data and cloud satellite data", "Dados do sensor de hardware e dados da nuvem"))}</span></h2>
+            <h2 class="card-title">${ic("satellite", "sm")} <span>${esc(m("Lo que mide el robot y lo que ve el satélite", "What the robot measures vs what the satellite sees", "O que o robô mede e o que o satélite vê"))}</span></h2>
             <p class="small mut" style="margin:0 0 10px">
               ${esc(m(
                 "Comparación entre las lecturas directas del banco de pruebas del prototipo físico y los promedios satelitales Sentinel-2 / NASA POWER calculados para la parcela agrícola.",
@@ -1933,7 +1935,7 @@
 
           <!-- 5. PROMEDIOS Y ESTADÍSTICAS (24 h, 7 días, 30 días) -->
           <div class="card">
-            <h2 class="card-title">${ic("chart", "sm")} <span>Promedios y estadísticas históricas del lote</span></h2>
+            <h2 class="card-title">${ic("chart", "sm")} <span>Promedios del robot: 24 horas, 7 y 30 días</span></h2>
             <div class="table-wrap">
               <table class="v2-table">
                 <thead>
@@ -1956,6 +1958,7 @@
               </button>
             </div>
             <p class="small mut" style="margin:0 0 10px">${esc(m("Serie temporal de lecturas directas del banco y campo físico (Google Sheets · AppSheet · Sonda NPK 8-en-1).", "Time series of direct test bench and physical field readings (Google Sheets · AppSheet · 8-in-1 NPK probe).", "Série temporal de leituras diretas de bancada e campo físico (Google Sheets · AppSheet · Sonda NPK 8-em-1)."))}</p>
+            <details class="plan-mas"><summary>${esc(m("Ver la tabla de lecturas", "Show the readings table", "Ver a tabela de leituras"))}</summary>
             <div class="table-wrap" style="max-height:280px;overflow-y:auto">
               <table class="v2-table rover-stream-table">
                 <thead>
@@ -2000,6 +2003,7 @@
                 </tbody>
               </table>
             </div>
+            </details>
           </div>
 
           <!-- 6. NOTIFICACIONES Y ALERTAS RECIENTES -->
@@ -2152,9 +2156,9 @@
           <div class="card recom-hero-card">
             <div class="row-between" style="margin-bottom:8px">
               <div>
-                <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">Recomendaciones agronómicas</h1>
+                <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">Qué hacer en tu terreno</h1>
                 <p class="small mut" style="margin:0">
-                  Acciones concretas sustentadas en la combinación de datos del robot local, satélites Sentinel/NASA y modelos climáticos.
+                  Lo que conviene hacer hoy, esta temporada y en los próximos años, con los datos de tu terreno.
                 </p>
               </div>
             </div>

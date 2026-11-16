@@ -419,8 +419,8 @@
       fam_lbl: "Familias botánicas",
       fit_ok: "Encaja con tu maquinaria",
       fit_warn: "Requiere siembra directa",
-      rot_comp_title: "Comparador lado a lado de estrategias",
-      calc_title: "Calculadora de costos y márgenes (precios reales USDA MARS)",
+      rot_comp_title: "Las tres estrategias, lado a lado",
+      calc_title: "¿Cuánto me queda? Costos y ganancia con precios del USDA",
       calc_sub: "Tú pones tu área, tu costo y el rendimiento esperado; el precio de venta viene de USDA MARS.",
       cal3_title: "Calendario agrícola a 3 años (imprimible)",
       scen_title: "Escenarios de clima: ¿qué pasa si llueve menos o hace más calor?",
@@ -430,7 +430,7 @@
 
       // Pantalla 8: Clima y agua
       tab_clima: "Clima, agua y suelo",
-      tab_ia: "Superinteligencia (SI)",
+      tab_ia: "Predicciones de la SI",
       tab_fuentes: "Datos, catálogo y fuentes",
       fc_title: "Pronóstico de 7 días y riesgo de helada",
       bal_title: "Balance de agua por mes (lluvia contra consumo del cultivo)",
@@ -630,8 +630,8 @@
       fam_lbl: "Botanical families",
       fit_ok: "Fits your machinery",
       fit_warn: "Needs no-till equipment",
-      rot_comp_title: "Side-by-side strategy comparison",
-      calc_title: "Cost & margin calculator (live USDA MARS prices)",
+      rot_comp_title: "The three strategies, side by side",
+      calc_title: "What do I keep? Costs and profit at USDA prices",
       calc_sub: "Enter your area, cost, and expected yield; sale prices come live from USDA MARS.",
       cal3_title: "Printable 3-year crop calendar",
       scen_title: "Climate scenarios: what if rain drops or temperature rises?",
@@ -640,7 +640,7 @@
       alerts_title: "Active alerts & editable thresholds",
 
       tab_clima: "Weather, water & soil",
-      tab_ia: "Superintelligence (SI)",
+      tab_ia: "SI predictions",
       tab_fuentes: "Data, catalog & sources",
       fc_title: "7-day forecast and frost risk",
       bal_title: "Monthly water balance (rain vs crop water use)",
@@ -837,8 +837,8 @@
       fam_lbl: "Famílias botânicas",
       fit_ok: "Combina com seu maquinário",
       fit_warn: "Exige plantio direto",
-      rot_comp_title: "Comparador lado a lado de estratégias",
-      calc_title: "Calculadora de custos e margens (preços reais USDA MARS)",
+      rot_comp_title: "As três estratégias, lado a lado",
+      calc_title: "Quanto me sobra? Custos e lucro com preços do USDA",
       calc_sub: "Informe sua área, custo e produtividade esperada; o preço de venda vem da USDA MARS.",
       cal3_title: "Calendário agrícola de 3 anos (imprimível)",
       scen_title: "Cenários climáticos: e se chover menos ou esquentar?",
@@ -847,7 +847,7 @@
       alerts_title: "Alertas ativos e limites editáveis",
 
       tab_clima: "Clima, água e solo",
-      tab_ia: "Superinteligência (SI)",
+      tab_ia: "Previsões da SI",
       tab_fuentes: "Dados, catálogo e fontes",
       fc_title: "Previsão de 7 dias e risco de geada",
       bal_title: "Balanço mensal de água (chuva vs uso da cultura)",
@@ -1110,6 +1110,7 @@
   Object.assign(T, {" (escala de la humedad del suelo)": [" (soil moisture scale)", " (escala da umidade do solo)"], "(escala de la humedad del suelo)": ["(soil moisture scale)", "(escala da umidade do solo)"], "0.00–0.19 · Suelo pelado (Pelado)": ["0.00–0.19 · Bare soil", "0.00–0.19 · Solo nu"], "0.20–0.29 · Poca planta (Bajo)": ["0.20–0.29 · Low cover", "0.20–0.29 · Pouca planta (Baixo)"], "0.30–0.49 · Cobertura media (Medio)": ["0.30–0.49 · Medium cover", "0.30–0.49 · Cobertura média (Médio)"], "0.50–0.69 · Buena cobertura (Bueno)": ["0.50–0.69 · Good cover", "0.50–0.69 · Boa cobertura (Bom)"], "0.70–1.00 · Planta densa (Alto)": ["0.70–1.00 · Dense plants", "0.70–1.00 · Planta densa (Alto)"], "3 Zonas": ["3 Zones", "3 Zonas"], "Mejor que el lote (≥ +1.2σ)": ["Above field avg (≥ +1.2σ)", "Melhor que o talhão (≥ +1.2σ)"], "Automático": ["Auto", "Automático"], "Más débil que el lote (≤ −1.2σ)": ["Below field avg (≤ −1.2σ)", "Mais fraco que o talhão (≤ −1.2σ)"], "Cambiar tamaño de cuadros o dibujar →": ["Change square size or draw →", "Mudar tamanho dos quadros ou desenhar →"], "Comunidad / Localidad": ["Community / Town", "Comunidade / Localidade"], "Coordenadas (decimal o DMS)": ["Coordinates", "Coordenadas (decimal ou DMS)"], "No se encontró esa localidad. Intenta con municipio o código postal.": ["Could not find that place. Try city or postal code.", "Não encontramos esse lugar. Tente com município ou CEP."], "País": ["Country code", "País"], "Aviso de cobertura:": ["Coverage note:", "Aviso de cobertura:"], "Cultivo actual *": ["Current crop *", "Cultura atual *"], "7. Cultivo actual *": ["7. Current crop *", "7. Cultura atual *"], "Delimitar terreno": ["Delimit field boundary", "Delimitar terreno"], "Dibujar en mapa": ["Draw on map", "Desenhar no mapa"], "Primero dibuja o elige tu terreno.": ["Draw or select a field first.", "Primeiro desenhe ou escolha seu terreno."], "Ej. Ames, Iowa o Zamora, Michoacán": ["E.g. Ames, Iowa or Zamora, Michoacán", "Ex.: Ames, Iowa ou Zamora, Michoacán"], "Ej. Jean": ["E.g. Jean", "Ex.: Jean"], "Terreno mayor a 500 hectáreas:": ["Field exceeds 500 ha limit", "Terreno maior que 500 hectares:"], "Nombre del terreno *": ["Field name *", "Nome do terreno *"], "8. Nombre del terreno *": ["8. Field name *", "8. Nome do terreno *"], "Zona alta (≥ 0.58)": ["High vigor (≥ 0.58)", "Zona alta (≥ 0.58)"], "Zona baja (< 0.35)": ["Low (< 0.35)", "Zona baixa (< 0.35)"], "Zona baja": ["Low zone", "Zona baixa"], "Zona media (0.35–0.57)": ["Medium (0.35–0.57)", "Zona média (0.35–0.57)"], "Zona media": ["Medium zone", "Zona média"], "Igual al promedio (−1.2σ a +1.2σ)": ["Near field avg (−1.2σ to +1.2σ)", "Igual à média (−1.2σ a +1.2σ)"], "Ninguno / desconocido": ["None / unknown", "Nenhum / desconhecido"], "Parcela · Suelo": ["Parcel · Soil", "Parcela · Solo"], "Por favor delimita un lote menor a 500 ha para garantizar procesamiento satelital rápido.": ["Please draw or select a smaller field to avoid satellite timeout.", "Delimite um talhão menor que 500 ha para garantir processamento rápido do satélite."], "Cultivo anterior (opcional)": ["Previous crop (optional)", "Cultura anterior (opcional)"], "Riesgo": ["Risk", "Risco"], "Para entender y aprender, no para decidir.": ["To understand and learn, not to decide.", "Para entender e aprender, não para decidir."], "Usar mi ubicación (GPS real)": ["Use my device GPS", "Usar minha localização (GPS real)"], "Vs. lote": ["Vs. Avg", "Vs. talhão"], "Acepta pegado directo o grados-minutos-segundos": ["Lat -90..90, Lon -180..180", "Aceita colar direto ou graus-minutos-segundos"], "Escala de 0 (tierra pelada) a 1 (planta muy tupida). Toca cualquier cuadro del mapa para ver su diagnóstico.": ["Scale from 0 (bare soil) to 1 (very dense plants). Tap any square on the map to see its diagnosis.", "Escala de 0 (terra nua) a 1 (planta muito densa). Toque em qualquer quadro do mapa para ver o diagnóstico."], "Mayor": ["Higher", "Maior"], "Menor": ["Lower", "Menor"], "Baja": ["Low", "Baixa"], "Media": ["Med", "Média"]});
   Object.assign(T, {"Notificaciones y alertas": ["Notifications and alerts", "Notificações e alertas"], "Robot y misiones de muestreo": ["Robot and sampling missions", "Robô e missões de amostragem"], "Minimizar hoja": ["Minimize panel", "Minimizar painel"], "Expandir hoja": ["Expand panel", "Expandir painel"], "Requiere siembra directa": ["Requires no-till planting", "Requer plantio direto"], "Umbral helada (°C):": ["Frost threshold (°C):", "Limiar de geada (°C):"], "Ver 5 puntos ↓": ["See 5 points ↓", "Ver 5 pontos ↓"], "Bajo": ["Low", "Baixo"], "El robot no reporta": ["The robot is not reporting", "O robô não está reportando"], "Ver la ruta": ["Show the route", "Ver a rota"], "Cuadros para revisar": ["Squares to check", "Quadros para revisar"]});
   Object.assign(T, {"Umbral suelo pelado (verdor <):": ["Bare-soil threshold (greenness <):", "Limiar de solo nu (verdor <):"], "Umbral sequía raíz (< %):": ["Root drought threshold (< %):", "Limiar de seca na raiz (< %):"], "Umbral exceso agua (> %):": ["Excess water threshold (> %):", "Limiar de excesso de água (> %):"]});
+  Object.assign(T, {"Promedios del robot: 24 horas, 7 y 30 días": ["Robot averages: 24 hours, 7 and 30 days", "Médias do robô: 24 horas, 7 e 30 dias"], "Qué hacer en tu terreno": ["What to do on your field", "O que fazer no seu terreno"], "Lo que conviene hacer hoy, esta temporada y en los próximos años, con los datos de tu terreno.": ["What to do today, this season and in the coming years, using your field's data.", "O que convém fazer hoje, nesta safra e nos próximos anos, com os dados do seu terreno."], "Riesgo": ["Risk", "Risco"], "Ver la tabla de lecturas": ["Show the readings table", "Ver a tabela de leituras"]});
   const R = [["^📍 Coordenadas de prueba: (.+)$", "📍 Test coordinates: $1", "📍 Coordenadas do teste: $1"], ["^Humedad en zona de raíz dentro del rango normal \\(([\\d.]+)%\\)\\.?$", "Root-zone moisture within the normal range ($1%).", "Umidade na zona da raiz dentro da faixa normal ($1%)."],["^\\(mín (\\S+) · máx (\\S+)\\)$", "(min $1 · max $2)", "(mín $1 · máx $2)"], ["^mín (-?[\\d.]+°C)$", "min $1", "mín $1"], ["^Humedad idx: ([\\d.]+)$", "Moisture idx: $1", "Umidade idx: $1"], ["^(.*) · (\\S*) · (\\S*) → hoy$", "$1 · $2 · $3 → today", "$1 · $2 · $3 → hoje"], ["^(\\d+) de (\\d+) cuadros tienen verdor < ([\\d.]+) \\(Cuadros: (.*)\\)\\.$", "$1 of $2 squares have greenness < $3 (Squares: $4).", "$1 de $2 quadros têm verdor < $3 (Quadros: $4)."], ["^Datos de la parcela: ([\\d.]+) mm de agua útil en el suelo, pH ([\\d.]+), ([\\d.]+) mm/año de lluvia\\.$", "Field data: $1 mm of plant-available water, pH $2, $3 mm/year of rain.", "Dados do terreno: $1 mm de água útil no solo, pH $2, $3 mm/ano de chuva."], ["^Datos de la parcela: materia orgánica de ([\\d.]+)%, factor de erodabilidad K=([\\d.]+)\\.$", "Field data: $1% organic matter, erodibility factor K=$2.", "Dados do terreno: matéria orgânica de $1%, fator de erodibilidade K=$2."], ["^Datos de la parcela: máximo mensual de ([\\d.]+) °C reportado por NASA POWER\\.$", "Field data: monthly maximum of $1 °C reported by NASA POWER.", "Dados do terreno: máxima mensal de $1 °C informada pelo NASA POWER."], ["^Helada prevista: mínima de (-?[\\d.]+) °C en los próximos 7 días \\(umbral ≤ 0 °C · Meteomatics 1 km\\)\\.$", "Frost expected: low of $1 °C in the next 7 days (threshold ≤ 0 °C · Meteomatics 1 km).", "Geada prevista: mínima de $1 °C nos próximos 7 dias (limiar ≤ 0 °C · Meteomatics 1 km)."], ["^Humedad de la zona radicular: ([\\d.]+) %$", "Root-zone moisture: $1 %", "Umidade da zona radicular: $1 %"], ["^Lluvia media anual: (\\d+) mm$", "Mean annual rain: $1 mm", "Chuva média anual: $1 mm"], ["^Pico térmico histórico: ([\\d.]+) °C$", "Historical heat peak: $1 °C", "Pico térmico histórico: $1 °C"], ["^La última lectura llegó el (.+)\\.$", "The last reading arrived on $1.", "A última leitura chegou em $1."], ["^Mostrar (\\d+) más \\((\\d+) / (\\d+)\\)$", "Show $1 more ($2 / $3)", "Mostrar mais $1 ($2 / $3)"], ["^Resultado por cuadro \\(Temporada (.*)\\):$", "Result per square (Season $1):", "Resultado por quadro (Temporada $1):"], ["^t_min_2m_24h: (.+) · Semáforo servidor: VERDE$", "t_min_2m_24h: $1 · Server light: GREEN", "t_min_2m_24h: $1 · Semáforo do servidor: VERDE"], ["^📍 Test coordinates: (.+) \\(Querétaro\\)$", "📍 Test coordinates: $1 (Querétaro)", "📍 Coordenadas do teste: $1 (Querétaro)"], ["^Acción: Humedad en zona de raíz dentro del rango normal \\(([\\d.]+)%\\)\\.$", "Action: root-zone moisture within the normal range ($1%).", "Ação: umidade na zona da raiz dentro da faixa normal ($1%)."], ["^Abr–Sep: Siembra y desarrollo de (.+)\\.$", "Apr–Sep: planting and growth of $1.", "Abr–Set: plantio e desenvolvimento de $1."], ["^Agua disponible en el perfil: (.+)$", "Plant-available water in the profile: $1", "Água disponível no perfil: $1"], ["^Helada ≤ (-?[\\d.]+)°$", "Frost ≤ $1°", "Geada ≤ $1°"], ["^(\\d+) cuadros · verdor medio ([\\d.]+) · foto del (.+)\\.$", "$1 squares · mean greenness $2 · image of $3.", "$1 quadros · verdor médio $2 · imagem de $3."], ["^(\\d+) cuadros tienen verdor bajo \\(menos de 0\\.30\\)\\. Te trazo la ruta para ir a verlos\\.$", "$1 squares have low greenness (under 0.30). Here is a route to go and check them.", "$1 quadros têm verdor baixo (menos de 0.30). Traço a rota para ir vê-los."], ["^(.+) y OpenET (.+)$", "$1 and OpenET $2", "$1 e OpenET $2"], ["^Datos de la parcela: no hace falta aquí: llueven (\\d+) mm al año; úsalo solo si tu lluvia baja de 600 mm\\.$", "Field data: not needed here: $1 mm of rain a year; use it only if your rain drops below 600 mm.", "Dados do terreno: não precisa aqui: chovem $1 mm por ano; use só se sua chuva cair abaixo de 600 mm."], ["^Máxima extrema registrada: ([\\d.]+) °C$", "Recorded extreme high: $1 °C", "Máxima extrema registrada: $1 °C"]].map(([p, en, pt]) => [new RegExp(p), en, pt]);
   function tradu(k, i) {
     if (T[k]) return T[k][i];

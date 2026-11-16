@@ -2552,3 +2552,37 @@ body.si-abierta #demo-caja { top: auto; bottom: 16px; right: auto; left: 96px; }
 
 /* El panel de la flota simulada solo tiene sentido sobre el mapa. */
 body:not([data-space="mapa"]) #sim-panel { display: none; }
+
+/* ===== Plan por secciones: una frase clara arriba, el detalle plegado ===== */
+#agro-plan .plan-sec { border: 1px solid var(--linea); border-radius: 12px; background: var(--superficie); margin-bottom: 10px; overflow: hidden; }
+#agro-plan .plan-sec > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 14px 16px; align-items: center; }
+#agro-plan .plan-sec > summary::-webkit-details-marker { display: none; }
+#agro-plan .plan-sec > summary::after { content: "+"; grid-row: 1 / span 2; grid-column: 3; font-size: 20px; color: var(--texto-suave); line-height: 1; }
+#agro-plan .plan-sec[open] > summary::after { content: "−"; }
+#agro-plan .plan-sec[open] > summary { border-bottom: 1px solid var(--linea); }
+#agro-plan .plan-sec-n { font-weight: 700; font-size: 16px; color: var(--texto); }
+#agro-plan .plan-sec-f { grid-column: 1; font-size: 14px; color: var(--texto-suave); line-height: 1.45; }
+#agro-plan .plan-sec-c { grid-row: 1; grid-column: 2; font-size: 12px; color: var(--texto-suave); background: color-mix(in srgb, var(--primario) 10%, transparent); border-radius: 99px; padding: 2px 8px; }
+#agro-plan .plan-sec-body { padding: 4px 16px 12px; }
+#agro-plan .plan-fila { padding: 12px 0; border-bottom: 1px solid color-mix(in srgb, var(--linea) 60%, transparent); }
+#agro-plan .plan-fila:last-child { border-bottom: 0; }
+#agro-plan .plan-fila-t { font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--texto); }
+#agro-plan .plan-fila-p { margin: 0; font-size: 14px; line-height: 1.55; max-width: 72ch; }
+#agro-plan .plan-aviso { border-left: 3px solid #C77700; padding-left: 10px; }
+.plan-mas { margin-top: 6px; }
+.plan-mas > summary { cursor: pointer; font-size: 13px; color: var(--primario); font-weight: 600; width: fit-content; }
+.plan-mas > p { margin: 6px 0 0; font-size: 13px; line-height: 1.55; color: var(--texto-suave); max-width: 72ch; }
+.plan-glosario { margin-top: 10px; border: 1px dashed var(--linea); border-radius: 10px; padding: 10px 14px; }
+.plan-glosario > summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.plan-glosario dl { margin: 8px 0 0; display: grid; gap: 6px; }
+.plan-glosario dt { font-weight: 700; font-size: 13px; }
+.plan-glosario dd { margin: 0 0 4px; font-size: 13px; line-height: 1.5; color: var(--texto-suave); }
+.plan-glosario ul { margin: 8px 0 0 18px; padding: 0; font-size: 13px; line-height: 1.5; }
+/* Lectura cómoda en todas las pantallas: renglones más aireados y de largo razonable */
+.v2-workspace .card p { line-height: 1.55; }
+.v2-workspace .card .small { line-height: 1.5; }
+/* Botones de reproducción solo con símbolos: área táctil de 44 px */
+#rover-btn-prev, #rover-btn-next, #rover-btn-play { min-width: 44px; min-height: 44px; }
+/* Foco visible con teclado */
+.v2-workspace button:focus-visible, .v2-workspace summary:focus-visible, .v2-workspace input:focus-visible, .v2-workspace select:focus-visible { outline: 3px solid color-mix(in srgb, var(--primario) 60%, transparent); outline-offset: 2px; }
+@media (max-width: 768px) { #agro-plan .plan-sec > summary { padding: 12px; } #agro-plan .plan-sec-body { padding: 2px 12px 10px; } }

@@ -637,7 +637,7 @@
                 </span>
                 <div>
                   <h1 style="font-size:20px;font-weight:700;margin:0">
-                    ${lang === "en" ? "Agronomic Concepts Guide" : lang === "pt" ? "Guia de Conceitos Agronômicos" : "Guía de Conceptos Agronómicos"}
+                    ${lang === "en" ? "Concepts guide" : lang === "pt" ? "Guia de conceitos" : "Guía de conceptos"}
                   </h1>
                   <div class="xs mut">${lang === "en" ? "To understand and learn, not to decide." : "Para entender y aprender, no para decidir."}</div>
                 </div>

@@ -230,23 +230,71 @@
       for (const k of Object.keys(F)) if (this.titulosExtra?.[k] && !filas.some(f => f[0] === k)) filas.push([k, m(...this.titulosExtra[k])]);
       return `
         <div class="card" id="agro-plan">
-          <h2 class="card-title" style="margin-bottom:6px">${window.ic ? window.ic("calc", "sm") : ""} <span>${esc(m("Plan agronómico calculado", "Computed agronomic plan", "Plano agronômico calculado"))}</span></h2>
-          <p class="xs mut" style="margin:0 0 10px">${esc(m("Cuentas hechas con los datos de tu terreno. Cada fila dice de dónde sale; las guías de Iowa State son reglas, no mediciones.", "Worked out from your field's data. Each row says where it comes from; Iowa State guides are rules, not measurements.", "Contas feitas com os dados do seu terreno. Cada linha diz de onde vem; os guias da Iowa State são regras, não medições."))}</p>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            ${filas.map(([k, t]) => `<div class="recom-card${k === "fenologia" ? " urgent" : ""}" style="padding:10px 12px"><strong class="small">${esc(t)}</strong><div class="small" style="margin-top:4px">${esc(F[k])}</div></div>`).join("")}
-          </div>
-          ${p.faltan.length ? `<div class="notice atencion" style="margin-top:10px"><div class="xs"><b>${esc(m("Lo que todavía no se puede calcular:", "Not yet computable:", "Ainda não dá para calcular:"))}</b><ul style="margin:4px 0 0 16px;padding:0">${p.faltan.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div></div>` : ""}
+          <h2 class="card-title" style="margin-bottom:6px">${window.ic ? window.ic("calc", "sm") : ""} <span>${esc(m("Tu plan, calculado con tus datos", "Your plan, worked out from your data", "Seu plano, calculado com seus dados"))}</span></h2>
+          <p class="small mut" style="margin:0 0 12px">${esc(m("Seis temas. Abre uno para ver el detalle y la cuenta. Las guías de universidades son reglas, no mediciones.", "Six topics. Open one to see the detail and the math. University guides are rules, not measurements.", "Seis temas. Abra um para ver o detalhe e a conta. Os guias de universidades são regras, não medições."))}</p>
+          ${this.vistaPlan(F, filas, p)}
+          ${p.faltan.length ? `<details class="plan-glosario"><summary>${esc(m("Lo que todavía no se puede calcular", "What can't be computed yet", "O que ainda não dá para calcular"))} (${p.faltan.length})</summary><ul>${p.faltan.map(f => `<li>${esc(f)}</li>`).join("")}</ul></details>` : ""}
+          ${this.glosario()}
           ${this.panelExtra?.() || ""}
           <label class="small" style="display:block;margin-top:12px"><b>${esc(m("Mis notas de campo", "My field notes", "Minhas notas de campo"))}</b>
             <textarea id="agro-notas" class="field" rows="4" style="width:100%;margin-top:4px" placeholder="${esc(m("Lo que viste en el recorrido, decisiones, dudas…", "What you saw, decisions, questions…", "O que você viu, decisões, dúvidas…"))}">${esc(this.notas())}</textarea>
           </label>
           <div class="row-wrap" style="gap:8px;margin-top:8px">
-            <button type="button" class="btn btn-sec btn-sm" data-agro-gpx>${esc(m("Muestreo GPX", "Sampling GPX", "Amostragem GPX"))}</button>
-            <button type="button" class="btn btn-sec btn-sm" data-agro-presc>${esc(m("Prescripción GeoJSON", "Prescription GeoJSON", "Prescrição GeoJSON"))}</button>
-            <button type="button" class="btn btn-pri btn-sm" data-agro-reporte>${esc(m("Generar reporte", "Build report", "Gerar relatório"))}</button>
+            <button type="button" class="btn btn-sec btn-sm" data-agro-gpx>${esc(m("Puntos de muestreo (GPS)", "Sampling points (GPS)", "Pontos de amostragem (GPS)"))}</button>
+            <button type="button" class="btn btn-sec btn-sm" data-agro-presc>${esc(m("Mapa de siembra (maquinaria)", "Seeding map (machinery)", "Mapa de plantio (máquinas)"))}</button>
+            <button type="button" class="btn btn-pri btn-sm" data-agro-reporte>${esc(m("Hacer reporte", "Make report", "Fazer relatório"))}</button>
             <span class="xs mut">${esc(m("Las notas se guardan en este navegador.", "Notes are saved in this browser.", "As notas ficam salvas neste navegador."))}</span>
           </div>
         </div>`;
+    },
+
+    // Plan en 6 secciones plegables: una frase clara arriba, el detalle y la cuenta adentro.
+    vistaPlan(F, filas, p) {
+      const titulo = Object.fromEntries(filas);
+      const GR = [
+        ["temporada", m("Esta temporada", "This season", "Esta safra"), ["fenologia", "siembra", "sueloSiembra", "gradosDia", "cosecha", "secado", "coberturaFechas"]],
+        ["agua", m("Agua y clima", "Water and climate", "Água e clima"), ["agua", "etReal", "riesgo", "extremos", "clima", "proyeccion", "validacion", "horizontes"]],
+        ["suelo", m("Suelo", "Soil", "Solo"), ["suelo", "erosionReal", "erosion", "calLargo", "fosforoPotasio", "carbonoSuelo", "nitratoAgua", "huella"]],
+        ["insumos", m("Semilla y fertilizante", "Seed and fertilizer", "Semente e fertilizante"), ["densidad", "prescripcion", "nitrogenoAjuste", "nitrogeno", "insumos"]],
+        ["dinero", m("Dinero y riesgo", "Money and risk", "Dinheiro e risco"), ["economia", "portafolio", "riegoVan", "drenajeTubos", "valorTierra", "banco"]],
+        ["mapa", m("Mapa y muestreo", "Map and sampling", "Mapa e amostragem"), ["celdas", "zonasEstables", "anomalias", "muestreoZonas", "semivariograma", "ruta", "calibracion", "bitacora"]],
+      ];
+      const usados = new Set(GR.flatMap(g => g[2]));
+      GR[5][2].push(...Object.keys(titulo).filter(k => !usados.has(k)));
+      const pc = (x) => `${Math.round(x * 100)} %`;
+      const MES = { es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"], en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], pt: ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"] };
+      const dia = (md) => { const l = window.V2?.lang || "es", [mo, d] = md.split("-").map(Number), n = (MES[l] || MES.es)[mo - 1]; return l === "en" ? `${n} ${d}` : `${d} de ${n}`; };
+      // La frase de arriba de cada sección: lo que importa, con su número.
+      const frase = {
+        temporada: () => p.siembra && m(`Sembrar maíz entre el ${dia(p.siembra.ini)} y el ${dia(p.siembra.fin)}.${p.fenologia?.fuera ? " La foto actual es de fuera de temporada." : ""}`, `Plant corn between ${dia(p.siembra.ini)} and ${dia(p.siembra.fin)}.${p.fenologia?.fuera ? " The current image is off-season." : ""}`, `Plantar milho entre ${dia(p.siembra.ini)} e ${dia(p.siembra.fin)}.${p.fenologia?.fuera ? " A foto atual é de fora da safra." : ""}`),
+        agua: () => { const r = this.riesgo40?.(p.agua?.awc), pr = this.proyectar?.(p.agua?.awc); return r && m(`Falta agua para el maíz ${r.porDecada} veces por década${pr ? `; hacia 2041–2050 rendiría ${Math.round(-pr.res[2].mediana * 100)} % menos` : ""}.`, `Corn runs short of water ${r.porDecada} times per decade${pr ? `; by 2041–2050 it would yield ${Math.round(-pr.res[2].mediana * 100)} % less` : ""}.`, `Falta água para o milho ${r.porDecada} vezes por década${pr ? `; em 2041–2050 renderia ${Math.round(-pr.res[2].mediana * 100)} % menos` : ""}.`); },
+        suelo: () => { const s = p.suelo, er = this.erosion?.(s); return s && m(`Suelo de textura ${s.textura} y pH ${s.ph}${s.cal ? ": necesita cal" : ": no necesita cal hoy"}.${er ? ` Arándolo cada año pierde 5 cm en ${er.esc.convencional.anios5cm} años.` : ""}`, `${s.textura.charAt(0).toUpperCase() + s.textura.slice(1)} soil, pH ${s.ph}${s.cal ? ": needs lime" : ": no lime needed today"}.${er ? ` Plowing every year loses 5 cm in ${er.esc.convencional.anios5cm} years.` : ""}`, `Solo de textura ${s.textura} e pH ${s.ph}${s.cal ? ": precisa de calcário" : ": não precisa de calcário hoje"}.${er ? ` Arando todo ano perde 5 cm em ${er.esc.convencional.anios5cm} anos.` : ""}`); },
+        insumos: () => { const n = this.nitrogeno?.(), i = p.insumos; return i && m(`${n ? n.total : i.nTrasSoya[1]} kg de nitrógeno y ${i.dens[0]}–${i.dens[1]} mil semillas por hectárea.`, `${n ? n.total : i.nTrasSoya[1]} kg of nitrogen and ${i.dens[0]}–${i.dens[1]} thousand seeds per hectare.`, `${n ? n.total : i.nTrasSoya[1]} kg de nitrogênio e ${i.dens[0]}–${i.dens[1]} mil sementes por hectare.`); },
+        dinero: () => { const pf = this.portafolio?.(); return pf ? m(`Maíz-soya deja ${pf.out.maizSoya.media} USD/ha en promedio y pierde dinero ${pc(pf.out.maizSoya.pPerdida)} de los años.`, `Corn-soy leaves ${pf.out.maizSoya.media} USD/ha on average and loses money in ${pc(pf.out.maizSoya.pPerdida)} of years.`, `Milho-soja deixa ${pf.out.maizSoya.media} USD/ha em média e perde dinheiro em ${pc(pf.out.maizSoya.pPerdida)} dos anos.`) : p.economia && m(`Maíz a ${p.economia.precioT} USD/t hoy.`, `Corn at ${p.economia.precioT} USD/t today.`, `Milho a ${p.economia.precioT} USD/t hoje.`); },
+        mapa: () => { const an = this.analisisJulios?.(); return an ? m(`${pc(an.estables)} del terreno se comporta igual año con año; ${an.malos} cuadros están peor que de costumbre.`, `${pc(an.estables)} of the field behaves the same every year; ${an.malos} squares are worse than usual.`, `${pc(an.estables)} do terreno se comporta igual ano após ano; ${an.malos} quadros estão piores que o normal.`) : p.celdas && m(`${p.celdas.n} cuadros de ${p.celdas.lado} m.`, `${p.celdas.n} squares of ${p.celdas.lado} m.`, `${p.celdas.n} quadros de ${p.celdas.lado} m.`); },
+      };
+      // Primera oración a la vista; el resto, plegado.
+      const partir = (t) => { const i = t.indexOf(". ", 60); return i < 0 || i > t.length - 20 ? [t, ""] : [t.slice(0, i + 1), t.slice(i + 2)]; };
+      const fila = (k) => { const [a, b] = partir(F[k]); return `<div class="plan-fila${k === "fenologia" ? " plan-aviso" : ""}"><div class="plan-fila-t">${esc(titulo[k])}</div><p class="plan-fila-p">${esc(a)}</p>${b ? `<details class="plan-mas"><summary>${esc(m("Ver la cuenta", "See the math", "Ver a conta"))}</summary><p>${esc(b)}</p></details>` : ""}</div>`; };
+      return GR.map(([id, nom, ks], i) => {
+        const ok = ks.filter(k => F[k] && titulo[k]); if (!ok.length) return "";
+        let f = ""; try { f = frase[id]?.() || ""; } catch (_) {}
+        return `<details class="plan-sec" ${i === 0 ? "open" : ""}><summary><span class="plan-sec-n">${esc(nom)}</span><span class="plan-sec-f">${esc(f)}</span><span class="plan-sec-c">${ok.length}</span></summary><div class="plan-sec-body">${ok.map(fila).join("")}</div></details>`;
+      }).join("");
+    },
+    glosario() {
+      const G = [
+        ["NDVI", "Número de 0 a 1 que mide qué tan verde y viva está la planta, calculado con la luz que refleja.", "A 0-to-1 number for how green and alive the plant is, from the light it reflects.", "Número de 0 a 1 que mede quão verde e viva está a planta, pela luz que reflete."],
+        ["Evapotranspiración (ET)", "Agua que el suelo y la planta pierden hacia el aire. Es lo que el cultivo \"bebe\".", "Water the soil and plant lose to the air. It is what the crop \"drinks\".", "Água que o solo e a planta perdem para o ar. É o que a cultura \"bebe\"."],
+        ["Grados día", "Suma del calor útil de cada día. La planta avanza de etapa cuando junta cierta cantidad.", "Sum of each day's useful heat. The plant moves to its next stage after collecting enough.", "Soma do calor útil de cada dia. A planta muda de fase ao juntar certa quantidade."],
+        ["RUSLE", "Fórmula oficial del USDA para estimar cuánta tierra se lleva la lluvia.", "The USDA's standard formula for how much soil rain washes away.", "Fórmula oficial do USDA para estimar quanto solo a chuva leva."],
+        ["MRTN", "Método de Iowa State para elegir la dosis de nitrógeno que más dinero deja.", "Iowa State's method for the nitrogen rate that pays the most.", "Método da Iowa State para escolher a dose de nitrogênio que mais rende."],
+        ["Semivariograma", "Gráfica que dice a qué distancia dos puntos del terreno dejan de parecerse. Sirve para decidir cada cuánto muestrear.", "A chart of how far apart two spots must be before they stop resembling each other. It sets sampling distance.", "Gráfico que diz a que distância dois pontos deixam de se parecer. Serve para decidir de quanto em quanto amostrar."],
+        ["CMIP6", "Conjunto de modelos del clima futuro que usa el IPCC.", "The set of future-climate models the IPCC uses.", "Conjunto de modelos do clima futuro usado pelo IPCC."],
+        ["Valor presente", "Cuánto vale hoy una inversión, sumando lo que dejará cada año y descontando el costo.", "What an investment is worth today: future yearly gains minus the cost, discounted.", "Quanto vale hoje um investimento: os ganhos de cada ano menos o custo, descontados."],
+        ["GPX / GeoJSON", "Formatos de archivo para llevar puntos y mapas al GPS, al robot o a la maquinaria.", "File formats to carry points and maps to a GPS, robot or machinery.", "Formatos de arquivo para levar pontos e mapas ao GPS, ao robô ou às máquinas."],
+      ];
+      return `<details class="plan-glosario"><summary>${esc(m("Palabras técnicas, en simple", "Technical words, plainly", "Palavras técnicas, em simples"))}</summary><dl>${G.map(g => `<dt>${esc(g[0])}</dt><dd>${esc(m(g[1], g[2], g[3]))}</dd>`).join("")}</dl></details>`;
     },
 
     // ------------------------------------------------------------ reporte imprimible
